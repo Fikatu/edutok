@@ -2,16 +2,16 @@
 <html lang="ro">
 <head>
   <meta charset="UTF-8">
-  <title>EduScroll - Full Screen</title>
+  <title>EduScroll - Smart Quiz</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;800&display=swap" rel="stylesheet">
   
   <style>
     :root {
       --bg-dark: #050505;
-      --accent: #10b981; /* Verde pentru fapte */
-      --accent-quiz: #3b82f6; /* Albastru pentru quiz */
-      --wrong: #ef4444; /* Roșu */
+      --accent: #10b981; 
+      --accent-quiz: #3b82f6; 
+      --wrong: #ef4444; 
       --text-main: #ffffff;
       --text-muted: #94a3b8;
     }
@@ -26,7 +26,6 @@
       overflow: hidden; 
     }
 
-    /* Containerul Scroll Edge-to-Edge */
     .feed-container {
       height: 100vh; width: 100vw;
       overflow-y: scroll;
@@ -37,7 +36,6 @@
     }
     .feed-container::-webkit-scrollbar { display: none; }
 
-    /* Fiecare ecran ocupă exact 100% din telefon */
     .snap-card {
       height: 100vh; width: 100vw;
       scroll-snap-align: start;
@@ -45,22 +43,14 @@
       position: relative;
     }
 
-    /* BAZA PENTRU ECRANE (Fără margini, fără border-radius) */
     .fact-card, .quiz-card {
       width: 100%; height: 100%;
       display: flex; flex-direction: column; justify-content: center;
-      padding: 15% 8%; /* Spațiu generos pe laterale și sus/jos */
+      padding: 15% 8%; 
     }
 
-    /* Fundal specific Fapte */
-    .fact-card {
-      background-image: radial-gradient(circle at top right, rgba(16, 185, 129, 0.15) 0%, var(--bg-dark) 70%);
-    }
-
-    /* Fundal specific Teste */
-    .quiz-card {
-      background-image: radial-gradient(circle at top left, rgba(59, 130, 246, 0.15) 0%, var(--bg-dark) 70%);
-    }
+    .fact-card { background-image: radial-gradient(circle at top right, rgba(16, 185, 129, 0.15) 0%, var(--bg-dark) 70%); }
+    .quiz-card { background-image: radial-gradient(circle at top left, rgba(59, 130, 246, 0.15) 0%, var(--bg-dark) 70%); }
 
     .category-badge {
       color: var(--accent); font-size: 0.95rem; font-weight: 800;
@@ -85,10 +75,8 @@
       padding-left: 20px; border-left: 4px solid rgba(16, 185, 129, 0.6);
     }
 
-    /* Opțiunile pentru Quiz */
-    .quiz-options {
-      display: flex; flex-direction: column; gap: 12px; width: 100%;
-    }
+    .quiz-options { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+    
     .quiz-btn {
       background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.1);
@@ -113,7 +101,6 @@
       animation: fadeIn 0.3s ease;
     }
 
-    /* BUTON IEȘIRE STILIZAT DISCRET */
     .close-btn {
       position: fixed; top: 20px; right: 20px;
       background: rgba(255,255,255,0.1); width: 40px; height: 40px;
@@ -140,49 +127,52 @@
 <body>
 
   <a href="index.html" class="close-btn">✕</a>
-
-  <div class="feed-container" id="feed">
-    </div>
+  <div class="feed-container" id="feed"></div>
 
   <script>
-    // --- BAZA DE DATE: INFORMAȚII ---
+    // --- BAZA DE DATE SMART ---
+    // Eu (AI-ul) îți voi genera mereu aceste variante greșite plauzibile din același domeniu.
     const facts = [
-      { category: "Drept Civil", q: "Atributele dreptului de proprietate", a: "Dreptul de proprietate conferă titularului său trei atribute esențiale: Posesia, Folosința și Dispoziția." },
-      { category: "Finanțe", q: "Nerespectarea formei 'ad validitatem'", a: "Atrage întotdeauna sancțiunea nulității absolute a actului juridic, deoarece forma este cerută pentru însăși valabilitatea sa." },
-      { category: "D.I.E.", q: "Aplicabilitatea directă a unei Directive", a: "Se recunoaște doar dacă dispozițiile ei sunt clare, precise, neafectate de condiții și dacă nu a fost transpusă în legislația națională." },
-      { category: "Drept Civil", q: "Eroarea asupra identității persoanei (intuitu personae)", a: "Este considerată o eroare esențială și atrage sancțiunea nulității relative (anularea) actului juridic." },
-      { category: "Finanțe", q: "Efectul imobilizării fondurilor de investiții", a: "Un nivel cât mai scăzut al acestui indicator exprimă o eficiență economică ridicată (banii se recuperează rapid)." },
-      { category: "D.I.E.", q: "Comisia Europeană (Demisie)", a: "Comisia Europeană în ansamblul ei poate fi demisă doar de către Parlamentul European, prin adoptarea unei moțiuni de cenzură." },
-      { category: "Finanțe", q: "Principiul universalității bugetare", a: "Presupune ca veniturile și cheltuielile să figureze în buget în sumele lor totale (brute), fără a se compensa veniturile cu cheltuielile." }
-    ];
-
-    // --- BAZA DE DATE: TESTE SURPRIZĂ ---
-    const quizzes = [
-      {
-        category: "Test Surpriză: Civil",
-        question: "Ce sancțiune intervine dacă nu se respectă forma 'ad validitatem' a unui act?",
-        options: ["Nulitatea relativă", "Nulitatea absolută", "Inopozabilitatea"],
-        correctIndex: 1, 
-        explanation: "Forma 'ad validitatem' este o condiție de valabilitate. Lipsa ei atrage mereu nulitatea absolută."
+      { 
+        category: "Drept Civil", 
+        q: "Care sunt atributele dreptului de proprietate?", 
+        a: "Posesia, Folosința și Dispoziția.",
+        wrongOptions: ["Uzul, Abitația și Servitutea", "Posesia, Detenția și Uzufructul", "Folosința, Înstrăinarea și Administrarea"],
+        expl: "Dreptul de proprietate este singurul drept real complet, oferind toate cele 3 atribute: ius possidendi, ius utendi/fruendi și ius abutendi."
       },
-      {
-        category: "Test Surpriză: D.I.E.",
-        question: "Cine poate demite Comisia Europeană în ansamblul ei?",
-        options: ["Consiliul European", "Curtea de Justiție", "Parlamentul European", "Niciuna din cele de mai sus"],
-        correctIndex: 2,
-        explanation: "Parlamentul European este singura instituție care are puterea de a demite Comisia prin moțiune de cenzură."
+      { 
+        category: "Finanțe", 
+        q: "Ce sancțiune atrage nerespectarea formei 'ad validitatem'?", 
+        a: "Nulitatea absolută a actului juridic.",
+        wrongOptions: ["Nulitatea relativă a actului juridic", "Inopozabilitatea față de terți", "Decăderea din dreptul de a cere executarea silită"],
+        expl: "Forma 'ad validitatem' este o condiție de valabilitate; în lipsa ei, actul nu poate lua naștere în mod valabil, deci sancțiunea este mereu nulitatea absolută."
       },
-      {
-        category: "Test Surpriză: Finanțe",
-        question: "Un nivel SCĂZUT al 'efectului imobilizării fondurilor' înseamnă:",
-        options: ["O eficiență economică ridicată", "O eficiență economică scăzută", "Faliment"],
-        correctIndex: 0,
-        explanation: "Cu cât fondurile stau imobilizate (blocate) mai puțin timp, cu atât eficiența investiției este mai mare."
+      { 
+        category: "D.I.E.", 
+        q: "Cine poate demite Comisia Europeană în ansamblul ei?", 
+        a: "Parlamentul European (prin moțiune de cenzură).",
+        wrongOptions: ["Consiliul European (cu vot în unanimitate)", "Curtea de Justiție a Uniunii Europene", "Președintele Consiliului Uniunii Europene"],
+        expl: "Doar Parlamentul European exercită controlul democratic și are puterea de a demite Comisia în bloc printr-o moțiune de cenzură."
+      },
+      { 
+        category: "Finanțe", 
+        q: "Ce semnifică principiul universalității bugetare?", 
+        a: "Veniturile și cheltuielile figurează în sume brute, fără a se compensa între ele.",
+        wrongOptions: ["Toate bugetele locale sunt incluse în bugetul de stat", "Veniturile realizate se alocă exact pentru cheltuielile din același domeniu", "Bugetul se aprobă de către un parlament bicameral"],
+        expl: "Universalitatea interzice compensarea. Nu ai voie să scazi cheltuielile dintr-un venit și să treci în buget doar profitul/pierderea netă."
+      },
+      { 
+        category: "Drept Civil", 
+        q: "Ce atrage eroarea asupra identității persoanei (intuitu personae)?", 
+        a: "Nulitatea relativă (anularea) actului.",
+        wrongOptions: ["Nulitatea absolută", "Rezolutiunea contractului", "Rezilierea contractului de plin drept"],
+        expl: "Eroarea (viciu de consimțământ) ocrotește un interes privat, prin urmare sancțiunea este mereu nulitatea relativă, putând fi invocată doar de partea aflată în eroare."
       }
     ];
 
     const QUIZ_INTERVAL = 3; 
 
+    // Funcție amestecare
     function shuffleArray(array) {
       let arr = [...array];
       for (let i = arr.length - 1; i > 0; i--) {
@@ -194,10 +184,12 @@
 
     const feedContainer = document.getElementById('feed');
     let shuffledFacts = shuffleArray(facts);
-    let shuffledQuizzes = shuffleArray(quizzes);
+    
     let factCounter = 0;
+    let recentFactsCache = []; 
 
     shuffledFacts.forEach((fact, index) => {
+      // 1. GENERĂM CARDUL CURENT (Informația)
       const factCard = document.createElement('div');
       factCard.className = 'snap-card';
       const hintHTML = index === 0 ? `<div class="swipe-hint"><span>Swipe sus</span><span>^</span></div>` : '';
@@ -211,46 +203,62 @@
         ${hintHTML}
       `;
       feedContainer.appendChild(factCard);
+      
+      recentFactsCache.push(fact);
       factCounter++;
 
-      if (factCounter % QUIZ_INTERVAL === 0 && shuffledQuizzes.length > 0) {
-        const quiz = shuffledQuizzes.pop(); 
+      // 2. LA FIECARE X SCROLL-URI, GENERĂM UN TEST SURPRIZĂ
+      if (factCounter % QUIZ_INTERVAL === 0 && recentFactsCache.length > 0) {
+        
+        // Alegem un concept din cele recent citite
+        const targetFact = recentFactsCache[Math.floor(Math.random() * recentFactsCache.length)];
         const explanationId = 'expl-' + index;
+
+        // Unim răspunsul corect cu capcanele SCRISE INTELIGENT de mine
+        let allOptions = [targetFact.a, ...targetFact.wrongOptions];
+        // Le amestecăm ca să nu fie a) mereu corect
+        allOptions = shuffleArray(allOptions);
+        
+        const correctIndex = allOptions.indexOf(targetFact.a);
 
         const quizCard = document.createElement('div');
         quizCard.className = 'snap-card';
 
         let optionsHTML = '';
-        quiz.options.forEach((opt, optIndex) => {
-          optionsHTML += `<button class="quiz-btn" onclick="checkQuizAnswer(this, ${optIndex === quiz.correctIndex}, '${explanationId}')">${opt}</button>`;
+        allOptions.forEach((opt, optIndex) => {
+          optionsHTML += `<button class="quiz-btn" onclick="checkQuizAnswer(this, ${optIndex === correctIndex}, '${explanationId}')">${opt}</button>`;
         });
 
         quizCard.innerHTML = `
           <div class="quiz-card">
-            <div class="category-badge quiz-badge">🧠 ${quiz.category}</div>
-            <div class="question">${quiz.question}</div>
+            <div class="category-badge quiz-badge">🧠 Recapitulează ce ai citit</div>
+            <div class="question">${targetFact.q}</div>
             <div class="quiz-options">
               ${optionsHTML}
             </div>
             <div class="explanation" id="${explanationId}">
-              <b>Reține:</b> ${quiz.explanation}
+              <b>Reține:</b> ${targetFact.expl}
             </div>
           </div>
         `;
         
         feedContainer.appendChild(quizCard);
+        recentFactsCache = []; // Golim memoria pentru următoarea serie
       }
     });
 
+    // --- FUNCȚIA DE VERIFICARE ---
     window.checkQuizAnswer = function(buttonClicked, isCorrect, explanationId) {
       const parentDiv = buttonClicked.parentElement;
       const allButtons = parentDiv.querySelectorAll('.quiz-btn');
+      
       allButtons.forEach(btn => btn.style.pointerEvents = 'none');
 
       if (isCorrect) {
         buttonClicked.classList.add('correct');
       } else {
         buttonClicked.classList.add('wrong');
+        // Dacă greșește, îi arătăm explicația clară
         document.getElementById(explanationId).style.display = 'block';
         
         const correctBtnIndex = Array.from(allButtons).findIndex(btn => btn.getAttribute('onclick').includes('true'));
