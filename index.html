@@ -10,144 +10,127 @@
     :root {
       --bg-dark: #000000;
       --card-dark: #1e293b;
-      --accent: #10b981; /* Verde pentru accent */
+      --accent: #10b981; /* Verde */
+      --wrong: #ef4444; /* Roșu */
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
     }
 
-    /* Reset global pentru a preveni scroll-ul accidental pe body */
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
     html, body {
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       background-color: var(--bg-dark);
       color: var(--text-main);
       font-family: 'Outfit', sans-serif;
-      overflow: hidden; /* Blocăm scroll-ul pe pagină, folosim doar containerul */
+      overflow: hidden; 
     }
 
-    /* CONTAINERUL TIKTOK (Optimizat) */
+    /* Containerul Scroll */
     .feed-container {
-      height: 100vh;
-      width: 100vw;
+      height: 100vh; width: 100vw;
       overflow-y: scroll;
-      
-      /* Magia de stabilizare */
       scroll-snap-type: y mandatory;
-      -webkit-overflow-scrolling: touch; /* Scroll fin pe iOS */
-      
-      /* Ascundem bara de scroll pentru un look curat */
-      scrollbar-width: none; /* Firefox */
-      -ms-overflow-style: none; /* IE/Edge */
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; 
+      -ms-overflow-style: none; 
     }
-    .feed-container::-webkit-scrollbar {
-      display: none; /* Chrome, Safari, Opera */
-    }
+    .feed-container::-webkit-scrollbar { display: none; }
 
-    /* FIECARE ECRAN (100% din înălțimea telefonului) */
+    /* Fixarea pe ecran */
     .snap-card {
-      height: 100vh;
-      width: 100vw;
+      height: 100vh; width: 100vw;
       scroll-snap-align: start;
-      scroll-snap-stop: always; /* Forțează oprirea pe fiecare element */
-      
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-      position: relative;
+      scroll-snap-stop: always; 
+      display: flex; justify-content: center; align-items: center;
+      padding: 20px; position: relative;
     }
 
-    /* DESIGN-UL CITATULUI / INFORMAȚIEI */
+    /* CARD CITAT (Informație) */
     .fact-card {
       background: var(--card-dark);
-      width: 100%;
-      max-width: 420px;
-      border-radius: 24px;
-      padding: 40px 30px;
+      width: 100%; max-width: 420px;
+      border-radius: 24px; padding: 40px 30px;
       box-shadow: 0 15px 35px rgba(0,0,0,0.6);
       border: 1px solid rgba(255,255,255,0.05);
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      
-      /* Un fundal subtil gradient pentru profunzime */
       background-image: radial-gradient(circle at top right, rgba(16, 185, 129, 0.05) 0%, transparent 60%);
     }
 
-    .category-badge {
-      color: var(--accent);
-      font-size: 0.85rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    /* CARD TEST (Quiz) */
+    .quiz-card {
+      background: var(--card-dark);
+      width: 100%; max-width: 420px;
+      border-radius: 24px; padding: 30px 25px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+      border: 1px solid rgba(59, 130, 246, 0.3); /* Contur albăstrui să iasă în evidență */
+      background-image: radial-gradient(circle at top right, rgba(59, 130, 246, 0.05) 0%, transparent 60%);
     }
 
-    .category-badge::before {
-      content: '';
-      display: block;
-      width: 8px;
-      height: 8px;
-      background: var(--accent);
-      border-radius: 50%;
+    .category-badge {
+      color: var(--accent); font-size: 0.85rem; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 2px;
+      margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
     }
+    .category-badge::before {
+      content: ''; display: block; width: 8px; height: 8px;
+      background: var(--accent); border-radius: 50%;
+    }
+    
+    .quiz-badge { color: #3b82f6; } /* Culoare diferită pentru badge-ul de test */
+    .quiz-badge::before { background: #3b82f6; }
 
     .question {
-      font-size: 1.35rem;
-      font-weight: 700;
-      line-height: 1.4;
-      margin-bottom: 25px;
-      color: var(--text-main);
+      font-size: 1.35rem; font-weight: 700; line-height: 1.4;
+      margin-bottom: 25px; color: var(--text-main);
     }
-
     .answer {
-      font-size: 1.15rem;
+      font-size: 1.15rem; color: var(--text-muted); line-height: 1.5; font-weight: 300;
+      padding-left: 18px; border-left: 3px solid rgba(16, 185, 129, 0.5);
+    }
+
+    /* Opțiunile pentru Quiz */
+    .quiz-options {
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .quiz-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text-main);
+      padding: 15px; border-radius: 12px;
+      font-size: 1rem; text-align: left; font-family: inherit;
+      cursor: pointer; transition: 0.2s;
+    }
+    .quiz-btn:active { transform: scale(0.98); }
+    
+    /* Stări Răspuns */
+    .quiz-btn.correct { background: rgba(16, 185, 129, 0.2) !important; border-color: var(--accent) !important; color: var(--accent); font-weight: bold;}
+    .quiz-btn.wrong { background: rgba(239, 68, 68, 0.2) !important; border-color: var(--wrong) !important; color: var(--wrong); }
+
+    .explanation {
+      display: none; /* Ascuns inițial */
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      font-size: 0.95rem;
       color: var(--text-muted);
-      line-height: 1.5;
-      font-weight: 300;
-      
-      /* Efect de "citat" (o linie în stânga) */
-      padding-left: 18px;
-      border-left: 3px solid rgba(16, 185, 129, 0.5);
+      border-left: 3px solid var(--accent);
+      animation: fadeIn 0.3s ease;
     }
 
-    /* BUTON DE IEȘIRE */
     .close-btn {
-      position: fixed;
-      top: 25px;
-      right: 25px;
-      background: rgba(255,255,255,0.1);
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      text-decoration: none;
-      color: white;
-      font-weight: bold;
-      z-index: 1000;
-      backdrop-filter: blur(5px);
+      position: fixed; top: 25px; right: 25px;
+      background: rgba(255,255,255,0.1); width: 44px; height: 44px;
+      border-radius: 50%; display: grid; place-items: center;
+      text-decoration: none; color: white; font-weight: bold;
+      z-index: 1000; backdrop-filter: blur(5px);
     }
 
-    /* INDICAȚIE SCROLL (Apare doar pe primul card) */
     .swipe-hint {
-      position: absolute;
-      bottom: 40px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: rgba(255,255,255,0.3);
-      font-size: 0.9rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
-      animation: bounce 2s infinite;
-      pointer-events: none;
+      position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+      color: rgba(255,255,255,0.3); font-size: 0.9rem;
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      animation: bounce 2s infinite; pointer-events: none;
     }
 
     @keyframes bounce {
@@ -155,7 +138,7 @@
       40% { transform: translate(-50%, -10px); }
       60% { transform: translate(-50%, -5px); }
     }
-
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   </style>
 </head>
 <body>
@@ -166,62 +149,72 @@
     </div>
 
   <script>
-    // BAZA DE DATE - Aici pui "Citatele / Conceptele"
-    // Le-am formulat direct (Context + Răspuns direct)
+    // --- BAZA DE DATE: INFORMAȚII STATICE ---
     const facts = [
+      { category: "Drept Civil", q: "Atributele dreptului de proprietate", a: "Dreptul de proprietate conferă titularului său trei atribute esențiale: Posesia, Folosința și Dispoziția." },
+      { category: "Finanțe", q: "Nerespectarea formei 'ad validitatem'", a: "Atrage întotdeauna sancțiunea nulității absolute a actului juridic, deoarece forma este cerută pentru însăși valabilitatea sa." },
+      { category: "D.I.E.", q: "Aplicabilitatea directă a unei Directive", a: "Se recunoaște doar dacă dispozițiile ei sunt clare, precise, neafectate de condiții și dacă nu a fost transpusă în legislația națională." },
+      { category: "Drept Civil", q: "Eroarea asupra identității persoanei (intuitu personae)", a: "Este considerată o eroare esențială și atrage sancțiunea nulității relative (anularea) actului juridic." },
+      { category: "Finanțe", q: "Efectul imobilizării fondurilor de investiții", a: "Un nivel cât mai scăzut al acestui indicator exprimă o eficiență economică ridicată (banii se recuperează rapid)." },
+      { category: "D.I.E.", q: "Comisia Europeană (Demisie)", a: "Comisia Europeană în ansamblul ei poate fi demisă doar de către Parlamentul European, prin adoptarea unei moțiuni de cenzură." },
+      { category: "Finanțe", q: "Principiul universalității bugetare", a: "Presupune ca veniturile și cheltuielile să figureze în buget în sumele lor totale (brute), fără a se compensa veniturile cu cheltuielile." }
+    ];
+
+    // --- BAZA DE DATE: ÎNTREBĂRI TIP GRILĂ (Surprize) ---
+    const quizzes = [
       {
-        category: "Drept Civil",
-        q: "Atributele dreptului de proprietate",
-        a: "Dreptul de proprietate conferă titularului său trei atribute esențiale: Posesia, Folosința și Dispoziția."
+        category: "Test Surpriză: Civil",
+        question: "Ce sancțiune intervine dacă nu se respectă forma 'ad validitatem' a unui act?",
+        options: ["Nulitatea relativă", "Nulitatea absolută", "Inopozabilitatea"],
+        correctIndex: 1, // 'Nulitatea absolută' e a doua (index 1)
+        explanation: "Forma 'ad validitatem' este o condiție de valabilitate. Lipsa ei atrage mereu nulitatea absolută."
       },
       {
-        category: "Finanțe",
-        q: "Nerespectarea formei 'ad validitatem'",
-        a: "Atrage întotdeauna sancțiunea nulității absolute a actului juridic, deoarece forma este cerută pentru însăși valabilitatea sa."
+        category: "Test Surpriză: D.I.E.",
+        question: "Cine poate demite Comisia Europeană în ansamblul ei?",
+        options: ["Consiliul European", "Curtea de Justiție", "Parlamentul European", "Niciuna de mai sus"],
+        correctIndex: 2,
+        explanation: "Parlamentul European este singura instituție care are puterea de a demite Comisia prin moțiune de cenzură."
       },
       {
-        category: "D.I.E.",
-        q: "Aplicabilitatea directă a unei Directive",
-        a: "Se recunoaște doar dacă dispozițiile ei sunt clare, precise, neafectate de condiții și dacă nu a fost transpusă în legislația națională în termenul prevăzut."
-      },
-      {
-        category: "Drept Civil",
-        q: "Eroarea asupra identității persoanei (intuitu personae)",
-        a: "Este considerată o eroare esențială și atrage sancțiunea nulității relative (anularea) actului juridic."
-      },
-      {
-        category: "Finanțe",
-        q: "Efectul imobilizării fondurilor de investiții",
-        a: "Un nivel cât mai scăzut al acestui indicator exprimă o eficiență economică ridicată (banii se recuperează rapid și nu stau blocați)."
-      },
-      {
-        category: "D.I.E.",
-        q: "Comisia Europeană (Demisie)",
-        a: "Comisia Europeană în ansamblul ei poate fi demisă doar de către Parlamentul European, prin adoptarea unei moțiuni de cenzură."
+        category: "Test Surpriză: Finanțe",
+        question: "Un nivel SCĂZUT al 'efectului imobilizării fondurilor' înseamnă:",
+        options: ["O eficiență economică ridicată", "O eficiență economică scăzută", "Faliment"],
+        correctIndex: 0,
+        explanation: "Cu cât fondurile stau imobilizate (blocate) mai puțin timp, cu atât eficiența investiției este mai mare."
       }
     ];
 
-    // Amestecăm informațiile ca să nu te plictisești
+    // --- CONFIGURARE INTERVAL ---
+    // Aici setezi la câte scroll-uri apare o grilă! (Tu vrei 15-20, am pus 3 pentru test)
+    const QUIZ_INTERVAL = 3; 
+
+    // Funcție de amestecare
     function shuffleArray(array) {
-      for (let i = array.length - 1; i > 0; i--) {
+      let arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+        [arr[i], arr[j]] = [arr[j], arr[i]];
       }
-      return array;
+      return arr;
     }
 
     const feedContainer = document.getElementById('feed');
-    const shuffledFacts = shuffleArray([...facts]);
+    let shuffledFacts = shuffleArray(facts);
+    let shuffledQuizzes = shuffleArray(quizzes);
 
-    // Generăm fiecare card în HTML
+    let factCounter = 0;
+
+    // Generăm fluxul de scroll
+    // Pentru fiecare citat, verificăm dacă e momentul să băgăm și o Grilă
     shuffledFacts.forEach((fact, index) => {
-      const snapCard = document.createElement('div');
-      snapCard.className = 'snap-card';
-
-      // Adăugăm animația de "swipe up" doar pe primul element
+      
+      // 1. GENERĂM CARDUL CU INFORMAȚIA
+      const factCard = document.createElement('div');
+      factCard.className = 'snap-card';
       const hintHTML = index === 0 ? `<div class="swipe-hint"><span>Swipe sus</span><span>^</span></div>` : '';
 
-      snapCard.innerHTML = `
+      factCard.innerHTML = `
         <div class="fact-card">
           <div class="category-badge">${fact.category}</div>
           <div class="question">${fact.q}</div>
@@ -229,9 +222,68 @@
         </div>
         ${hintHTML}
       `;
+      feedContainer.appendChild(factCard);
+      factCounter++;
 
-      feedContainer.appendChild(snapCard);
+      // 2. VERIFICĂM DACĂ TREBUIE SĂ INSERĂM O GRILĂ AICI
+      if (factCounter % QUIZ_INTERVAL === 0 && shuffledQuizzes.length > 0) {
+        // Scoatem o grilă din lista amestecată
+        const quiz = shuffledQuizzes.pop(); 
+        // Avem nevoie de un ID unic pentru secțiunea de explicație a acestui quiz
+        const explanationId = 'expl-' + index;
+
+        const quizCard = document.createElement('div');
+        quizCard.className = 'snap-card';
+
+        // Construim butoanele cu opțiuni
+        let optionsHTML = '';
+        quiz.options.forEach((opt, optIndex) => {
+          optionsHTML += `<button class="quiz-btn" onclick="checkQuizAnswer(this, ${optIndex === quiz.correctIndex}, '${explanationId}')">${opt}</button>`;
+        });
+
+        quizCard.innerHTML = `
+          <div class="quiz-card">
+            <div class="category-badge quiz-badge">🧠 ${quiz.category}</div>
+            <div class="question">${quiz.question}</div>
+            <div class="quiz-options">
+              ${optionsHTML}
+            </div>
+            <div class="explanation" id="${explanationId}">
+              <b>Reține:</b> ${quiz.explanation}
+            </div>
+          </div>
+        `;
+        
+        feedContainer.appendChild(quizCard);
+      }
     });
+
+    // --- FUNCȚIA DE VERIFICARE RĂSPUNS ---
+    window.checkQuizAnswer = function(buttonClicked, isCorrect, explanationId) {
+      // 1. Blocăm toate butoanele din acest card să nu mai poți apăsa de 2 ori
+      const parentDiv = buttonClicked.parentElement;
+      const allButtons = parentDiv.querySelectorAll('.quiz-btn');
+      allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+
+      // 2. Logică vizuală
+      if (isCorrect) {
+        // Dacă e corect, îl facem verde
+        buttonClicked.classList.add('correct');
+      } else {
+        // Dacă e greșit, îl facem roșu pe cel apăsat
+        buttonClicked.classList.add('wrong');
+        // Și arătăm explicația cu răspunsul corect!
+        document.getElementById(explanationId).style.display = 'block';
+        
+        // Bonus: Îl facem verde pe cel care ERA de fapt corect
+        // (codul caută butonul care ar fi declanșat "isCorrect = true")
+        const correctBtnIndex = Array.from(allButtons).findIndex(btn => btn.getAttribute('onclick').includes('true'));
+        if(correctBtnIndex !== -1) {
+            allButtons[correctBtnIndex].classList.add('correct');
+        }
+      }
+    };
+
   </script>
 </body>
 </html>
