@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title>EduScroll - Învață prin Swipe</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #000000;
+      --card-dark: #1e293b;
+      --accent: #10b981; /* Verde smarald */
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--bg-dark);
+      color: white;
+      /* Previne scroll-ul pe body, controlăm totul din container */
+      overflow: hidden; 
+    }
+
+    /* CONTAINERUL TIP TIKTOK */
+    .feed-container {
+      height: 100vh;
+      width: 100vw;
+      overflow-y: scroll;
+      /* Magia care face efectul de TikTok (se oprește fix pe cartonaș) */
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+    }
+
+    /* FIECARE "VIDEO/CARD" ÎN PARTE */
+    .snap-card {
+      height: 100vh;
+      width: 100vw;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      position: relative;
+    }
+
+    /* DESIGN-UL CARTONAȘULUI */
+    .flashcard {
+      background: var(--card-dark);
+      width: 100%;
+      max-width: 400px;
+      min-height: 50vh;
+      border-radius: 24px;
+      padding: 40px 30px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+      border: 1px solid rgba(255,255,255,0.1);
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.3s ease;
+    }
+
+    .flashcard:active {
+      transform: scale(0.97);
+    }
+
+    /* CATEGORIA (ex: Drept Civil) */
+    .category-badge {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--accent);
+      padding: 5px 12px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* ÎNTREBAREA / INFORMAȚIA */
+    .card-front {
+      font-size: 1.6rem;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    /* RĂSPUNSUL (Ascuns inițial) */
+    .card-back {
+      display: none;
+      margin-top: 30px;
+      font-size: 1.3rem;
+      color: var(--accent);
+      font-weight: 800;
+      animation: fadeIn 0.3s ease;
+    }
+
+    /* INSTRUCȚIUNEA DE JOS */
+    .hint {
+      position: absolute;
+      bottom: 20px;
+      color: rgba(255,255,255,0.3);
+      font-size: 0.9rem;
+    }
+
+    /* BUTON DE IEȘIRE */
+    .close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255,255,255,0.1);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      text-decoration: none;
+      color: white;
+      font-weight: bold;
+      z-index: 100;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+  </style>
+</head>
+<body>
+
+  <a href="index.html" class="close-btn">✕</a>
+
+  <div class="feed-container" id="feed">
+    </div>
+
+  <script>
+    // BAZA DE DATE CU MICRO-INFORMAȚII
+    const facts = [
+      {
+        category: "Drept Civil",
+        front: "Care sunt cele trei atribute ale dreptului de proprietate?",
+        back: "Posesia, Folosința și Dispoziția."
+      },
+      {
+        category: "Finanțe",
+        front: "Ce atrage după sine nerespectarea formei cerute 'ad validitatem'?",
+        back: "Nulitatea absolută a actului juridic."
+      },
+      {
+        category: "D.I.E.",
+        front: "Cine are rolul de a exercita funcția jurisdicțională în UE?",
+        back: "Curtea de Justiție a Uniunii Europene."
+      },
+      {
+        category: "Management",
+        front: "Ce reprezintă 'efectul imobilizării fondurilor' într-o investiție?",
+        back: "Timpul în care banii sunt blocați fără a produce profit. Un nivel cât mai scăzut indică o eficiență mare."
+      },
+      {
+        category: "Drept Civil",
+        front: "Când începe capacitatea de folosință a persoanei fizice?",
+        back: "La nașterea persoanei."
+      }
+    ];
+
+    // Amestecăm informațiile la fel ca pe TikTok (să nu știi ce urmează)
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    const feedContainer = document.getElementById('feed');
+    const shuffledFacts = shuffleArray([...facts]);
+
+    // Generăm HTML-ul pentru fiecare card
+    shuffledFacts.forEach((fact, index) => {
+      const snapCard = document.createElement('div');
+      snapCard.className = 'snap-card';
+
+      snapCard.innerHTML = `
+        <div class="flashcard" onclick="revealAnswer(this)">
+          <div class="category-badge">${fact.category}</div>
+          <div class="card-front">${fact.front}</div>
+          <div class="card-back">${fact.back}</div>
+          <div class="hint">Apasă pentru răspuns • Swipe sus pentru următorul</div>
+        </div>
+      `;
+
+      feedContainer.appendChild(snapCard);
+    });
+
+    // Funcția care arată răspunsul când apeși pe ecran
+    function revealAnswer(cardElement) {
+      const backElement = cardElement.querySelector('.card-back');
+      const hintElement = cardElement.querySelector('.hint');
+      
+      // Arată răspunsul
+      backElement.style.display = 'block';
+      // Ascunde hint-ul "Apasă pentru răspuns"
+      hintElement.style.display = 'none';
+    }
+  </script>
+</body>
+</html>
