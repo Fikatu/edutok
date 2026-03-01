@@ -1,272 +1,178 @@
-<!DOCTYPE html>
-<html lang="ro">
-<head>
-  <meta charset="UTF-8">
-  <title>EduScroll - Smart Quiz</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;800&display=swap" rel="stylesheet">
-  
-  <style>
-    :root {
-      --bg-dark: #050505;
-      --accent: #10b981; 
-      --accent-quiz: #3b82f6; 
-      --wrong: #ef4444; 
-      --text-main: #ffffff;
-      --text-muted: #94a3b8;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-    html, body {
-      width: 100%; height: 100%;
-      background-color: var(--bg-dark);
-      color: var(--text-main);
-      font-family: 'Outfit', sans-serif;
-      overflow: hidden; 
-    }
-
-    .feed-container {
-      height: 100vh; width: 100vw;
-      overflow-y: scroll;
-      scroll-snap-type: y mandatory;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none; 
-      -ms-overflow-style: none; 
-    }
-    .feed-container::-webkit-scrollbar { display: none; }
-
-    .snap-card {
-      height: 100vh; width: 100vw;
-      scroll-snap-align: start;
-      scroll-snap-stop: always; 
-      position: relative;
-    }
-
-    .fact-card, .quiz-card {
-      width: 100%; height: 100%;
-      display: flex; flex-direction: column; justify-content: center;
-      padding: 15% 8%; 
-    }
-
-    .fact-card { background-image: radial-gradient(circle at top right, rgba(16, 185, 129, 0.15) 0%, var(--bg-dark) 70%); }
-    .quiz-card { background-image: radial-gradient(circle at top left, rgba(59, 130, 246, 0.15) 0%, var(--bg-dark) 70%); }
-
-    .category-badge {
-      color: var(--accent); font-size: 0.95rem; font-weight: 800;
-      text-transform: uppercase; letter-spacing: 2px;
-      margin-bottom: 25px; display: flex; align-items: center; gap: 10px;
-    }
-    .category-badge::before {
-      content: ''; display: block; width: 10px; height: 10px;
-      background: var(--accent); border-radius: 50%;
-      box-shadow: 0 0 10px var(--accent);
-    }
-    
-    .quiz-badge { color: var(--accent-quiz); }
-    .quiz-badge::before { background: var(--accent-quiz); box-shadow: 0 0 10px var(--accent-quiz); }
-
-    .question {
-      font-size: 1.8rem; font-weight: 800; line-height: 1.3;
-      margin-bottom: 35px; color: var(--text-main);
-    }
-    .answer {
-      font-size: 1.3rem; color: var(--text-muted); line-height: 1.6; font-weight: 300;
-      padding-left: 20px; border-left: 4px solid rgba(16, 185, 129, 0.6);
-    }
-
-    .quiz-options { display: flex; flex-direction: column; gap: 12px; width: 100%; }
-    
-    .quiz-btn {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: var(--text-main);
-      padding: 18px 20px; border-radius: 16px;
-      font-size: 1.1rem; text-align: left; font-family: inherit;
-      cursor: pointer; transition: 0.2s;
-      width: 100%; line-height: 1.4;
-    }
-    .quiz-btn:active { transform: scale(0.97); }
-    
-    .quiz-btn.correct { background: rgba(16, 185, 129, 0.2) !important; border-color: var(--accent) !important; color: var(--accent); font-weight: bold;}
-    .quiz-btn.wrong { background: rgba(239, 68, 68, 0.2) !important; border-color: var(--wrong) !important; color: var(--wrong); }
-
-    .explanation {
-      display: none; 
-      margin-top: 25px; padding: 20px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 16px; font-size: 1.05rem;
-      color: var(--text-muted); line-height: 1.5;
-      border-left: 4px solid var(--accent-quiz);
-      animation: fadeIn 0.3s ease;
-    }
-
-    .close-btn {
-      position: fixed; top: 20px; right: 20px;
-      background: rgba(255,255,255,0.1); width: 40px; height: 40px;
-      border-radius: 50%; display: grid; place-items: center;
-      text-decoration: none; color: white; font-size: 1.2rem;
-      z-index: 1000; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .swipe-hint {
-      position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
-      color: rgba(255,255,255,0.4); font-size: 0.95rem; font-weight: 500;
-      display: flex; flex-direction: column; align-items: center; gap: 8px;
-      animation: bounce 2s infinite; pointer-events: none; text-transform: uppercase; letter-spacing: 1px;
-    }
-
-    @keyframes bounce {
-      0%, 20%, 50%, 80%, 100% { transform: translate(-50%, 0); }
-      40% { transform: translate(-50%, -10px); }
-      60% { transform: translate(-50%, -5px); }
-    }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px);} to { opacity: 1; transform: translateY(0); } }
-  </style>
-</head>
-<body>
-
-  <a href="index.html" class="close-btn">✕</a>
-  <div class="feed-container" id="feed"></div>
-
-  <script>
-    // --- BAZA DE DATE SMART ---
-    // Eu (AI-ul) îți voi genera mereu aceste variante greșite plauzibile din același domeniu.
+// --- BAZA DE DATE CURS COMPLET: PROCEDURA DE DREPT ADMINISTRATIV ---
     const facts = [
       { 
-        category: "Drept Civil", 
-        q: "Care sunt atributele dreptului de proprietate?", 
-        a: "Posesia, Folosința și Dispoziția.",
-        wrongOptions: ["Uzul, Abitația și Servitutea", "Posesia, Detenția și Uzufructul", "Folosința, Înstrăinarea și Administrarea"],
-        expl: "Dreptul de proprietate este singurul drept real complet, oferind toate cele 3 atribute: ius possidendi, ius utendi/fruendi și ius abutendi."
+        category: "Unitatea 1 - Concepte", 
+        q: "Ce reprezintă procedura administrativă necontencioasă?", 
+        a: "Procedura urmată de autoritățile publice la emiterea actelor sau eliberarea de avize, în absența unui litigiu.",
+        wrongOptions: ["Procedura urmată de instanțele judecătorești în soluționarea unui litigiu.", "Procedura de anulare a actelor de către instanța de contencios.", "Procedura prin care Parlamentul adoptă legi organice."],
+        expl: "Procedura necontencioasă vizează doar faza de elaborare și emitere a actelor (la ghișeu/în birou), înainte să apară un proces cu cetățeanul (conflict)."
       },
       { 
-        category: "Finanțe", 
-        q: "Ce sancțiune atrage nerespectarea formei 'ad validitatem'?", 
-        a: "Nulitatea absolută a actului juridic.",
-        wrongOptions: ["Nulitatea relativă a actului juridic", "Inopozabilitatea față de terți", "Decăderea din dreptul de a cere executarea silită"],
-        expl: "Forma 'ad validitatem' este o condiție de valabilitate; în lipsa ei, actul nu poate lua naștere în mod valabil, deci sancțiunea este mereu nulitatea absolută."
+        category: "Unitatea 1 - Principii", 
+        q: "Ce presupune deconcentrarea administrativă?", 
+        a: "Reprezentanții locali ai puterii centrale (ex: Prefectura) iau decizii în teritoriu, dar sunt subordonați ierarhic centrului.",
+        wrongOptions: ["Transferul puterii de la stat către consiliile locale autonome.", "Acordarea personalității juridice primăriilor de comună.", "Renunțarea statului la controlul asupra ordinii publice."],
+        expl: "Deconcentrarea este o 'centralizare mai blândă'. Statul se apropie de cetățeni prin direcții județene, dar nu le dă autonomie completă (deciziile aparțin tot statului)."
       },
       { 
-        category: "D.I.E.", 
-        q: "Cine poate demite Comisia Europeană în ansamblul ei?", 
-        a: "Parlamentul European (prin moțiune de cenzură).",
-        wrongOptions: ["Consiliul European (cu vot în unanimitate)", "Curtea de Justiție a Uniunii Europene", "Președintele Consiliului Uniunii Europene"],
-        expl: "Doar Parlamentul European exercită controlul democratic și are puterea de a demite Comisia în bloc printr-o moțiune de cenzură."
+        category: "Unitatea 1 - Tutela Administrativă", 
+        q: "Ce fel de control exercită Prefectul asupra actelor emise de Consiliul Local?", 
+        a: "Un control de legalitate (tutelă administrativă), neputând cenzura oportunitatea actului.",
+        wrongOptions: ["Un control ierarhic direct, putând revoca actul.", "Un control de oportunitate și eficiență economică.", "Un control financiar de gestiune a bugetului local."],
+        expl: "În baza autonomiei locale, Prefectul nu îi poate spune Primarului dacă decizia sa e „bună” (oportună), ci doar verifică dacă a respectat legea (legalitate)."
       },
       { 
-        category: "Finanțe", 
-        q: "Ce semnifică principiul universalității bugetare?", 
-        a: "Veniturile și cheltuielile figurează în sume brute, fără a se compensa între ele.",
-        wrongOptions: ["Toate bugetele locale sunt incluse în bugetul de stat", "Veniturile realizate se alocă exact pentru cheltuielile din același domeniu", "Bugetul se aprobă de către un parlament bicameral"],
-        expl: "Universalitatea interzice compensarea. Nu ai voie să scazi cheltuielile dintr-un venit și să treci în buget doar profitul/pierderea netă."
+        category: "Unitatea 2 - Competența Instanțelor", 
+        q: "La ce instanță de contencios se atacă actele emise de autoritățile publice centrale (Guvern, Ministere)?", 
+        a: "La Curtea de Apel (secția de contencios administrativ și fiscal).",
+        wrongOptions: ["La Tribunalul județean.", "Direct la Înalta Curte de Casație și Justiție.", "La Judecătoria de sector."],
+        expl: "Legea contenciosului împarte competența: actele autorităților locale (Primar) merg la Tribunal, iar cele centrale (Miniștri, Guvern) merg la Curtea de Apel."
       },
       { 
-        category: "Drept Civil", 
-        q: "Ce atrage eroarea asupra identității persoanei (intuitu personae)?", 
-        a: "Nulitatea relativă (anularea) actului.",
-        wrongOptions: ["Nulitatea absolută", "Rezolutiunea contractului", "Rezilierea contractului de plin drept"],
-        expl: "Eroarea (viciu de consimțământ) ocrotește un interes privat, prin urmare sancțiunea este mereu nulitatea relativă, putând fi invocată doar de partea aflată în eroare."
+        category: "Unitatea 2 - Procedură civilă", 
+        q: "Cum se calculează un termen procedural pe zile (regula generală din Codul de procedură civilă)?", 
+        a: "Se calculează pe zile libere, neintrând în calcul nici ziua în care începe, nici ziua în care se sfârșește.",
+        wrongOptions: ["Se calculează incluzând prima și ultima zi a termenului.", "Se calculează exclusiv pe zile lucrătoare, excluzând weekendul.", "Termenul se împlinește la ora la care a fost comunicat actul."],
+        expl: "Sistemul zilelor libere protejează părțile: termenul începe la 00:00 a zilei următoare și se termină la 24:00 a zilei care nu se numără."
+      },
+      { 
+        category: "Unitatea 3 - Acte Prealabile", 
+        q: "Ce valoare juridică are un 'aviz conform'?", 
+        a: "Autoritatea emitentă este obligată prin lege atât să îl solicite, cât și să îl respecte întocmai.",
+        wrongOptions: ["Trebuie solicitat obligatoriu, dar autoritatea poate decide contrariul.", "Se solicită facultativ, dar dacă e obținut trebuie respectat.", "Este o recomandare dată de cetățeni în urma dezbaterilor publice."],
+        expl: "Avizul conform este cel mai puternic: leagă juridic emitentul. Dacă primești un aviz conform negativ, proiectul tău este blocat definitiv."
+      },
+      { 
+        category: "Unitatea 3 - Transparența Decizională", 
+        q: "Cu cât timp înainte trebuie publicat anunțul privind intenția de elaborare a unui proiect de act normativ?", 
+        a: "Cu cel puțin 30 de zile lucrătoare înainte de supunerea spre avizare.",
+        wrongOptions: ["Cu minim 10 zile calendaristice.", "În termen de 5 zile de la prima ședință a Consiliului.", "Legea 52/2003 nu prevede un termen fix, ci un termen 'rezonabil'."],
+        expl: "Acest interval lung (30 de zile lucrătoare) asigură timpul necesar cetățenilor și ONG-urilor să trimită amendamente și opinii scrise."
+      },
+      { 
+        category: "Unitatea 4 - Cvorum și Majoritate", 
+        q: "Care este diferența dintre cvorum și majoritatea de vot în administrație?", 
+        a: "Cvorumul e numărul necesar de membri prezenți (pentru întrunire), iar majoritatea e numărul de voturi necesar (pentru adoptare).",
+        wrongOptions: ["Sunt termeni sinonimi, referindu-se la voturile valabil exprimate.", "Cvorumul se aplică la actele individuale, iar majoritatea la cele normative.", "Cvorumul poate fi atins doar în mod unanim (consens)."],
+        expl: "O ședință este valabilă dacă are cvorum (ex: 50%+1 din membri prezenți), dar proiectul pică dacă nu adună majoritatea de voturi a celor care sunt în sală."
+      },
+      { 
+        category: "Unitatea 4 - Valabilitatea actelor", 
+        q: "Ce sancțiune intervine dacă lipsește semnătura de pe un act administrativ emis de primar?", 
+        a: "Inexistența actului administrativ.",
+        wrongOptions: ["Nulitatea relativă, putând fi semnat ulterior.", "Inopozabilitatea actului față de terți.", "Răspunderea exclusiv disciplinară a secretarului primăriei."],
+        expl: "Semnătura atestă autenticitatea și voința autorității (organ unipersonal). Fără ea, actul nu e doar ilegal, ci este un non-act juridic (inexistent)."
+      },
+      { 
+        category: "Unitatea 4 - Intrarea în vigoare", 
+        q: "Când intră în vigoare actele administrative cu caracter normativ?", 
+        a: "Doar de la data aducerii lor la cunoștință publică (publicării) sau o dată ulterioară prevăzută în act.",
+        wrongOptions: ["La 15 zile de la comunicarea lor personală părților.", "Imediat după momentul deliberării în ședință.", "Odată cu semnarea lor de către prefect."],
+        expl: "Regula generală (nemo censetur ignorare legem): o normă aplicabilă tuturor nu poate produce efecte secrete. Trebuie publicată în Monitorul Oficial/Local."
+      },
+      { 
+        category: "Unitatea 4 - Aprobarea Tacită", 
+        q: "Cum operează procedura aprobării tacite a autorizațiilor (OUG 27/2003)?", 
+        a: "Dacă administrația nu răspunde în termenul legal, autorizația se consideră acordată din oficiu.",
+        wrongOptions: ["Dacă lipsește răspunsul, se consideră refuz nejustificat și se merge la instanță.", "Autorizația se emite tacit doar după plata unei taxe de urgență.", "Se aplică exclusiv în domeniul siguranței naționale și apărării."],
+        expl: "Aprobarea tacită pedepsește lentoarea funcționarilor. Tăcerea valorează acceptare (excepție fac domeniile vitale gen arme, mediu, siguranță națională)."
+      },
+      { 
+        category: "Unitatea 4 - Legea 544/2001", 
+        q: "Care este termenul general de răspuns la o solicitare de informații de interes public?", 
+        a: "10 zile, cu posibilitatea de prelungire până la 30 de zile pentru cereri complexe.",
+        wrongOptions: ["30 de zile lucrătoare, fără excepții.", "Imediat pe loc, pentru toate cererile scrise.", "45 de zile calendaristice, cu notificare."],
+        expl: "Termenul scurt de 10 zile asigură fluiditatea informației democratice. Prelungirea se face doar excepțional, cu anunțarea scrisă a petentului."
+      },
+      { 
+        category: "Unitatea 4 - Desființarea Actelor", 
+        q: "Prin ce se diferențiază revocarea de abrogarea actelor administrative?", 
+        a: "Revocarea produce efecte retroactive (pentru trecut), pe când abrogarea produce efecte doar pentru viitor (ex nunc).",
+        wrongOptions: ["Ambele produc aceleași efecte, diferă doar organul care le pronunță.", "Abrogarea atrage nulitatea absolută a actelor civile.", "Revocarea este dispusă doar de instanță, abrogarea doar de Guvern."],
+        expl: "Revocarea 'șterge' actul cu totul (ca și cum nu ar fi existat), în timp ce abrogarea doar îl scoate la pensie (ce s-a aplicat până azi rămâne valabil)."
+      },
+      { 
+        category: "Unitatea 4 - Limita Revocării", 
+        q: "Ce acte administrative sunt, în principiu, irevocabile de către organul emitent?", 
+        a: "Actele individuale care au intrat în circuitul civil și au produs efecte juridice stabile.",
+        wrongOptions: ["Actele normative adoptate de Consiliul Local.", "Toate actele administrative care nu poartă contrasemnătură.", "Actele care conțin vicii de formă exterioară."],
+        expl: "Pentru a proteja stabilitatea juridică a cetățenilor, dacă primăria ți-a dat o autorizație și tu ai apucat să construiești casa, primăria nu ți-o mai poate revoca unilateral retroactiv."
+      },
+      { 
+        category: "Unitatea 5 - Contractele administrative", 
+        q: "Care sunt cele două părți ale clauzelor dintr-un contract administrativ (de ex: concesiune)?", 
+        a: "Partea reglementară (impusă prin caietul de sarcini) și partea convențională (negociată).",
+        wrongOptions: ["Partea publică (vizibilă tuturor) și partea secretă comercială.", "Partea principală (obligațiile statului) și partea subsidiară (obligațiile privatului).", "Partea penală și partea civilă."],
+        expl: "Spre deosebire de un contract civil obișnuit, administrația dictează condițiile majore prin caietul de sarcini (fără negocieri pe ele), lăsând un spațiu mic pentru convenție."
+      },
+      { 
+        category: "Unitatea 5 - Executarea Contractelor", 
+        q: "Are dreptul administrația să rezilieze unilateral un contract administrativ?", 
+        a: "Da, atunci când interesul public o cere, dar cu obligația plății de despăgubiri cocontractantului.",
+        wrongOptions: ["Nu, rezilierea se face exclusiv prin hotărâre a instanței civile.", "Da, fără plata niciunei despăgubiri, statul fiind suveran.", "Doar în cazul contractelor de muncă ale funcționarilor."],
+        expl: "Datorită regimului de putere publică, administrația poate schimba decizia dacă interesul comunității se modifică, dar suportă prejudiciul provocat privatului onest."
+      },
+      { 
+        category: "Unitatea 6 - Răspunderea disciplinară", 
+        q: "Care este termenul de prescripție pentru aplicarea unei sancțiuni disciplinare unui funcționar public?", 
+        a: "Maxim 1 an de la sesizare, dar nu mai târziu de 2 ani de la săvârșirea faptei.",
+        wrongOptions: ["Maxim 3 ani de la primirea raportului de evaluare.", "Nu există termen de prescripție pentru faptele funcționarilor publici.", "În 6 luni de la hotărârea judecătorească definitivă."],
+        expl: "Dincolo de termenul de 2 ani, fapta (deși săvârșită) se șterge, iar funcționarul nu mai poate fi cercetat de comisia de disciplină."
+      },
+      { 
+        category: "Unitatea 6 - Cazierul Administrativ", 
+        q: "Ce evidențiază Cazierul Administrativ al unui funcționar public?", 
+        a: "Sancțiunile disciplinare aplicate funcționarului care nu au fost încă radiate în condițiile legii.",
+        wrongOptions: ["Infracțiunile de natură penală săvârșite în exercițiul funcției.", "Aprecierile anuale, diplomele și cursurile de perfecționare absolvite.", "Declarațiile de avere și de interese ale demnitarilor."],
+        expl: "Eliberat de ANFP, acest cazier este un filtru. Nu poți ocupa o funcție de conducere sau fi într-o comisie de concurs dacă ai sancțiuni 'la activ'."
+      },
+      { 
+        category: "Unitatea 7 - Contencios: Recursul Grațios", 
+        q: "Ce este recursul administrativ prealabil (procedura prealabilă) în contenciosul administrativ?", 
+        a: "Cererea persoanei vătămate adresată emitentului de a-și revoca actul ilegal, înainte de a se adresa instanței.",
+        wrongOptions: ["A doua cale de atac în instanță, după apel.", "Plângerea penală făcută la DNA împotriva primarului.", "Cererea de suspendare a executării formulată direct la tribunal."],
+        expl: "Legea obligă (ca regulă) cetățeanul să ceară întâi administrației să-și repare singură greșeala în termen de 30 de zile, înainte să blocheze sălile de judecată."
+      },
+      { 
+        category: "Unitatea 7 - Excepții de la Contencios", 
+        q: "Care acte administrative NU pot fi atacate pe calea contenciosului administrativ?", 
+        a: "Actele de comandament militar și actele de raportare la Parlament (excepții de la controlul de legalitate).",
+        wrongOptions: ["Actele administrative de demitere a funcționarilor.", "Ordonanțele Guvernului și Hotărârile Consiliilor Județene.", "Certificatul de urbanism și autorizația de construire."],
+        expl: "Art. 5 din Legea 554/2004 instituie aceste limitări stricte pentru acte cu un puternic caracter politic sau care țin de structura de apărare a țării."
+      },
+      { 
+        category: "Unitatea 7 - Suspendarea de Drept", 
+        q: "Ce efect are introducerea acțiunii în contencios administrativ de către Prefect asupra actului atacat?", 
+        a: "Actul autorității locale atacat este suspendat de drept, imediat.",
+        wrongOptions: ["Actul este revocat retroactiv, de drept.", "Actul intră în procedură de avizare suplimentară la Guvern.", "Nu are niciun efect fără o încheiere separată a judecătorului."],
+        expl: "Pentru a proteja bugetul și legea, Prefectul (fiind ochiul statului) beneficiază de acest privilegiu enorm: de la depunerea cererii la tribunal, actul primăriei 'îngheață'."
+      },
+      { 
+        category: "Unitatea 7 - Tăcerea Administrației", 
+        q: "Ce se întâmplă dacă o autoritate refuză nejustificat să rezolve o cerere sau nu răspunde în termen?", 
+        a: "Refuzul sau tăcerea sunt asimilate actelor administrative și pot fi atacate direct în instanță.",
+        wrongOptions: ["Trebuie depusă obligatoriu o nouă cerere de la zero.", "Cererea se consideră respinsă definitiv și irevocabil.", "Competența trece automat la Prefectul județului."],
+        expl: "Contenciosul administrativ nu protejează doar împotriva actelor proaste, ci și împotriva inacțiunii (tăcerea vătămătoare)."
+      },
+      { 
+        category: "Unitatea 7 - Termene Contencios", 
+        q: "Care este termenul limită general, socotit de la emiterea actului, până la care se poate face plângerea prealabilă (din motive temeinice)?", 
+        a: "6 luni de la data emiterii actului (termen de prescripție).",
+        wrongOptions: ["15 zile de la publicarea în Monitorul Oficial.", "1 an și 6 luni, aplicabil tuturor cetățenilor.", "Nu există termen de prescripție pentru acte individuale."],
+        expl: "Deși ai 30 de zile de la comunicare ca regulă, dacă din motive temeinice nu ai aflat de act, termenul maxim absolut este de 6 luni, după care dreptul se prescrie."
+      },
+      { 
+        category: "Unitatea 7 - Excepția de Nelegalitate", 
+        q: "Care este caracteristica esențială a excepției de nelegalitate invocate într-un proces?", 
+        a: "Este imprescriptibilă (poate fi ridicată oricând în proces) și are efect doar în cazul respectiv (nu anulează actul general).",
+        wrongOptions: ["Poate fi ridicată doar în primele 3 luni de la începerea procesului.", "Atrage suspendarea automată a judecătorului din dosar.", "Dacă se admite, actul administrativ este anulat pentru totdeauna."],
+        expl: "Dacă într-un proces civil te lovești de un act administrativ ilegal din trecut (pe care nu-l mai poți ataca direct), ceri judecătorului doar să îl ignore în dosarul tău."
+      },
+      { 
+        category: "Unitatea 7 - Răspunderea Solidară", 
+        q: "Poate fi chemat în judecată direct funcționarul public care a elaborat actul ilegal?", 
+        a: "Da, dar numai dacă reclamantul solicită și plata unor despăgubiri, pentru a răspunde solidar cu autoritatea.",
+        wrongOptions: ["Nu, funcționarii răspund doar în fața șefului instituției.", "Da, dar instanța îi poate anula diploma de studii.", "Nu, chemarea în judecată este permisă doar pentru Primar/Ministru."],
+        expl: "Art. 16 din Legea Contenciosului permite sancționarea directă la buzunar a funcționarului vinovat de actul ilegal sau de refuz, dacă cetățeanul cere daune materiale."
       }
     ];
-
-    const QUIZ_INTERVAL = 3; 
-
-    // Funcție amestecare
-    function shuffleArray(array) {
-      let arr = [...array];
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-      return arr;
-    }
-
-    const feedContainer = document.getElementById('feed');
-    let shuffledFacts = shuffleArray(facts);
-    
-    let factCounter = 0;
-    let recentFactsCache = []; 
-
-    shuffledFacts.forEach((fact, index) => {
-      // 1. GENERĂM CARDUL CURENT (Informația)
-      const factCard = document.createElement('div');
-      factCard.className = 'snap-card';
-      const hintHTML = index === 0 ? `<div class="swipe-hint"><span>Swipe sus</span><span>^</span></div>` : '';
-
-      factCard.innerHTML = `
-        <div class="fact-card">
-          <div class="category-badge">${fact.category}</div>
-          <div class="question">${fact.q}</div>
-          <div class="answer">${fact.a}</div>
-        </div>
-        ${hintHTML}
-      `;
-      feedContainer.appendChild(factCard);
-      
-      recentFactsCache.push(fact);
-      factCounter++;
-
-      // 2. LA FIECARE X SCROLL-URI, GENERĂM UN TEST SURPRIZĂ
-      if (factCounter % QUIZ_INTERVAL === 0 && recentFactsCache.length > 0) {
-        
-        // Alegem un concept din cele recent citite
-        const targetFact = recentFactsCache[Math.floor(Math.random() * recentFactsCache.length)];
-        const explanationId = 'expl-' + index;
-
-        // Unim răspunsul corect cu capcanele SCRISE INTELIGENT de mine
-        let allOptions = [targetFact.a, ...targetFact.wrongOptions];
-        // Le amestecăm ca să nu fie a) mereu corect
-        allOptions = shuffleArray(allOptions);
-        
-        const correctIndex = allOptions.indexOf(targetFact.a);
-
-        const quizCard = document.createElement('div');
-        quizCard.className = 'snap-card';
-
-        let optionsHTML = '';
-        allOptions.forEach((opt, optIndex) => {
-          optionsHTML += `<button class="quiz-btn" onclick="checkQuizAnswer(this, ${optIndex === correctIndex}, '${explanationId}')">${opt}</button>`;
-        });
-
-        quizCard.innerHTML = `
-          <div class="quiz-card">
-            <div class="category-badge quiz-badge">🧠 Recapitulează ce ai citit</div>
-            <div class="question">${targetFact.q}</div>
-            <div class="quiz-options">
-              ${optionsHTML}
-            </div>
-            <div class="explanation" id="${explanationId}">
-              <b>Reține:</b> ${targetFact.expl}
-            </div>
-          </div>
-        `;
-        
-        feedContainer.appendChild(quizCard);
-        recentFactsCache = []; // Golim memoria pentru următoarea serie
-      }
-    });
-
-    // --- FUNCȚIA DE VERIFICARE ---
-    window.checkQuizAnswer = function(buttonClicked, isCorrect, explanationId) {
-      const parentDiv = buttonClicked.parentElement;
-      const allButtons = parentDiv.querySelectorAll('.quiz-btn');
-      
-      allButtons.forEach(btn => btn.style.pointerEvents = 'none');
-
-      if (isCorrect) {
-        buttonClicked.classList.add('correct');
-      } else {
-        buttonClicked.classList.add('wrong');
-        // Dacă greșește, îi arătăm explicația clară
-        document.getElementById(explanationId).style.display = 'block';
-        
-        const correctBtnIndex = Array.from(allButtons).findIndex(btn => btn.getAttribute('onclick').includes('true'));
-        if(correctBtnIndex !== -1) {
-            allButtons[correctBtnIndex].classList.add('correct');
-        }
-      }
-    };
-  </script>
-</body>
-</html>
