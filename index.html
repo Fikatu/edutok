@@ -2,17 +2,17 @@
 <html lang="ro">
 <head>
   <meta charset="UTF-8">
-  <title>EduScroll - Învață prin Swipe</title>
+  <title>EduScroll - Full Screen</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;800&display=swap" rel="stylesheet">
   
   <style>
     :root {
-      --bg-dark: #000000;
-      --card-dark: #1e293b;
-      --accent: #10b981; /* Verde */
+      --bg-dark: #050505;
+      --accent: #10b981; /* Verde pentru fapte */
+      --accent-quiz: #3b82f6; /* Albastru pentru quiz */
       --wrong: #ef4444; /* Roșu */
-      --text-main: #f8fafc;
+      --text-main: #ffffff;
       --text-muted: #94a3b8;
     }
 
@@ -26,7 +26,7 @@
       overflow: hidden; 
     }
 
-    /* Containerul Scroll */
+    /* Containerul Scroll Edge-to-Edge */
     .feed-container {
       height: 100vh; width: 100vw;
       overflow-y: scroll;
@@ -37,100 +37,96 @@
     }
     .feed-container::-webkit-scrollbar { display: none; }
 
-    /* Fixarea pe ecran */
+    /* Fiecare ecran ocupă exact 100% din telefon */
     .snap-card {
       height: 100vh; width: 100vw;
       scroll-snap-align: start;
       scroll-snap-stop: always; 
-      display: flex; justify-content: center; align-items: center;
-      padding: 20px; position: relative;
+      position: relative;
     }
 
-    /* CARD CITAT (Informație) */
+    /* BAZA PENTRU ECRANE (Fără margini, fără border-radius) */
+    .fact-card, .quiz-card {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 15% 8%; /* Spațiu generos pe laterale și sus/jos */
+    }
+
+    /* Fundal specific Fapte */
     .fact-card {
-      background: var(--card-dark);
-      width: 100%; max-width: 420px;
-      border-radius: 24px; padding: 40px 30px;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.6);
-      border: 1px solid rgba(255,255,255,0.05);
-      background-image: radial-gradient(circle at top right, rgba(16, 185, 129, 0.05) 0%, transparent 60%);
+      background-image: radial-gradient(circle at top right, rgba(16, 185, 129, 0.15) 0%, var(--bg-dark) 70%);
     }
 
-    /* CARD TEST (Quiz) */
+    /* Fundal specific Teste */
     .quiz-card {
-      background: var(--card-dark);
-      width: 100%; max-width: 420px;
-      border-radius: 24px; padding: 30px 25px;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.6);
-      border: 1px solid rgba(59, 130, 246, 0.3); /* Contur albăstrui să iasă în evidență */
-      background-image: radial-gradient(circle at top right, rgba(59, 130, 246, 0.05) 0%, transparent 60%);
+      background-image: radial-gradient(circle at top left, rgba(59, 130, 246, 0.15) 0%, var(--bg-dark) 70%);
     }
 
     .category-badge {
-      color: var(--accent); font-size: 0.85rem; font-weight: 800;
+      color: var(--accent); font-size: 0.95rem; font-weight: 800;
       text-transform: uppercase; letter-spacing: 2px;
-      margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
+      margin-bottom: 25px; display: flex; align-items: center; gap: 10px;
     }
     .category-badge::before {
-      content: ''; display: block; width: 8px; height: 8px;
+      content: ''; display: block; width: 10px; height: 10px;
       background: var(--accent); border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent);
     }
     
-    .quiz-badge { color: #3b82f6; } /* Culoare diferită pentru badge-ul de test */
-    .quiz-badge::before { background: #3b82f6; }
+    .quiz-badge { color: var(--accent-quiz); }
+    .quiz-badge::before { background: var(--accent-quiz); box-shadow: 0 0 10px var(--accent-quiz); }
 
     .question {
-      font-size: 1.35rem; font-weight: 700; line-height: 1.4;
-      margin-bottom: 25px; color: var(--text-main);
+      font-size: 1.8rem; font-weight: 800; line-height: 1.3;
+      margin-bottom: 35px; color: var(--text-main);
     }
     .answer {
-      font-size: 1.15rem; color: var(--text-muted); line-height: 1.5; font-weight: 300;
-      padding-left: 18px; border-left: 3px solid rgba(16, 185, 129, 0.5);
+      font-size: 1.3rem; color: var(--text-muted); line-height: 1.6; font-weight: 300;
+      padding-left: 20px; border-left: 4px solid rgba(16, 185, 129, 0.6);
     }
 
     /* Opțiunile pentru Quiz */
     .quiz-options {
-      display: flex; flex-direction: column; gap: 10px;
+      display: flex; flex-direction: column; gap: 12px; width: 100%;
     }
     .quiz-btn {
-      background: rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.1);
       color: var(--text-main);
-      padding: 15px; border-radius: 12px;
-      font-size: 1rem; text-align: left; font-family: inherit;
+      padding: 18px 20px; border-radius: 16px;
+      font-size: 1.1rem; text-align: left; font-family: inherit;
       cursor: pointer; transition: 0.2s;
+      width: 100%; line-height: 1.4;
     }
-    .quiz-btn:active { transform: scale(0.98); }
+    .quiz-btn:active { transform: scale(0.97); }
     
-    /* Stări Răspuns */
     .quiz-btn.correct { background: rgba(16, 185, 129, 0.2) !important; border-color: var(--accent) !important; color: var(--accent); font-weight: bold;}
     .quiz-btn.wrong { background: rgba(239, 68, 68, 0.2) !important; border-color: var(--wrong) !important; color: var(--wrong); }
 
     .explanation {
-      display: none; /* Ascuns inițial */
-      margin-top: 20px;
-      padding: 15px;
+      display: none; 
+      margin-top: 25px; padding: 20px;
       background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      font-size: 0.95rem;
-      color: var(--text-muted);
-      border-left: 3px solid var(--accent);
+      border-radius: 16px; font-size: 1.05rem;
+      color: var(--text-muted); line-height: 1.5;
+      border-left: 4px solid var(--accent-quiz);
       animation: fadeIn 0.3s ease;
     }
 
+    /* BUTON IEȘIRE STILIZAT DISCRET */
     .close-btn {
-      position: fixed; top: 25px; right: 25px;
-      background: rgba(255,255,255,0.1); width: 44px; height: 44px;
+      position: fixed; top: 20px; right: 20px;
+      background: rgba(255,255,255,0.1); width: 40px; height: 40px;
       border-radius: 50%; display: grid; place-items: center;
-      text-decoration: none; color: white; font-weight: bold;
-      z-index: 1000; backdrop-filter: blur(5px);
+      text-decoration: none; color: white; font-size: 1.2rem;
+      z-index: 1000; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1);
     }
 
     .swipe-hint {
-      position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
-      color: rgba(255,255,255,0.3); font-size: 0.9rem;
-      display: flex; flex-direction: column; align-items: center; gap: 5px;
-      animation: bounce 2s infinite; pointer-events: none;
+      position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+      color: rgba(255,255,255,0.4); font-size: 0.95rem; font-weight: 500;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      animation: bounce 2s infinite; pointer-events: none; text-transform: uppercase; letter-spacing: 1px;
     }
 
     @keyframes bounce {
@@ -138,7 +134,7 @@
       40% { transform: translate(-50%, -10px); }
       60% { transform: translate(-50%, -5px); }
     }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px);} to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
@@ -149,7 +145,7 @@
     </div>
 
   <script>
-    // --- BAZA DE DATE: INFORMAȚII STATICE ---
+    // --- BAZA DE DATE: INFORMAȚII ---
     const facts = [
       { category: "Drept Civil", q: "Atributele dreptului de proprietate", a: "Dreptul de proprietate conferă titularului său trei atribute esențiale: Posesia, Folosința și Dispoziția." },
       { category: "Finanțe", q: "Nerespectarea formei 'ad validitatem'", a: "Atrage întotdeauna sancțiunea nulității absolute a actului juridic, deoarece forma este cerută pentru însăși valabilitatea sa." },
@@ -160,19 +156,19 @@
       { category: "Finanțe", q: "Principiul universalității bugetare", a: "Presupune ca veniturile și cheltuielile să figureze în buget în sumele lor totale (brute), fără a se compensa veniturile cu cheltuielile." }
     ];
 
-    // --- BAZA DE DATE: ÎNTREBĂRI TIP GRILĂ (Surprize) ---
+    // --- BAZA DE DATE: TESTE SURPRIZĂ ---
     const quizzes = [
       {
         category: "Test Surpriză: Civil",
         question: "Ce sancțiune intervine dacă nu se respectă forma 'ad validitatem' a unui act?",
         options: ["Nulitatea relativă", "Nulitatea absolută", "Inopozabilitatea"],
-        correctIndex: 1, // 'Nulitatea absolută' e a doua (index 1)
+        correctIndex: 1, 
         explanation: "Forma 'ad validitatem' este o condiție de valabilitate. Lipsa ei atrage mereu nulitatea absolută."
       },
       {
         category: "Test Surpriză: D.I.E.",
         question: "Cine poate demite Comisia Europeană în ansamblul ei?",
-        options: ["Consiliul European", "Curtea de Justiție", "Parlamentul European", "Niciuna de mai sus"],
+        options: ["Consiliul European", "Curtea de Justiție", "Parlamentul European", "Niciuna din cele de mai sus"],
         correctIndex: 2,
         explanation: "Parlamentul European este singura instituție care are puterea de a demite Comisia prin moțiune de cenzură."
       },
@@ -185,11 +181,8 @@
       }
     ];
 
-    // --- CONFIGURARE INTERVAL ---
-    // Aici setezi la câte scroll-uri apare o grilă! (Tu vrei 15-20, am pus 3 pentru test)
     const QUIZ_INTERVAL = 3; 
 
-    // Funcție de amestecare
     function shuffleArray(array) {
       let arr = [...array];
       for (let i = arr.length - 1; i > 0; i--) {
@@ -202,14 +195,9 @@
     const feedContainer = document.getElementById('feed');
     let shuffledFacts = shuffleArray(facts);
     let shuffledQuizzes = shuffleArray(quizzes);
-
     let factCounter = 0;
 
-    // Generăm fluxul de scroll
-    // Pentru fiecare citat, verificăm dacă e momentul să băgăm și o Grilă
     shuffledFacts.forEach((fact, index) => {
-      
-      // 1. GENERĂM CARDUL CU INFORMAȚIA
       const factCard = document.createElement('div');
       factCard.className = 'snap-card';
       const hintHTML = index === 0 ? `<div class="swipe-hint"><span>Swipe sus</span><span>^</span></div>` : '';
@@ -225,17 +213,13 @@
       feedContainer.appendChild(factCard);
       factCounter++;
 
-      // 2. VERIFICĂM DACĂ TREBUIE SĂ INSERĂM O GRILĂ AICI
       if (factCounter % QUIZ_INTERVAL === 0 && shuffledQuizzes.length > 0) {
-        // Scoatem o grilă din lista amestecată
         const quiz = shuffledQuizzes.pop(); 
-        // Avem nevoie de un ID unic pentru secțiunea de explicație a acestui quiz
         const explanationId = 'expl-' + index;
 
         const quizCard = document.createElement('div');
         quizCard.className = 'snap-card';
 
-        // Construim butoanele cu opțiuni
         let optionsHTML = '';
         quiz.options.forEach((opt, optIndex) => {
           optionsHTML += `<button class="quiz-btn" onclick="checkQuizAnswer(this, ${optIndex === quiz.correctIndex}, '${explanationId}')">${opt}</button>`;
@@ -258,32 +242,23 @@
       }
     });
 
-    // --- FUNCȚIA DE VERIFICARE RĂSPUNS ---
     window.checkQuizAnswer = function(buttonClicked, isCorrect, explanationId) {
-      // 1. Blocăm toate butoanele din acest card să nu mai poți apăsa de 2 ori
       const parentDiv = buttonClicked.parentElement;
       const allButtons = parentDiv.querySelectorAll('.quiz-btn');
       allButtons.forEach(btn => btn.style.pointerEvents = 'none');
 
-      // 2. Logică vizuală
       if (isCorrect) {
-        // Dacă e corect, îl facem verde
         buttonClicked.classList.add('correct');
       } else {
-        // Dacă e greșit, îl facem roșu pe cel apăsat
         buttonClicked.classList.add('wrong');
-        // Și arătăm explicația cu răspunsul corect!
         document.getElementById(explanationId).style.display = 'block';
         
-        // Bonus: Îl facem verde pe cel care ERA de fapt corect
-        // (codul caută butonul care ar fi declanșat "isCorrect = true")
         const correctBtnIndex = Array.from(allButtons).findIndex(btn => btn.getAttribute('onclick').includes('true'));
         if(correctBtnIndex !== -1) {
             allButtons[correctBtnIndex].classList.add('correct');
         }
       }
     };
-
   </script>
 </body>
 </html>
