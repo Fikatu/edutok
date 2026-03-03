@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title>EduScroll - Smart Memory</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #020617; 
+      --accent: #10b981; 
+      --accent-gradient: linear-gradient(135deg, #10b981, #3b82f6);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+      width: 100%; height: 100%;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Outfit', sans-serif;
+      overflow: hidden; 
+      user-select: none; 
+    }
+
+    .bg-blobs {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      z-index: 0; pointer-events: none; overflow: hidden;
+    }
+    .blob {
+      position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.3;
+      animation: float 12s infinite alternate ease-in-out;
+    }
+    .blob-1 { width: 350px; height: 350px; background: var(--accent); top: -10%; left: -10%; }
+    .blob-2 { width: 300px; height: 300px; background: #3b82f6; bottom: -10%; right: -10%; animation-delay: -6s;}
+
+    .feed-container {
+      position: relative; z-index: 1;
+      height: 100vh; width: 100vw;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; 
+      -ms-overflow-style: none; 
+    }
+    .feed-container::-webkit-scrollbar { display: none; }
+
+    .snap-card {
+      height: 100vh; width: 100vw;
+      scroll-snap-align: start;
+      scroll-snap-stop: always; 
+      position: relative;
+      display: flex; align-items: center; justify-content: flex-start;
+      padding: 0 15vw 0 8vw; 
+    }
+
+    .glass-panel {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.02);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 32px;
+      padding: 45px 35px;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+      opacity: 0;
+      transform: translateY(50px) scale(0.92);
+      transition: all 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .snap-card.is-visible .glass-panel {
+      opacity: 1; transform: translateY(0) scale(1);
+    }
+
+    .category-badge {
+      color: var(--accent); font-size: 0.85rem; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 2px;
+      margin-bottom: 25px; display: flex; align-items: center; gap: 8px;
+    }
+    .category-badge::before {
+      content: ''; display: block; width: 8px; height: 8px;
+      background: var(--accent); border-radius: 50%;
+      box-shadow: 0 0 12px var(--accent);
+    }
+
+    .question {
+      font-size: 1.8rem; font-weight: 800; line-height: 1.3;
+      margin-bottom: 30px; 
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    .answer {
+      font-size: 1.3rem; color: rgba(255,255,255,0.9); line-height: 1.6; font-weight: 400;
+      padding-left: 20px; border-left: 4px solid rgba(16, 185, 129, 0.5);
+    }
+
+    .action-bar {
+      position: absolute; right: 15px; bottom: 15vh;
+      display: flex; flex-direction: column; gap: 25px;
+      align-items: center; z-index: 10;
+    }
+
+    .action-btn {
+      background: rgba(255,255,255,0.05); backdrop-filter: blur(10px);
+      width: 55px; height: 55px; border-radius: 50%;
+      display: flex; justify-content: center; align-items: center;
+      font-size: 1.6rem; color: white; border: 1px solid rgba(255,255,255,0.1);
+      cursor: pointer; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .action-btn:active { transform: scale(0.7); }
+    .action-btn.liked { 
+      background: rgba(239, 68, 68, 0.15); color: #ef4444; 
+      border-color: rgba(239, 68, 68, 0.4); 
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+    }
+    
+    .action-label {
+      font-size: 0.75rem; font-weight: 600; margin-top: 8px; text-align: center; color: var(--text-muted);
+    }
+
+    .top-bar {
+      position: fixed; top: 0; left: 0; width: 100%;
+      padding: 20px 25px; display: flex; justify-content: space-between; align-items: center;
+      z-index: 1000;
+    }
+    .close-btn {
+      background: rgba(255,255,255,0.1); width: 44px; height: 44px;
+      border-radius: 50%; display: grid; place-items: center;
+      text-decoration: none; color: white; font-size: 1.2rem;
+      backdrop-filter: blur(5px);
+    }
+    
+    .filter-btn {
+      background: rgba(255,255,255,0.1); padding: 8px 16px;
+      border-radius: 20px; font-size: 0.9rem; font-weight: 600;
+      color: white; border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(5px); cursor: pointer; transition: 0.3s;
+    }
+    .filter-btn.active {
+      background: rgba(239, 68, 68, 0.2); border-color: #ef4444; color: #ef4444;
+    }
+
+    .progress-text {
+      color: rgba(255,255,255,0.6); font-size: 1rem; font-weight: 700; letter-spacing: 1px;
+      background: rgba(0,0,0,0.3); padding: 5px 15px; border-radius: 20px; backdrop-filter: blur(5px);
+    }
+
+    .progress-line-container {
+      position: fixed; top: 0; left: 0; width: 100%; height: 4px;
+      background: rgba(255,255,255,0.05); z-index: 1001;
+    }
+    .progress-line {
+      height: 100%; width: 0%; background: var(--accent-gradient);
+      transition: width 0.3s ease; border-radius: 0 4px 4px 0;
+    }
+
+    .heart-popup {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
+      font-size: 8rem; color: #ef4444; opacity: 0; pointer-events: none; z-index: 100;
+      text-shadow: 0 10px 30px rgba(239, 68, 68, 0.5);
+    }
+    .heart-popup.animate {
+      animation: heartBurst 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    .empty-state {
+      text-align: center; color: var(--text-muted); padding: 40px;
+    }
+    .empty-state h2 { color: white; margin-bottom: 10px; font-size: 1.8rem;}
+
+    @keyframes float {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(40px, 60px) scale(1.15); }
+    }
+    @keyframes heartBurst {
+      0% { transform: translate(-50%, -50%) scale(0) rotate(-15deg); opacity: 0; }
+      15% { transform: translate(-50%, -50%) scale(1.2) rotate(10deg); opacity: 1; }
+      30% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
+      70% { transform: translate(-50%, -50%) scale(1) translateY(0); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1.5) translateY(-50px); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <div class="progress-line-container">
+    <div class="progress-line" id="progress-line"></div>
+  </div>
+
+  <div class="top-bar">
+    <a href="index.html" class="close-btn">✕</a>
+    <button class="filter-btn" id="filter-btn" onclick="toggleFilter()">Arată doar ❤️</button>
+    <div class="progress-text" id="counter">0 / 0</div>
+  </div>
+
+  <div class="feed-container" id="feed">
+    </div>
+
+  <script>
+const facts = [
+      { category: "PDA - Concepte", q: "Ce reprezintă procedura administrativă necontencioasă?", a: "Procedura urmată de autoritățile publice la emiterea actelor sau eliberarea de avize, în absența unui litigiu (la birou/ghișeu)." },
+      { category: "PDA - Principii", q: "Ce presupune deconcentrarea administrativă?", a: "Reprezentanții locali ai puterii centrale (ex: Prefectura) iau decizii în teritoriu, dar sunt subordonați ierarhic centrului." },
+      { category: "PDA - Tutela", q: "Ce fel de control exercită Prefectul asupra actelor emise de Consiliul Local?", a: "Un control exclusiv de legalitate (tutelă administrativă), neputând cenzura oportunitatea actului (dacă e „bun” sau „rău”)." },
+      { category: "PDA - Instanțe", q: "La ce instanță se atacă actele emise de autoritățile publice centrale (ex: Guvern)?", a: "La Curtea de Apel (secția de contencios administrativ și fiscal)." },
+      { category: "PDA - Termene", q: "Cum se calculează un termen procedural pe zile (regula CPC)?", a: "Pe zile libere: nu intră în calcul nici ziua în care începe, nici ziua în care se sfârșește." },
+      { category: "PDA - Avizare", q: "Ce valoare juridică are un 'aviz conform'?", a: "Autoritatea emitentă este obligată prin lege atât să îl solicite, cât și să îl respecte întocmai (un aviz negativ blochează actul)." },
+      { category: "PDA - Transparență", q: "Cu cât timp înainte se publică anunțul de intenție pentru un act normativ?", a: "Cu cel puțin 30 de zile lucrătoare înainte de supunerea spre avizare (Legea 52/2003)." },
+      { category: "PDA - Vot", q: "Care este diferența dintre cvorum și majoritatea de vot?", a: "Cvorumul e numărul necesar de membri prezenți pentru a deschide ședința, iar majoritatea e numărul de voturi necesar pentru a adopta actul." },
+      { category: "PDA - Valabilitate", q: "Ce sancțiune intervine dacă lipsește semnătura de pe un act emis de primar?", a: "Inexistența actului administrativ (este un non-act juridic)." },
+      { category: "PDA - Intrare în vigoare", q: "Când intră în vigoare actele administrative normative?", a: "Doar de la data aducerii lor la cunoștință publică (publicării), pentru a fi opozabile tuturor." },
+      { category: "PDA - Autorizări", q: "Cum operează procedura aprobării tacite?", a: "Dacă administrația nu răspunde în termenul legal la o cerere completă, autorizația se consideră acordată din oficiu." },
+      { category: "PDA - Informații Publice", q: "Care este termenul general de răspuns la o solicitare de informații publice?", a: "10 zile, cu posibilitatea prelungirii justificate până la 30 de zile." },
+      { category: "PDA - Desființarea Actelor", q: "Prin ce se diferențiază revocarea de abrogarea actelor?", a: "Revocarea șterge actul retroactiv (pentru trecut), pe când abrogarea îi oprește efectele doar pentru viitor." },
+      { category: "PDA - Revocare", q: "Ce acte administrative sunt, în principiu, irevocabile?", a: "Actele individuale care au intrat în circuitul civil și au produs deja efecte juridice stabile pentru cetățean." },
+      { category: "PDA - Contracte", q: "Care sunt cele două părți ale clauzelor dintr-un contract administrativ (ex: concesiune)?", a: "Partea reglementară (impusă de stat prin caietul de sarcini) și partea convențională (negociată cu privatul)." },
+      { category: "PDA - Reziliere", q: "Poate administrația să rezilieze unilateral un contract administrativ?", a: "Da, oricând interesul public o cere, dar cu obligația plății de despăgubiri cocontractantului privat." },
+      { category: "PDA - Răspundere", q: "Care este termenul de prescripție pentru aplicarea unei sancțiuni disciplinare unui funcționar?", a: "Maxim 1 an de la sesizare, dar nu mai târziu de 2 ani de la săvârșirea faptei." },
+      { category: "PDA - Contencios", q: "Ce este recursul administrativ prealabil?", a: "Cererea obligatorie adresată emitentului de a-și revoca propriul act ilegal, înainte ca cetățeanul să se adreseze instanței." },
+      { category: "PDA - Exceptări", q: "Care acte administrative NU pot fi atacate în contencios?", a: "Actele de comandament militar și actele care privesc raporturile Guvernului cu Parlamentul." },
+      { category: "PDA - Instanță", q: "Care este caracteristica excepției de nelegalitate?", a: "Poate fi ridicată oricând într-un proces civil/penal și, dacă e admisă, actul administrativ este ignorat doar în acel dosar (nu e anulat general)." }
+    ];
+
+    // Funcția MAGICĂ de amestecare
+    function shuffleArray(array) {
+      let arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // --- LOGICA DE MEMORIE (LocalStorage) ---
+    function getSavedQuestions() {
+      const saved = localStorage.getItem('eduScroll_Favorites');
+      return saved ? JSON.parse(saved) : [];
+    }
+
+    function saveQuestionsToMemory(arr) {
+      localStorage.setItem('eduScroll_Favorites', JSON.stringify(arr));
+    }
+
+    // Variabile globale
+    let isFilterMode = false;
+    let savedQuestionsList = getSavedQuestions();
+    const feedContainer = document.getElementById('feed');
+    let observer;
+
+    // AICI E REPARATIA CRITICA:
+    // Amestecăm cartonașele O SINGURĂ DATĂ, la deschiderea paginii!
+    let shuffledFacts = shuffleArray(facts);
+
+    function renderCards() {
+      feedContainer.innerHTML = '';
+      
+      // Folosim variabila amestecată (shuffledFacts), NU 'facts'
+      let cardsToShow = shuffledFacts; 
+      
+      // Dacă filtrul e activ, păstrăm doar favoritele, dar ele vor rămâne în ordinea amestecată curentă
+      if (isFilterMode) {
+        cardsToShow = shuffledFacts.filter(fact => savedQuestionsList.includes(fact.q));
+      }
+
+      if (cardsToShow.length === 0) {
+        feedContainer.innerHTML = `
+          <div class="snap-card is-visible">
+            <div class="glass-panel empty-state">
+              <h2>Niciun cartonaș salvat</h2>
+              <p>Oprește filtrul, dă scroll și apasă de două ori pe ecran pentru a salva informațiile pe care vrei să le repeți.</p>
+            </div>
+          </div>
+        `;
+        document.getElementById('counter').innerText = `0 / 0`;
+        document.getElementById('progress-line').style.width = `0%`;
+        return;
+      }
+
+      cardsToShow.forEach((fact, index) => {
+        const card = document.createElement('div');
+        card.className = 'snap-card';
+        
+        const isLiked = savedQuestionsList.includes(fact.q);
+        const heartClass = isLiked ? 'liked' : '';
+        const heartIcon = isLiked ? '❤️' : '🤍';
+
+        card.innerHTML = `
+          <div class="heart-popup">❤️</div>
+          <div class="glass-panel">
+            <div class="category-badge">${fact.category}</div>
+            <div class="question">${fact.q}</div>
+            <div class="answer">${fact.a}</div>
+          </div>
+          
+          <div class="action-bar">
+            <div>
+              <div class="action-btn like-btn ${heartClass}">${heartIcon}</div>
+              <div class="action-label">Reține</div>
+            </div>
+          </div>
+        `;
+        
+        feedContainer.appendChild(card);
+
+        const likeBtn = card.querySelector('.like-btn');
+        
+        const handleSave = (e) => {
+          if(e) e.preventDefault();
+          toggleFavorite(fact.q, card, likeBtn);
+        };
+
+        likeBtn.addEventListener('click', handleSave);
+        
+        let lastTap = 0;
+        card.addEventListener('touchend', function(e) {
+          const currentTime = new Date().getTime();
+          const tapLength = currentTime - lastTap;
+          if (tapLength < 400 && tapLength > 0) handleSave(e);
+          lastTap = currentTime;
+        });
+        
+        card.addEventListener('dblclick', handleSave);
+      });
+
+      setupObserver(cardsToShow.length);
+    }
+
+    function toggleFavorite(questionText, cardElement, btnElement) {
+      const heartPopup = cardElement.querySelector('.heart-popup');
+      
+      if (savedQuestionsList.includes(questionText)) {
+        savedQuestionsList = savedQuestionsList.filter(q => q !== questionText);
+        btnElement.classList.remove('liked');
+        btnElement.innerHTML = '🤍';
+      } else {
+        savedQuestionsList.push(questionText);
+        btnElement.classList.add('liked');
+        btnElement.innerHTML = '❤️';
+        
+        heartPopup.classList.remove('animate');
+        void heartPopup.offsetWidth; 
+        heartPopup.classList.add('animate');
+        if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
+      }
+      
+      saveQuestionsToMemory(savedQuestionsList);
+
+      if (isFilterMode && !savedQuestionsList.includes(questionText)) {
+        renderCards();
+      }
+    }
+
+    window.toggleFilter = function() {
+      const filterBtn = document.getElementById('filter-btn');
+      isFilterMode = !isFilterMode; 
+      
+      if (isFilterMode) {
+        filterBtn.classList.add('active');
+        filterBtn.innerText = "Vezi Toate";
+      } else {
+        filterBtn.classList.remove('active');
+        filterBtn.innerText = "Arată doar ❤️";
+      }
+      
+      renderCards(); 
+    };
+
+    function setupObserver(totalCards) {
+      if(observer) observer.disconnect(); 
+      
+      observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            
+            const allCards = Array.from(document.querySelectorAll('.snap-card'));
+            const index = allCards.indexOf(entry.target) + 1;
+            
+            document.getElementById('counter').innerText = `${index} / ${totalCards}`;
+            const progressPercent = (index / totalCards) * 100;
+            document.getElementById('progress-line').style.width = `${progressPercent}%`;
+          } else {
+            entry.target.classList.remove('is-visible');
+          }
+        });
+      }, { threshold: 0.5 }); 
+
+      document.querySelectorAll('.snap-card').forEach(card => observer.observe(card));
+    }
+
+    // PORNIRE APLICAȚIE
+    renderCards();
+
+  </script>
+</body>
+</html>
