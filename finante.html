@@ -54,21 +54,32 @@
       scroll-snap-stop: always; 
       position: relative;
       display: flex; align-items: center; justify-content: flex-start;
-      padding: 0 15vw 0 8vw; 
+      padding: 0 18vw 0 6vw; /* Ajustat pentru a lăsa loc de text și butoane */
     }
 
-    .glass-panel {
+.glass-panel {
       width: 100%;
+      max-height: 82vh; /* Limitează înălțimea să nu iasă din ecran */
+      overflow-y: auto; /* Permite scroll în interior dacă e prea lung */
+      overscroll-behavior: contain; /* Previne scroll-ul paginii când ajungi la capătul textului */
       background: rgba(255, 255, 255, 0.02);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 32px;
-      padding: 45px 35px;
+      padding: 35px 25px; /* Padding mai mic pt a lăsa loc de text */
       box-shadow: 0 30px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
       opacity: 0;
       transform: translateY(50px) scale(0.92);
       transition: all 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    /* Design Scrollbar Intern pentru Panou */
+    .glass-panel::-webkit-scrollbar { width: 5px; }
+    .glass-panel::-webkit-scrollbar-track { background: transparent; }
+    .glass-panel::-webkit-scrollbar-thumb { 
+      background: rgba(16, 185, 129, 0.4); 
+      border-radius: 10px; 
     }
 
     .snap-card.is-visible .glass-panel {
@@ -87,8 +98,9 @@
     }
 
     .question {
-      font-size: 1.8rem; font-weight: 800; line-height: 1.3;
-      margin-bottom: 30px; 
+      font-size: clamp(1.4rem, 6vw, 1.8rem); /* Font Adaptabil automat */
+      font-weight: 800; line-height: 1.3;
+      margin-bottom: 25px; 
       background: var(--accent-gradient);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -96,8 +108,9 @@
     }
 
     .answer {
-      font-size: 1.3rem; color: rgba(255,255,255,0.9); line-height: 1.6; font-weight: 400;
-      padding-left: 20px; border-left: 4px solid rgba(16, 185, 129, 0.5);
+      font-size: clamp(1.1rem, 4.5vw, 1.3rem); /* Font Adaptabil automat */
+      color: rgba(255,255,255,0.9); line-height: 1.5; font-weight: 400;
+      padding-left: 15px; border-left: 3px solid rgba(16, 185, 129, 0.5);
     }
 
     .action-bar {
@@ -220,7 +233,7 @@ const facts = [
       { category: "FP - US 1", q: "Ce sunt resursele (veniturile) fiscale?", a: "Sunt procese de redistribuire a PIB-ului sau avuției naționale, de la persoane fizice și juridice la autorități publice, sub forma impozitelor, taxelor sau contribuțiilor. Ele asigură cea mai mare parte a resurselor obișnuite ale statului"},   
       { category: "FP - US 1", q: "Ce sunt resursele nefiscale?", a: "Sunt venituri din exploatarea întreprinderilor și bunurilor statului, dividende, vânzări de active(publice), chirii(redevențe) etc."},   
       { category: "FP - US 1", q: "Ce sunt resursele de trezorerie?", a: "Este mecanismul prin care statul împrumută sau mută banii dintr-o parte în alta pentru a fi mereu capabil să își plătească facturile la timp."},   
-      { category: "FP - US 1", q: "Care sunt resursele în cazul unui stat unitar?", a: "Resursele administrației centrale, locale și ale asigurărilor sociale."},   
+      { category: "FP - US 1", q: "Care sunt resursele în cazul unui stat unitar?", a: "Resursele administrației centrale, resursele locale și resursele asigurărilor sociale."},   
       { category: "FP - US 1", q: "Care sunt resursele în cazul unui stat federal?", a: "Resursele statului federal, ale statelor membre, ale entităților administrativ locale din cadrul fiecărui stat federat"},   
       { category: "FP - US 1", q: "În funcție de locul de proveniență cum sunt clasificate resursele finanțelor publice?", a: "Resurse interne și resurse externe."},   
       { category: "FP - US 1", q: "De unde provin resursele interne?", a: "Din distribuirea și redistribuirea PIB-ului și uneori a avuției naționale, se regăsesc ca venituri curente fiscale și nefiscale, venituri de capital dar și împrumuturi publice sau emisiune de monedă."},   
