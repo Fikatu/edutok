@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title>PDA - Moduri de Învățare</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #020617; --text-main: #f8fafc; --text-muted: #94a3b8;
+      --glass: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.08);
+      --accent: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg-dark); color: var(--text-main); font-family: 'Outfit', sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
+
+    .bg-blobs { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
+    .blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.2; animation: float 15s infinite alternate ease-in-out; }
+    .blob-1 { width: 400px; height: 400px; background: #10b981; top: -10%; left: -10%; }
+    .blob-2 { width: 350px; height: 350px; background: #3b82f6; bottom: -10%; right: -10%; animation-delay: -7s;}
+
+    .top-bar { width: 100%; padding: 20px 25px; position: relative; z-index: 10; display: flex; align-items: center; gap: 15px;}
+    .back-btn { background: rgba(255,255,255,0.1); width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; text-decoration: none; color: white; font-size: 1.2rem; backdrop-filter: blur(5px); }
+    
+    .container { position: relative; z-index: 1; width: 100%; max-width: 500px; padding: 10px 25px 40px; display: flex; flex-direction: column; gap: 30px; flex: 1;}
+    
+    header h1 { font-size: 2.2rem; font-weight: 800; background: linear-gradient(135deg, #10b981, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.1; margin-bottom: 5px;}
+    header p { color: var(--text-muted); font-size: 1.05rem; }
+
+    .modes-list { display: flex; flex-direction: column; gap: 15px; }
+
+    .mode-card {
+      text-decoration: none; color: inherit; background: var(--glass);
+      backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+      border: 1px solid var(--glass-border); border-radius: 24px; padding: 25px 20px;
+      display: flex; align-items: center; gap: 20px; transition: 0.3s; position: relative;
+    }
+    .mode-card:active { transform: scale(0.96); background: rgba(255, 255, 255, 0.07); }
+    .mode-card::after { content: '→'; position: absolute; right: 25px; font-size: 1.2rem; color: rgba(255,255,255,0.2); }
+
+    .icon-box { width: 65px; height: 65px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 2rem; flex-shrink: 0; background: rgba(255, 255, 255, 0.05); }
+    .info-box h3 { font-size: 1.3rem; font-weight: 700; margin-bottom: 5px; }
+    .info-box p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.4; }
+
+    .card-cards .icon-box { color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .card-grile .icon-box { color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .card-podcast .icon-box { color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); }
+
+    @keyframes float { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(30px, 40px) scale(1.1); } }
+  </style>
+</head>
+<body>
+  <div class="bg-blobs"><div class="blob blob-1"></div><div class="blob blob-2"></div></div>
+
+  <div class="top-bar">
+    <a href="index.html" class="back-btn">←</a>
+  </div>
+
+  <div class="container">
+    <header>
+      <h1>Procedura Drept Administrativ</h1>
+      <p>Alege modul de învățare pentru astăzi.</p>
+    </header>
+
+    <div class="modes-list">
+      <a href="PDA.html" class="mode-card card-cards">
+        <div class="icon-box">📇</div>
+        <div class="info-box">
+          <h3>Cardboards</h3>
+          <p>Învață rapid prin flashcards cu swipe. Memorie vizuală.</p>
+        </div>
+      </a>
+
+      <a href="grile_pda.html" class="mode-card card-grile">
+        <div class="icon-box">📝</div>
+        <div class="info-box">
+          <h3>Test Grile</h3>
+          <p>Verifică-ți cunoștințele prin simulare de examen.</p>
+        </div>
+      </a>
+
+      <a href="podcast_pda.html" class="mode-card card-podcast">
+        <div class="icon-box">🎧</div>
+        <div class="info-box">
+          <h3>Audio Hub</h3>
+          <p>Ascultă cursurile generate cu AI în timp ce mergi.</p>
+        </div>
+      </a>
+    </div>
+  </div>
+</body>
+</html>

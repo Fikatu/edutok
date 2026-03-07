@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title>PDA - Podcasturi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #020617; --text-main: #f8fafc; --text-muted: #94a3b8;
+      --glass: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg-dark); color: var(--text-main); font-family: 'Outfit', sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
+
+    .bg-blobs { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
+    .blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.2; animation: float 15s infinite alternate ease-in-out; }
+    .blob-1 { width: 400px; height: 400px; background: #8b5cf6; top: -10%; left: -10%; } /* Violet pt Podcast */
+    .blob-2 { width: 350px; height: 350px; background: #3b82f6; bottom: -10%; right: -10%; animation-delay: -7s;}
+
+    .top-bar { width: 100%; padding: 20px 25px; position: relative; z-index: 10; display: flex; align-items: center; gap: 15px;}
+    .back-btn { background: rgba(255,255,255,0.1); width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; text-decoration: none; color: white; font-size: 1.2rem; backdrop-filter: blur(5px); }
+    
+    .container { position: relative; z-index: 1; width: 100%; max-width: 500px; padding: 10px 25px 40px; display: flex; flex-direction: column; gap: 25px; flex: 1;}
+    
+    header h1 { font-size: 2rem; font-weight: 800; margin-bottom: 5px; }
+    header p { color: var(--text-muted); font-size: 1rem; }
+
+    .podcast-list { display: flex; flex-direction: column; gap: 20px; }
+
+    .podcast-card {
+      background: var(--glass); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+      border: 1px solid var(--glass-border); border-radius: 24px; padding: 25px;
+      display: flex; flex-direction: column; gap: 15px;
+    }
+
+    .ep-header { display: flex; justify-content: space-between; align-items: flex-start; }
+    .ep-title { font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 5px; }
+    .ep-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.4; }
+    .ep-badge { background: rgba(139, 92, 246, 0.2); color: #c4b5fd; font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 12px; letter-spacing: 1px; }
+
+    /* Customizarea playerului audio nativ */
+    audio { width: 100%; height: 40px; border-radius: 20px; outline: none; }
+    audio::-webkit-media-controls-panel { background-color: rgba(255, 255, 255, 0.9); }
+    audio::-webkit-media-controls-play-button, audio::-webkit-media-controls-mute-button { filter: invert(100%); }
+
+  </style>
+</head>
+<body>
+  <div class="bg-blobs"><div class="blob blob-1"></div><div class="blob blob-2"></div></div>
+
+  <div class="top-bar">
+    <a href="menu_pda.html" class="back-btn">←</a>
+  </div>
+
+  <div class="container">
+    <header>
+      <h1>🎧 Audio Hub PDA</h1>
+      <p>Ascultă sintezele cursurilor.</p>
+    </header>
+
+    <div class="podcast-list">
+      
+      <div class="podcast-card">
+        <div class="ep-header">
+          <div>
+            <h3 class="ep-title">Modulul 1: Concepte și Principii</h3>
+            <p class="ep-desc">Procedura necontencioasă, deconcentrare, tutelă administrativă și competențe.</p>
+          </div>
+          <div class="ep-badge">EP 01</div>
+        </div>
+        <audio controls controlsList="nodownload">
+          <source src="audio/pda_cap1.mp3" type="audio/mpeg">
+          Browserul tău nu suportă elementul audio.
+        </audio>
+      </div>
+
+      <div class="podcast-card">
+        <div class="ep-header">
+          <div>
+            <h3 class="ep-title">Modulul 2: Actul Administrativ</h3>
+            <p class="ep-desc">Avizarea, transparența, cvorum vs. majoritate, revocare și abrogare.</p>
+          </div>
+          <div class="ep-badge">EP 02</div>
+        </div>
+        <audio controls controlsList="nodownload">
+          <source src="audio/pda_cap2.mp3" type="audio/mpeg">
+        </audio>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>
