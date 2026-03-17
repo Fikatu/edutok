@@ -1,219 +1,332 @@
 <!DOCTYPE html>
 <html lang="ro">
 <head>
-  <meta charset="UTF-8">
-  <title>PDA - Audio Hub</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-  
-  <style>
-    :root {
-      --bg-dark: #020617; --text-main: #f8fafc; --text-muted: #94a3b8;
-      --glass: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.08);
-      --accent-gradient: linear-gradient(135deg, #8b5cf6, #3b82f6);
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    body { background-color: var(--bg-dark); color: var(--text-main); font-family: 'Outfit', sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>AudioHub — ULTRA</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08090a;
+  --surface: #111316;
+  --surface2: #181b1f;
+  --border: #2a2d33;
+  --accent: #c8f53f; /* Verde Neon */
+  --accent-bg: #1a2100;
+  --blue: #38bdf8;   /* Albastru Cyber */
+  --blue-bg: #001e30;
+  --text: #f0f2f5;
+  --muted: #5a6070;
+  --muted2: #363b45;
+  --font: 'Syne', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
 
-    /* Fundal Ambiental */
-    .bg-blobs { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
-    .blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.2; animation: float 15s infinite alternate ease-in-out; }
-    .blob-1 { width: 400px; height: 400px; background: #8b5cf6; top: -10%; left: -10%; } 
-    .blob-2 { width: 350px; height: 350px; background: #3b82f6; bottom: -10%; right: -10%; animation-delay: -7s;}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
-    /* Top Bar */
-    .top-bar { width: 100%; padding: 20px 25px; position: relative; z-index: 10; display: flex; align-items: center; gap: 15px;}
-    .back-btn { background: rgba(255,255,255,0.1); width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; text-decoration: none; color: white; font-size: 1.2rem; backdrop-filter: blur(5px); transition: 0.3s;}
-    .back-btn:active { transform: scale(0.9); }
+html, body {
+  min-height: 100%;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+}
 
-    .container { position: relative; z-index: 1; width: 100%; max-width: 500px; padding: 10px 25px 40px; display: flex; flex-direction: column; gap: 25px; flex: 1;}
-    
-    header h1 { font-size: 2rem; font-weight: 800; margin-bottom: 5px; }
-    header p { color: var(--text-muted); font-size: 1rem; }
+/* ── SCANLINE OVERLAY ── */
+body::before {
+  content:'';
+  position:fixed; inset:0; pointer-events:none; z-index:999;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.08) 2px, rgba(0,0,0,.08) 4px);
+}
 
-    .podcast-list { display: flex; flex-direction: column; gap: 20px; }
+/* ── HEADER HUD ── */
+header {
+  position: sticky; top: 0;
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  background: rgba(8, 9, 10, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 100;
+}
 
-    /* Cardul principal pentru un Episod */
-    .podcast-card {
-      background: var(--glass); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-      border: 1px solid var(--glass-border); border-radius: 28px; padding: 25px;
-      display: flex; flex-direction: column; gap: 20px;
-    }
+.back-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  text-decoration: none; font-family: var(--mono); font-weight: 800;
+  transition: 0.2s;
+}
+.back-btn:active { transform: scale(0.9); border-color: var(--accent); color: var(--accent); }
 
-    .ep-header { display: flex; justify-content: space-between; align-items: flex-start; }
-    .ep-title { font-size: 1.25rem; font-weight: 700; color: #fff; margin-bottom: 6px; line-height: 1.3;}
-    .ep-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.4; }
-    .ep-badge { background: rgba(139, 92, 246, 0.2); color: #c4b5fd; font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 12px; letter-spacing: 1px; flex-shrink: 0;}
+.header-title {
+  font-family: var(--mono); font-size: 11px; font-weight: 800;
+  letter-spacing: .2em; text-transform: uppercase; color: var(--blue);
+}
 
-    /* --- CUSTOM PLAYER UI --- */
-    .custom-player {
-      display: flex; align-items: center; gap: 12px;
-      background: rgba(0, 0, 0, 0.2); border-radius: 20px; padding: 12px 15px;
-      border: 1px solid rgba(255,255,255,0.05);
-    }
+.hud-xp {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+}
+.hud-val { font-family: var(--mono); font-size: 16px; font-weight: 600; line-height: 1; color: var(--accent); text-shadow: 0 0 10px rgba(200,245,63,0.3); }
+.hud-label { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 
-    /* Grupul de butoane Play/Skip */
-    .play-controls-group {
-      display: flex; align-items: center; gap: 8px; flex-shrink: 0;
-    }
+/* ── MAIN CONTAINER ── */
+main {
+  padding: 25px 20px 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
 
-    .play-btn {
-      width: 48px; height: 48px; border-radius: 50%; border: none;
-      background: var(--accent-gradient); color: white; font-size: 1.1rem;
-      display: grid; place-items: center; cursor: pointer; flex-shrink: 0;
-      box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3); transition: 0.2s;
-    }
-    .play-btn:active { transform: scale(0.9); }
+/* ── EPISODE CARD ── */
+.ep-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+}
 
-    /* Butoanele de +/- 10 secunde */
-    .skip-btn {
-      background: transparent; border: none; color: rgba(255,255,255,0.7);
-      font-size: 1.1rem; width: 35px; height: 35px; border-radius: 50%;
-      display: flex; flex-direction: column; justify-content: center; align-items: center;
-      cursor: pointer; transition: 0.2s; font-family: 'Outfit', sans-serif;
-    }
-    .skip-btn:active { transform: scale(0.8); color: white; background: rgba(255,255,255,0.1); }
-    .skip-text { font-size: 0.55rem; font-weight: 800; margin-top: -2px;} /* Textul micuț cu "10s" */
+.ep-header {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;
+}
 
-    /* Bara de progres și timpul */
-    .player-controls { flex-grow: 1; display: flex; flex-direction: column; gap: 6px; }
-    
-    .timeline {
-      width: 100%; height: 6px; background: rgba(255,255,255,0.1);
-      border-radius: 4px; cursor: pointer; position: relative; overflow: hidden;
-    }
-    .progress-bar {
-      height: 100%; width: 0%; background: var(--accent-gradient);
-      border-radius: 4px; pointer-events: none; transition: width 0.1s linear;
-    }
+.ep-tag {
+  font-family: var(--mono); font-size: 10px; color: var(--blue); 
+  background: var(--blue-bg); padding: 4px 8px; border-radius: 6px;
+  text-transform: uppercase; letter-spacing: .1em; font-weight: 800;
+  margin-bottom: 8px; display: inline-block;
+}
 
-    .time-info {
-      display: flex; justify-content: space-between;
-      font-size: 0.75rem; color: var(--text-muted); font-weight: 600;
-      font-variant-numeric: tabular-nums; 
-    }
+.ep-title { font-size: 1.25rem; font-weight: 800; line-height: 1.2; letter-spacing: -.02em; }
+.ep-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.4; margin-top: 6px; }
 
-    @keyframes float { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(30px, 40px) scale(1.1); } }
-  </style>
+.ep-badge {
+  font-family: var(--mono); font-size: 10px; font-weight: 800;
+  color: var(--bg); background: var(--text); padding: 4px 6px; border-radius: 4px;
+  letter-spacing: 1px; flex-shrink: 0;
+}
+
+/* ── CUSTOM PLAYER UI ULTRA ── */
+.player-ui {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Controale Play / Skip */
+.controls-row {
+  display: flex; align-items: center; justify-content: center; gap: 20px;
+}
+
+.play-btn {
+  width: 50px; height: 50px; border-radius: 16px; border: 1px solid var(--accent);
+  background: var(--accent-bg); color: var(--accent); font-size: 1.2rem;
+  display: grid; place-items: center; cursor: pointer;
+  box-shadow: 0 0 15px rgba(200,245,63,0.1); transition: 0.2s;
+}
+.play-btn:active { transform: scale(0.9); background: var(--accent); color: var(--bg); }
+
+.skip-btn {
+  background: transparent; border: none; color: var(--muted);
+  font-size: 1.1rem; width: 40px; height: 40px;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  cursor: pointer; transition: 0.2s; font-family: var(--font);
+}
+.skip-btn:active { transform: scale(0.8); color: var(--text); }
+.skip-text { font-family: var(--mono); font-size: 9px; font-weight: 800; margin-top: 2px; letter-spacing: 1px;}
+
+/* Timeline & Progress */
+.timeline-container { display: flex; flex-direction: column; gap: 8px; }
+
+.time-info {
+  display: flex; justify-content: space-between;
+  font-family: var(--mono); font-size: 10px; color: var(--muted); font-weight: 600;
+}
+
+.timeline {
+  width: 100%; height: 6px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 4px; cursor: pointer; position: relative; overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%; width: 0%; background: var(--accent);
+  border-radius: 2px; pointer-events: none; transition: width 0.1s linear;
+  box-shadow: 0 0 10px var(--accent);
+}
+
+/* ── XP POPUP ── */
+.xp-popup {
+  position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
+  background: var(--accent); color: var(--bg);
+  font-family: var(--mono); font-size: 13px; font-weight: 800;
+  padding: 10px 20px; border-radius: 20px;
+  box-shadow: 0 0 20px rgba(200,245,63,0.4);
+  opacity: 0; pointer-events: none; z-index: 50; transition: 0.3s;
+}
+.xp-popup.show { animation: popupAnim 2.5s ease forwards; }
+
+@keyframes popupAnim {
+  0% { opacity: 0; transform: translate(-50%, 20px); }
+  15% { opacity: 1; transform: translate(-50%, 0); }
+  85% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -20px); }
+}
+
+</style>
 </head>
 <body>
-  <div class="bg-blobs"><div class="blob blob-1"></div><div class="blob blob-2"></div></div>
 
-  <div class="top-bar">
-    <a href="menu_pda.html" class="back-btn">←</a>
-  </div>
-
-  <div class="container">
-    <header>
-      <h1>🎧 Podcasturi Finanțe publice</h1>
-      <p>Ascultă sintezele cursurilor.</p>
-    </header>
-
-    <div class="podcast-list">
-      
-      <div class="podcast-card">
-        <div class="ep-header">
-          <div>
-            <h3 class="ep-title">Finanțe Publice - Capitolul 1</h3>
-            <p class="ep-desc">COMPONENTELE SISTEMULUI DE RESURSE FINANCIARE PUBLICE</p>
-          </div>
-          <div class="ep-badge">EP 01</div>
-        </div>
-        
-        <div class="custom-player" data-src="audio/fp_cap1.mp3">
-          
-          <div class="play-controls-group">
-            <button class="skip-btn rewind-btn">⟲<span class="skip-text">10s</span></button>
-            <button class="play-btn">▶</button>
-            <button class="skip-btn forward-btn">⟳<span class="skip-text">10s</span></button>
-          </div>
-
-          <div class="player-controls">
-            <div class="timeline"><div class="progress-bar"></div></div>
-            <div class="time-info">
-              <span class="current-time">0:00</span>
-              <span class="total-time">0:00</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="podcast-card">
-        <div class="ep-header">
-          <div>
-            <h3 class="ep-title">Finanțe Publice - Capitolul 2</h3>
-            <p class="ep-desc">IMPOZITELE – PRINCIPALĂ RESURSĂ FINANCIARĂ PUBLICĂ</p>
-          </div>
-          <div class="ep-badge">EP 02</div>
-        </div>
-        
-        <div class="custom-player" data-src="audio/fp_cap2.mp3">
-          
-          <div class="play-controls-group">
-            <button class="skip-btn rewind-btn">⟲<span class="skip-text">10s</span></button>
-            <button class="play-btn">▶</button>
-            <button class="skip-btn forward-btn">⟳<span class="skip-text">10s</span></button>
-          </div>
-
-          <div class="player-controls">
-            <div class="timeline"><div class="progress-bar"></div></div>
-            <div class="time-info">
-              <span class="current-time">0:00</span>
-              <span class="total-time">0:00</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-            <div class="podcast-card">
-        <div class="ep-header">
-          <div>
-            <h3 class="ep-title">Finanțe Publice - Capitolul 3</h3>
-            <p class="ep-desc">IMPOZITELE DIRECTE</p>
-          </div>
-          <div class="ep-badge">EP 02</div>
-        </div>
-        
-        <div class="custom-player" data-src="audio/fp_cap3.mp3">
-          
-          <div class="play-controls-group">
-            <button class="skip-btn rewind-btn">⟲<span class="skip-text">10s</span></button>
-            <button class="play-btn">▶</button>
-            <button class="skip-btn forward-btn">⟳<span class="skip-text">10s</span></button>
-          </div>
-
-          <div class="player-controls">
-            <div class="timeline"><div class="progress-bar"></div></div>
-            <div class="time-info">
-              <span class="current-time">0:00</span>
-              <span class="total-time">0:00</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
+  <header>
+    <a href="index.html" class="back-btn">←</a>
+    <div class="header-title">AUDIO_HUB</div>
+    <div class="hud-xp">
+      <div class="hud-val" id="global-xp">0</div>
+      <div class="hud-label">Global XP</div>
     </div>
-  </div>
+  </header>
+
+  <main>
+
+    <div class="ep-card">
+      <div class="ep-header">
+        <div>
+          <div class="ep-tag">FP - US 1</div>
+          <h3 class="ep-title">COMPONENTELE SISTEMULUI DE RESURSE FINANCIARE PUBLICE</h3>
+          <p class="ep-desc"></p>
+        </div>
+        <div class="ep-badge">EP_01</div>
+      </div>
+      
+      <div class="player-ui" data-src="audio/fp_cap1.mp3"> <div class="controls-row">
+          <button class="skip-btn rewind-btn">⟲<span class="skip-text">10s</span></button>
+          <button class="play-btn">▶</button>
+          <button class="skip-btn forward-btn">⟳<span class="skip-text">10s</span></button>
+        </div>
+        
+        <div class="timeline-container">
+          <div class="time-info">
+            <span class="current-time">00:00</span>
+            <span class="total-time">00:00</span>
+          </div>
+          <div class="timeline"><div class="progress-bar"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ep-card">
+      <div class="ep-header">
+        <div>
+          <div class="ep-tag" style="color:var(--accent); background:var(--accent-bg);">FP - US 2</div>
+          <h3 class="ep-title">IMPOZITELE – PRINCIPALĂ RESURSĂ FINANCIARĂ PUBLICĂ</h3>
+          <p class="ep-desc"></p>
+        </div>
+        <div class="ep-badge">EP_02</div>
+      </div>
+      
+      <div class="player-ui" data-src="audio/fp_cap2.mp3">
+        <div class="controls-row">
+          <button class="skip-btn rewind-btn">⟲<span class="skip-text">10s</span></button>
+          <button class="play-btn">▶</button>
+          <button class="skip-btn forward-btn">⟳<span class="skip-text">10s</span></button>
+        </div>
+        
+        <div class="timeline-container">
+          <div class="time-info">
+            <span class="current-time">00:00</span>
+            <span class="total-time">00:00</span>
+          </div>
+          <div class="timeline"><div class="progress-bar"></div></div>
+        </div>
+      </div>
+    </div>
+       <div class="ep-card">
+      <div class="ep-header">
+        <div>
+          <div class="ep-tag">FP - US 3</div>
+          <h3 class="ep-title">COMPONENTELE SISTEMULUI DE RESURSE FINANCIARE PUBLICE</h3>
+          <p class="ep-desc"></p>
+        </div>
+        <div class="ep-badge">EP_01</div>
+      </div>
+      
+      <div class="player-ui" data-src="audio/fp_cap3.mp3"> <div class="controls-row">
+          <button class="skip-btn rewind-btn">⟲<span class="skip-text">10s</span></button>
+          <button class="play-btn">▶</button>
+          <button class="skip-btn forward-btn">⟳<span class="skip-text">10s</span></button>
+        </div>
+        
+        <div class="timeline-container">
+          <div class="time-info">
+            <span class="current-time">00:00</span>
+            <span class="total-time">00:00</span>
+          </div>
+          <div class="timeline"><div class="progress-bar"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <div class="xp-popup" id="xp-popup">🎧 EPISOD FINALIZAT: +50 XP</div>
 
   <script>
-    document.querySelectorAll('.custom-player').forEach(playerUI => {
-      
-      const audioSrc = playerUI.getAttribute('data-src');
-      const audio = new Audio(audioSrc);
-      
-      const playBtn = playerUI.querySelector('.play-btn');
-      const rewindBtn = playerUI.querySelector('.rewind-btn');
-      const forwardBtn = playerUI.querySelector('.forward-btn');
-      const timeline = playerUI.querySelector('.timeline');
-      const progressBar = playerUI.querySelector('.progress-bar');
-      const currentTimeEl = playerUI.querySelector('.current-time');
-      const totalTimeEl = playerUI.querySelector('.total-time');
+    // 1. INIȚIALIZARE XP GLOBAL
+    let db = JSON.parse(localStorage.getItem('ec_ultra2') || '{}');
+    if (!db._meta) db._meta = { xp: 0, streak: 0, todayDone: 0, dailyGoal: 10 };
+    let state = db._meta;
+    
+    const xpDisplay = document.getElementById('global-xp');
+    xpDisplay.textContent = state.xp;
 
+    function saveAndShowXP(amount) {
+      state.xp += amount;
+      db._meta = state;
+      localStorage.setItem('ec_ultra2', JSON.stringify(db));
+      xpDisplay.textContent = state.xp;
+      
+      // Arată Pop-up
+      const popup = document.getElementById('xp-popup');
+      popup.classList.remove('show');
+      void popup.offsetWidth; // Trigger reflow
+      popup.classList.add('show');
+      if (navigator.vibrate) navigator.vibrate([30, 50, 100]);
+    }
+
+    // 2. LOGICA PLAYER-ULUI AUDIO
+    document.querySelectorAll('.player-ui').forEach(player => {
+      
+      const audioSrc = player.getAttribute('data-src');
+      const audio = new Audio(audioSrc);
+      let isCompleted = false; // Ca să nu dăm XP de 2 ori pe același ep.
+      
+      const playBtn = player.querySelector('.play-btn');
+      const rewindBtn = player.querySelector('.rewind-btn');
+      const forwardBtn = player.querySelector('.forward-btn');
+      const timeline = player.querySelector('.timeline');
+      const progressBar = player.querySelector('.progress-bar');
+      const currentTimeEl = player.querySelector('.current-time');
+      const totalTimeEl = player.querySelector('.total-time');
+
+      // Formatare timp (ex: 65 sec -> 01:05)
       const formatTime = (seconds) => {
-        if (isNaN(seconds)) return "0:00";
+        if (isNaN(seconds)) return "00:00";
         const min = Math.floor(seconds / 60);
         const sec = Math.floor(seconds % 60);
-        return `${min}:${sec < 10 ? '0' : ''}${sec}`;
+        return `${min < 10 ? '0' : ''}${min}:${sec < 10 ? '0' : ''}${sec}`;
       };
 
       audio.addEventListener('loadedmetadata', () => {
@@ -227,38 +340,37 @@
           document.querySelectorAll('audio').forEach(otherAudio => {
              if(otherAudio !== audio && !otherAudio.paused) {
                  otherAudio.pause();
-                 document.querySelectorAll('.play-btn').forEach(btn => btn.textContent = '▶');
+                 document.querySelectorAll('.play-btn').forEach(btn => btn.innerHTML = '▶');
              }
           });
           audio.play();
-          playBtn.textContent = '⏸';
+          playBtn.innerHTML = '⏸';
+          if (navigator.vibrate) navigator.vibrate(10);
         } else {
           audio.pause();
-          playBtn.textContent = '▶';
+          playBtn.innerHTML = '▶';
         }
       });
 
-      // --- LOGICA NOUĂ PENTRU SKIP 10 SECUNDE ---
+      // SKIP 10s
       rewindBtn.addEventListener('click', () => {
-        // Nu putem da mai mult înapoi decât secunda 0
         audio.currentTime = Math.max(0, audio.currentTime - 10);
-        // Haptic feedback dacă pe mobil e suportat
-        if (navigator.vibrate) navigator.vibrate(20);
+        if (navigator.vibrate) navigator.vibrate(15);
       });
 
       forwardBtn.addEventListener('click', () => {
-        // Nu putem da mai mult înainte decât durata totală
         audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
-        if (navigator.vibrate) navigator.vibrate(20);
+        if (navigator.vibrate) navigator.vibrate(15);
       });
-      // ------------------------------------------
 
+      // UPDATE PROGRESS BAR
       audio.addEventListener('timeupdate', () => {
         currentTimeEl.textContent = formatTime(audio.currentTime);
         const progressPercent = (audio.currentTime / audio.duration) * 100;
         progressBar.style.width = `${progressPercent}%`;
       });
 
+      // CLICK PE TIMELINE
       timeline.addEventListener('click', (e) => {
         const rect = timeline.getBoundingClientRect();
         const clickX = e.clientX - rect.left;
@@ -266,10 +378,16 @@
         audio.currentTime = widthPercent * audio.duration;
       });
 
+      // EPISOD TERMINAT -> ACORDARE XP
       audio.addEventListener('ended', () => {
-        playBtn.textContent = '▶';
+        playBtn.innerHTML = '▶';
         progressBar.style.width = '0%';
-        currentTimeEl.textContent = '0:00';
+        currentTimeEl.textContent = '00:00';
+        
+        if (!isCompleted) {
+          isCompleted = true; // Marchează ca finalizat în sesiunea curentă
+          saveAndShowXP(50); // Acordă 50 XP
+        }
       });
     });
   </script>
