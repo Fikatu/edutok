@@ -1,226 +1,585 @@
 <!DOCTYPE html>
 <html lang="ro">
 <head>
-  <meta charset="UTF-8">
-  <title>EduTok - Finanțe Publice 2</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-  
-  <style>
-    :root {
-      --bg-dark: #020617; 
-      --accent: #10b981; 
-      --accent-gradient: linear-gradient(135deg, #10b981, #3b82f6);
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Finanțe Publice</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08090a;
+  --surface: #111316;
+  --surface2: #181b1f;
+  --border: #2a2d33;
+  --accent: #c8f53f;
+  --accent-dim: #8aaa1f;
+  --accent-bg: #1a2100;
+  --blue: #38bdf8;
+  --blue-bg: #001e30;
+  --red: #f87171;
+  --red-bg: #2a0a0a;
+  --amber: #fbbf24;
+  --amber-bg: #271a00;
+  --text: #f0f2f5;
+  --muted: #5a6070;
+  --muted2: #363b45;
+  --font: 'Syne', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
 
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
-    html, body {
-      width: 100%; height: 100%;
-      background-color: var(--bg-dark);
-      color: var(--text-main);
-      font-family: 'Outfit', sans-serif;
-      overflow: hidden; 
-      user-select: none; 
-    }
+html, body {
+  height:100%; overflow:hidden;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+}
 
-    .bg-blobs {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      z-index: 0; pointer-events: none; overflow: hidden;
-    }
-    .blob {
-      position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.3;
-      animation: float 12s infinite alternate ease-in-out;
-    }
-    .blob-1 { width: 350px; height: 350px; background: var(--accent); top: -10%; left: -10%; }
-    .blob-2 { width: 300px; height: 300px; background: #3b82f6; bottom: -10%; right: -10%; animation-delay: -6s;}
+/* ── SCANLINE OVERLAY ── */
+body::before {
+  content:'';
+  position:fixed; inset:0; pointer-events:none; z-index:999;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.08) 2px, rgba(0,0,0,.08) 4px);
+}
 
-    .feed-container {
-      position: relative; z-index: 1;
-      height: 100vh; width: 100vw;
-      overflow-y: scroll;
-      scroll-snap-type: y mandatory;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none; 
-      -ms-overflow-style: none; 
-    }
-    .feed-container::-webkit-scrollbar { display: none; }
+/* ── LAYOUT ── */
+.back-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  text-decoration: none; font-family: var(--mono); font-weight: 800;
+  transition: 0.2s;
+}
+.back-btn:active { 
+  transform: scale(0.9); 
+  border-color: var(--accent); 
+  color: var(--accent); 
+}
 
-    .snap-card {
-      height: 100vh; width: 100vw;
-      scroll-snap-align: start;
-      scroll-snap-stop: always; 
-      position: relative;
-      display: flex; align-items: center; justify-content: flex-start;
-      padding: 0 18vw 0 6vw; /* Ajustat pentru a lăsa loc de text și butoane */
-    }
+#app {
+  height:100dvh;
+  display:grid;
+  grid-template-rows: auto 1fr auto;
+  gap:0;
+}
 
-.glass-panel {
-      width: 100%;
-      max-height: 82vh; /* Limitează înălțimea să nu iasă din ecran */
-      overflow-y: auto; /* Permite scroll în interior dacă e prea lung */
-      overscroll-behavior: contain; /* Previne scroll-ul paginii când ajungi la capătul textului */
-      background: rgba(255, 255, 255, 0.02);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 32px;
-      padding: 35px 25px; /* Padding mai mic pt a lăsa loc de text */
-      box-shadow: 0 30px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
-      opacity: 0;
-      transform: translateY(50px) scale(0.92);
-      transition: all 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
-    }
+/* ── HEADER ── */
+header {
+  padding: 14px 20px 10px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom: 1px solid var(--border);
+  position:relative;
+  z-index:10;
+}
 
-    /* Design Scrollbar Intern pentru Panou */
-    .glass-panel::-webkit-scrollbar { width: 5px; }
-    .glass-panel::-webkit-scrollbar-track { background: transparent; }
-    .glass-panel::-webkit-scrollbar-thumb { 
-      background: rgba(16, 185, 129, 0.4); 
-      border-radius: 10px; 
-    }
+.logo {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
 
-    .snap-card.is-visible .glass-panel {
-      opacity: 1; transform: translateY(0) scale(1);
-    }
+.hud {
+  display:flex;
+  gap: 18px;
+  align-items:center;
+}
 
-    .category-badge {
-      color: var(--accent); font-size: 0.85rem; font-weight: 800;
-      text-transform: uppercase; letter-spacing: 2px;
-      margin-bottom: 25px; display: flex; align-items: center; gap: 8px;
-    }
-    .category-badge::before {
-      content: ''; display: block; width: 8px; height: 8px;
-      background: var(--accent); border-radius: 50%;
-      box-shadow: 0 0 12px var(--accent);
-    }
+.hud-item {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:1px;
+}
 
-    .question {
-      font-size: clamp(1.4rem, 6vw, 1.8rem); /* Font Adaptabil automat */
-      font-weight: 800; line-height: 1.3;
-      margin-bottom: 25px; 
-      background: var(--accent-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: -0.5px;
-    }
+.hud-val {
+  font-family: var(--mono);
+  font-size: 16px;
+  font-weight: 600;
+  line-height:1;
+}
 
-    .answer {
-      font-size: clamp(1.1rem, 4.5vw, 1.3rem); /* Font Adaptabil automat */
-      color: rgba(255,255,255,0.9); line-height: 1.5; font-weight: 400;
-      padding-left: 15px; border-left: 3px solid rgba(16, 185, 129, 0.5);
-    }
+.hud-label {
+  font-size: 9px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
 
-    .action-bar {
-      position: absolute; right: 15px; bottom: 15vh;
-      display: flex; flex-direction: column; gap: 25px;
-      align-items: center; z-index: 10;
-    }
+#hud-xp .hud-val { color: var(--accent); }
+#hud-streak .hud-val { color: var(--amber); }
+#hud-level .hud-val { color: var(--blue); }
 
-    .action-btn {
-      background: rgba(255,255,255,0.05); backdrop-filter: blur(10px);
-      width: 55px; height: 55px; border-radius: 50%;
-      display: flex; justify-content: center; align-items: center;
-      font-size: 1.6rem; color: white; border: 1px solid rgba(255,255,255,0.1);
-      cursor: pointer; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    .action-btn:active { transform: scale(0.7); }
-    .action-btn.liked { 
-      background: rgba(239, 68, 68, 0.15); color: #ef4444; 
-      border-color: rgba(239, 68, 68, 0.4); 
-      box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
-    }
-    
-    .action-label {
-      font-size: 0.75rem; font-weight: 600; margin-top: 8px; text-align: center; color: var(--text-muted);
-    }
+/* ── XP BAR ── */
+.xp-track {
+  height: 2px;
+  background: var(--muted2);
+  position:relative;
+}
 
-    .top-bar {
-      position: fixed; top: 0; left: 0; width: 100%;
-      padding: 20px 25px; display: flex; justify-content: space-between; align-items: center;
-      z-index: 1000;
-    }
-    .close-btn {
-      background: rgba(255,255,255,0.1); width: 44px; height: 44px;
-      border-radius: 50%; display: grid; place-items: center;
-      text-decoration: none; color: white; font-size: 1.2rem;
-      backdrop-filter: blur(5px);
-    }
-    
-    .filter-btn {
-      background: rgba(255,255,255,0.1); padding: 8px 16px;
-      border-radius: 20px; font-size: 0.9rem; font-weight: 600;
-      color: white; border: 1px solid rgba(255,255,255,0.1);
-      backdrop-filter: blur(5px); cursor: pointer; transition: 0.3s;
-    }
-    .filter-btn.active {
-      background: rgba(239, 68, 68, 0.2); border-color: #ef4444; color: #ef4444;
-    }
+.xp-fill {
+  height:100%;
+  background: var(--accent);
+  transition: width .6s cubic-bezier(.16,1,.3,1);
+  position:relative;
+  overflow:hidden;
+}
 
-    .progress-text {
-      color: rgba(255,255,255,0.6); font-size: 1rem; font-weight: 700; letter-spacing: 1px;
-      background: rgba(0,0,0,0.3); padding: 5px 15px; border-radius: 20px; backdrop-filter: blur(5px);
-    }
+.xp-fill::after {
+  content:'';
+  position:absolute; inset:0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.4) 50%, transparent 100%);
+  animation: shimmer 1.8s infinite;
+}
 
-    .progress-line-container {
-      position: fixed; top: 0; left: 0; width: 100%; height: 4px;
-      background: rgba(255,255,255,0.05); z-index: 1001;
-    }
-    .progress-line {
-      height: 100%; width: 0%; background: var(--accent-gradient);
-      transition: width 0.3s ease; border-radius: 0 4px 4px 0;
-    }
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
 
-    .heart-popup {
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
-      font-size: 8rem; color: #ef4444; opacity: 0; pointer-events: none; z-index: 100;
-      text-shadow: 0 10px 30px rgba(239, 68, 68, 0.5);
-    }
-    .heart-popup.animate {
-      animation: heartBurst 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    }
+/* ── FEED AREA ── */
+.feed-wrap {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding: 20px 20px 10px;
+  position:relative;
+  overflow:hidden;
+}
 
-    .empty-state {
-      text-align: center; color: var(--text-muted); padding: 40px;
-    }
-    .empty-state h2 { color: white; margin-bottom: 10px; font-size: 1.8rem;}
+/* ── CARD FLIP ── */
+.card-scene {
+  width:100%;
+  max-width: 420px;
+  perspective: 1000px;
+  position:relative;
+  touch-action: pan-y; /* MAGIA: Oprește browserul să dea "Back" când dai swipe! */
+}
 
-    @keyframes float {
-      0% { transform: translate(0, 0) scale(1); }
-      100% { transform: translate(40px, 60px) scale(1.15); }
-    }
-    @keyframes heartBurst {
-      0% { transform: translate(-50%, -50%) scale(0) rotate(-15deg); opacity: 0; }
-      15% { transform: translate(-50%, -50%) scale(1.2) rotate(10deg); opacity: 1; }
-      30% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
-      70% { transform: translate(-50%, -50%) scale(1) translateY(0); opacity: 1; }
-      100% { transform: translate(-50%, -50%) scale(1.5) translateY(-50px); opacity: 0; }
-    }
-  </style>
+.card-flipper {
+  width:100%;
+  min-height: 420px;
+  position:relative;
+  transform-style: preserve-3d;
+  transition: transform .55s cubic-bezier(.16,1,.3,1);
+}
+
+.card-flipper.flipped {
+  transform: rotateY(180deg);
+}
+
+.card-face {
+  position:absolute; inset:0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 20px;
+  padding: 28px 24px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  display:flex;
+  flex-direction:column;
+  min-height: 420px;
+}
+
+.card-back {
+  transform: rotateY(180deg);
+}
+
+/* front */
+.card-category {
+  font-size: 10px;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-family: var(--mono);
+  margin-bottom: 20px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.card-category::before {
+  content:'';
+  display:block;
+  width:6px; height:6px;
+  border-radius:50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+}
+
+.card-number {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.card-question {
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1.3;
+  flex:1;
+  display:flex;
+  align-items:center;
+  letter-spacing: -.01em;
+}
+
+.tap-hint {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top: 24px;
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.tap-hint-icon {
+  width:28px; height:28px;
+  border-radius:8px;
+  border: 1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  font-size: 14px;
+  animation: pulse-border 2s ease infinite;
+}
+
+@keyframes pulse-border {
+  0%, 100% { border-color: var(--border); }
+  50% { border-color: var(--accent); }
+}
+
+/* back */
+.answer-label {
+  font-size: 10px;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-family: var(--mono);
+  margin-bottom: 16px;
+}
+
+.answer-text {
+  font-size: 1.05rem;
+  line-height: 1.65;
+  flex: 1;
+  color: #d0d4de;
+  overflow-y: auto; /* Permite scroll în interior */
+  padding-right: 8px; /* Spațiu pt scrollbar */
+  overscroll-behavior: contain; /* Previne scroll-ul întregii pagini */
+}
+
+.answer-text::-webkit-scrollbar { width: 4px; }
+.answer-text::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.action-row {
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.btn-action {
+  padding: 12px 6px;
+  border-radius: 12px;
+  border: 1px solid;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  transition: transform .12s ease, filter .12s ease;
+  background: transparent;
+}
+
+.btn-action:active { transform:scale(.95); filter:brightness(.8); }
+
+.btn-icon { font-size: 18px; line-height:1; }
+
+.btn-dont {
+  border-color: #3d1515;
+  color: var(--red);
+}
+.btn-dont:hover { background: var(--red-bg); }
+
+.btn-hard {
+  border-color: #3d2e00;
+  color: var(--amber);
+}
+.btn-hard:hover { background: var(--amber-bg); }
+
+.btn-know {
+  border-color: #2a3800;
+  color: var(--accent);
+}
+.btn-know:hover { background: var(--accent-bg); }
+
+/* ── COMBO BADGE ── */
+.combo-badge {
+  position:absolute;
+  top: -16px; right: 16px;
+  background: var(--amber);
+  color: #000;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  transform: scale(0);
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1);
+  z-index:5;
+  pointer-events:none;
+}
+
+.combo-badge.show { transform: scale(1); }
+
+/* ── FLASH OVERLAY ── */
+.flash-overlay {
+  position:absolute; inset:0;
+  border-radius: 20px;
+  pointer-events:none;
+  opacity:0;
+  transition: opacity .05s;
+}
+
+.flash-overlay.flash-green { background: rgba(200,245,63,.12); border: 1px solid rgba(200,245,63,.4); border-radius: 20px; opacity:1; animation: flashfade .5s forwards; }
+.flash-overlay.flash-red   { background: rgba(248,113,113,.12); border: 1px solid rgba(248,113,113,.4); border-radius: 20px; opacity:1; animation: flashfade .5s forwards; }
+
+@keyframes flashfade {
+  0% { opacity:1; }
+  100% { opacity:0; }
+}
+
+.swipe-hint {
+  display:flex;
+  gap:24px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: .08em;
+  justify-content:center;
+  opacity: 0; /* Ascuns inițial */
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.swipe-hint.show { opacity: 0.6; }
+
+.swipe-hint span { display:flex; align-items:center; gap:4px; }
+
+/* ── BOTTOM BAR ── */
+footer {
+  padding: 12px 20px 18px;
+  border-top: 1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.progress-section {
+  flex:1;
+  margin-right: 20px;
+}
+
+.progress-label {
+  font-size: 10px;
+  letter-spacing: .12em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  display:flex;
+  justify-content:space-between;
+}
+
+.progress-track {
+  height: 4px;
+  background: var(--muted2);
+  border-radius: 4px;
+  overflow:hidden;
+}
+
+.progress-fill {
+  height:100%;
+  background: var(--accent);
+  border-radius: 4px;
+  transition: width .5s cubic-bezier(.16,1,.3,1);
+}
+
+.next-due {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* ── CARD ENTER ANIMATION ── */
+.card-scene { animation: cardEnter .4s cubic-bezier(.16,1,.3,1); }
+
+@keyframes cardEnter {
+  from { opacity:0; transform: translateY(24px) scale(.96); }
+  to   { opacity:1; transform: translateY(0) scale(1); }
+}
+
+/* ── CARD EXIT ── */
+.card-scene.exit-right { animation: exitRight .3s ease forwards; }
+.card-scene.exit-left  { animation: exitLeft  .3s ease forwards; }
+
+@keyframes exitRight {
+  to { opacity:0; transform: translateX(80px) rotate(8deg); }
+}
+@keyframes exitLeft {
+  to { opacity:0; transform: translateX(-80px) rotate(-8deg); }
+}
+
+/* ── XP POPUP ── */
+.xp-popup {
+  position:fixed;
+  bottom:100px;
+  right:24px;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  opacity:0;
+  pointer-events:none;
+  z-index:50;
+}
+
+.xp-popup.pop { animation: xpPop .9s ease forwards; }
+
+@keyframes xpPop {
+  0%   { opacity:0; transform: translateY(0); }
+  20%  { opacity:1; }
+  100% { opacity:0; transform: translateY(-50px); }
+}
+
+/* ── LEVEL UP SCREEN ── */
+.levelup-screen {
+  position:fixed; inset:0;
+  background: rgba(0,0,0,.92);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  z-index: 100;
+  opacity:0;
+  pointer-events:none;
+  transition: opacity .3s;
+}
+
+.levelup-screen.show {
+  opacity:1;
+  pointer-events:all;
+}
+
+.levelup-num {
+  font-size: 7rem;
+  font-weight: 800;
+  color: var(--accent);
+  line-height:1;
+  letter-spacing: -.04em;
+  animation: levelPulse 1s ease infinite alternate;
+}
+
+@keyframes levelPulse {
+  from { text-shadow: 0 0 40px rgba(200,245,63,.4); }
+  to   { text-shadow: 0 0 80px rgba(200,245,63,.8); }
+}
+
+.levelup-label {
+  font-size: 1rem;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+.levelup-close {
+  margin-top:40px;
+  padding: 12px 32px;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 700;
+  cursor:pointer;
+  letter-spacing: .08em;
+}
+
+/* ── PARTICLES ── */
+.particle {
+  position:fixed;
+  pointer-events:none;
+  z-index:200;
+  border-radius:50%;
+  animation: particleFly 1s ease forwards;
+}
+
+@keyframes particleFly {
+  to { opacity:0; transform: translate(var(--tx), var(--ty)) scale(0); }
+}
+
+</style>
 </head>
 <body>
 
-  <div class="bg-blobs">
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-  </div>
-
-  <div class="progress-line-container">
-    <div class="progress-line" id="progress-line"></div>
-  </div>
-
-  <div class="top-bar">
-    <a href="index.html" class="close-btn">✕</a>
-    <button class="filter-btn" id="filter-btn" onclick="toggleFilter()">Arată doar ❤️</button>
-    <div class="progress-text" id="counter">0 / 0</div>
-  </div>
-
-  <div class="feed-container" id="feed">
+<div id="app">
+<header>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <a href="index.html" class="back-btn">←</a>
+      <div class="logo">Finanțe Publice</div>
     </div>
+    
+    <div class="hud">
+      <div class="hud-item" id="hud-streak">
+        <div class="hud-val" id="streak-val">0</div>
+        <div class="hud-label">Streak</div>
+      </div>
+      <div class="hud-item" id="hud-xp">
+        <div class="hud-val" id="xp-val">0</div>
+        <div class="hud-label">XP</div>
+      </div>
+      <div class="hud-item" id="hud-level">
+        <div class="hud-val" id="level-val">1</div>
+        <div class="hud-label">Nivel</div>
+      </div>
+    </div>
+  </header>
+  <div class="xp-track"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
 
-  <script>
+  <div class="feed-wrap" id="feed-wrap">
+    <!-- card injected here -->
+  </div>
+
+  <footer>
+    <div class="progress-section">
+      <div class="progress-label">
+        <span>Azi</span>
+        <span id="today-label">0 / 10</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="today-fill" style="width:0%"></div>
+      </div>
+    </div>
+    <div class="next-due" id="next-due"></div>
+  </footer>
+</div>
+
+<div class="xp-popup" id="xp-popup"></div>
+
+
+<script>
 const facts = [
       { category: "FP - US 1", q: "Care sunt cele două subsisteme ale resurselor financiare publice?", a: "Subsistemul resurselor publice bugetare și Subsistemul resurselor întreprinderilor cu capital de stat și mixte"},
       { category: "FP - US 1", q: "Pe câte subsisteme se structurează sistemul resurselor publice bugetare?", a: "Resursele financiare ale administrației de stat centrale, ale administrațiilor locale și ale asigurărilor sociale de stat"},
@@ -254,178 +613,236 @@ const facts = [
       { category: "FP - US 2", q: "Care sunt rolurile impozitelor?", a:"Asigurarea resurselor financiare necesare pentru acoperirea cheltuielilor publice bugetare, redistribuirea veniturilor (respectiv a PIB) între sfere sau domenii de activitate, ramuri și subramuri economice, redistribuirea pe baze mai echitabile a veniturilor între membrii societății, influențarea vieții economice și sociale, în acord cu obiectivele politicii generale"},
       { category: "FP - US 2", q: "", a:""},
       { category: "FP - US 2", q: "Ce este curba lui Laffer?", a:"Curba lui Laffer ne arată că o creștere a impozitelor nu înseamnă și o creștere a veniturilor, și trebuie găsit un punct de echilibru, lucru dificl totuși în practică. Creșterea impozitelor duce la creșterea veniturilor doar în zona admisibilă, în zona prohibitivă, veniturile scad, crește evaziunea fiscală, descurajează munca, migrarea capitalului."},
-    ];
+].filter(f => f.q.trim() !== '');
 
-    // Funcția MAGICĂ de amestecare
-    function shuffleArray(array) {
-      let arr = [...array];
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-      return arr;
-    }
+function getId(f) {
+  let s = f.q + f.category, h = 0;
+  for(let i=0;i<s.length;i++) h=((h<<5)-h)+s.charCodeAt(i)|0;
+  return h;
+}
 
-    // --- LOGICA DE MEMORIE (LocalStorage) ---
-    function getSavedQuestions() {
-      const saved = localStorage.getItem('eduScroll_Favorites');
-      return saved ? JSON.parse(saved) : [];
-    }
+let db = JSON.parse(localStorage.getItem('ec_ultra2')||'{}');
+let state = db._meta || { xp:0, streak:0, lastDay:null, todayDone:0, dailyGoal:10 };
+let combo = 0;
+let prevLevel = Math.floor(state.xp/100)+1;
 
-    function saveQuestionsToMemory(arr) {
-      localStorage.setItem('eduScroll_Favorites', JSON.stringify(arr));
-    }
+function save() { db._meta = state; localStorage.setItem('ec_ultra2', JSON.stringify(db)); }
 
-    // Variabile globale
-    let isFilterMode = false;
-    let savedQuestionsList = getSavedQuestions();
-    const feedContainer = document.getElementById('feed');
-    let observer;
+function getCard(id) {
+  if(!db[id]) db[id]={interval:1,ease:2.5,due:Date.now(),reps:0};
+  return db[id];
+}
 
-    // AICI E REPARATIA CRITICA:
-    // Amestecăm cartonașele O SINGURĂ DATĂ, la deschiderea paginii!
-    let shuffledFacts = shuffleArray(facts);
+function nextFact() {
+  return [...facts].sort((a,b)=>getCard(getId(a)).due - getCard(getId(b)).due)[0];
+}
 
-    function renderCards() {
-      feedContainer.innerHTML = '';
-      
-      // Folosim variabila amestecată (shuffledFacts), NU 'facts'
-      let cardsToShow = shuffledFacts; 
-      
-      // Dacă filtrul e activ, păstrăm doar favoritele, dar ele vor rămâne în ordinea amestecată curentă
-      if (isFilterMode) {
-        cardsToShow = shuffledFacts.filter(fact => savedQuestionsList.includes(fact.q));
-      }
+function updateSRS(id, quality) {
+  let c = getCard(id);
+  let xpGain;
 
-      if (cardsToShow.length === 0) {
-        feedContainer.innerHTML = `
-          <div class="snap-card is-visible">
-            <div class="glass-panel empty-state">
-              <h2>Niciun cartonaș salvat</h2>
-              <p>Oprește filtrul, dă scroll și apasă de două ori pe ecran pentru a salva informațiile pe care vrei să le repeți.</p>
-            </div>
+  if(quality < 3) {
+    c.interval = 0.01;
+    c.reps = 0;
+    combo = 0;
+    xpGain = 2;
+  } else {
+    combo++;
+    c.reps++;
+    if(c.reps===1) c.interval=1;
+    else if(c.reps===2) c.interval=3;
+    else c.interval*=c.ease;
+    xpGain = quality===5 ? 15 : 8;
+    if(combo >= 3) xpGain = Math.round(xpGain * (1 + (combo-2)*0.2));
+  }
+
+  c.ease = Math.max(1.3, c.ease + (0.1-(5-quality)*0.08));
+  c.due = Date.now() + c.interval*86400000;
+  state.xp += xpGain;
+  state.todayDone++;
+
+  let today = new Date().toDateString();
+  if(state.lastDay !== today) {
+    let yesterday = new Date(Date.now()-86400000).toDateString();
+    state.streak = (state.lastDay===yesterday) ? state.streak+1 : 1;
+    state.lastDay = today;
+  }
+
+  save();
+  return xpGain;
+}
+
+function vibrate(pattern) {
+  try { navigator.vibrate && navigator.vibrate(pattern); } catch(e){}
+}
+
+function spawnParticles(el, color) {
+  let rect = el.getBoundingClientRect();
+  let cx = rect.left + rect.width/2;
+  let cy = rect.top + rect.height/2;
+  for(let i=0;i<12;i++) {
+    let p = document.createElement('div');
+    p.className = 'particle';
+    let angle = (i/12)*Math.PI*2;
+    let dist = 40 + Math.random()*60;
+    p.style.cssText = `
+      width:${4+Math.random()*4}px;
+      height:${4+Math.random()*4}px;
+      background:${color};
+      left:${cx}px; top:${cy}px;
+      --tx:${Math.cos(angle)*dist}px;
+      --ty:${Math.sin(angle)*dist}px;
+    `;
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(), 1000);
+  }
+}
+
+function showXpPopup(xpGain, comboCount) {
+  let el = document.getElementById('xp-popup');
+  el.textContent = comboCount>=3 ? `+${xpGain} XP  ×${comboCount} COMBO` : `+${xpGain} XP`;
+  el.className = '';
+  void el.offsetWidth;
+  el.className = 'xp-popup pop';
+}
+
+function updateHUD() {
+  let level = Math.floor(state.xp/100)+1;
+  let xpInLevel = state.xp % 100;
+  document.getElementById('xp-val').textContent = state.xp;
+  document.getElementById('level-val').textContent = level;
+  document.getElementById('streak-val').textContent = state.streak;
+  document.getElementById('xp-fill').style.width = xpInLevel + '%';
+
+  let done = state.todayDone, goal = state.dailyGoal;
+  document.getElementById('today-label').textContent = `${done} / ${goal}`;
+  document.getElementById('today-fill').style.width = Math.min(100, (done/goal)*100) + '%';
+
+  let nxt = nextFact();
+  let nxtCard = getCard(getId(nxt));
+  let due = nxtCard.due;
+  let diff = due - Date.now();
+  let dueStr = diff < 60000 ? 'ora curentă'
+             : diff < 3600000 ? `${Math.ceil(diff/60000)}m`
+             : diff < 86400000 ? `${Math.ceil(diff/3600000)}h`
+             : `${Math.ceil(diff/86400000)}z`;
+  document.getElementById('next-due').textContent = `Următor: ${dueStr}`;
+}
+
+let currentFact = null;
+let isFlipped = false;
+
+function renderCard() {
+  currentFact = nextFact();
+  isFlipped = false;
+
+  let wrap = document.getElementById('feed-wrap');
+  wrap.innerHTML = `
+    <div class="card-scene" id="card-scene">
+      <div class="combo-badge" id="combo-badge"></div>
+      <div class="card-flipper" id="card-flipper">
+
+        <div class="card-face card-front">
+          <div class="card-category">${currentFact.category}</div>
+          <div class="card-question">${currentFact.q}</div>
+          <div class="tap-hint">
+            <div class="tap-hint-icon">↵</div>
+            <span>tap pentru răspuns</span>
           </div>
-        `;
-        document.getElementById('counter').innerText = `0 / 0`;
-        document.getElementById('progress-line').style.width = `0%`;
-        return;
-      }
+        </div>
 
-      cardsToShow.forEach((fact, index) => {
-        const card = document.createElement('div');
-        card.className = 'snap-card';
-        
-        const isLiked = savedQuestionsList.includes(fact.q);
-        const heartClass = isLiked ? 'liked' : '';
-        const heartIcon = isLiked ? '❤️' : '🤍';
-
-        card.innerHTML = `
-          <div class="heart-popup">❤️</div>
-          <div class="glass-panel">
-            <div class="category-badge">${fact.category}</div>
-            <div class="question">${fact.q}</div>
-            <div class="answer">${fact.a}</div>
+        <div class="card-face card-back">
+          <div class="answer-label">Răspuns</div>
+          <div class="answer-text">${currentFact.a}</div>
+          <div class="action-row">
+            <button class="btn-action btn-dont" id="btn-dont">
+              <span class="btn-icon">✕</span>
+              <span>Nu știu</span>
+            </button>
+            <button class="btn-action btn-hard" id="btn-hard">
+              <span class="btn-icon">~</span>
+              <span>Greu</span>
+            </button>
+            <button class="btn-action btn-know" id="btn-know">
+              <span class="btn-icon">✓</span>
+              <span>Știu</span>
+            </button>
           </div>
-          
-          <div class="action-bar">
-            <div>
-              <div class="action-btn like-btn ${heartClass}">${heartIcon}</div>
-              <div class="action-label">Reține</div>
-            </div>
-          </div>
-        `;
-        
-        feedContainer.appendChild(card);
+        </div>
 
-        const likeBtn = card.querySelector('.like-btn');
-        
-        const handleSave = (e) => {
-          if(e) e.preventDefault();
-          toggleFavorite(fact.q, card, likeBtn);
-        };
+      </div>
+      <div class="flash-overlay" id="flash-overlay"></div>
+    </div>
+    <div class="swipe-hint">
+      <span>← Nu știu</span>
+      <span>Știu →</span>
+    </div>
+  `;
 
-        likeBtn.addEventListener('click', handleSave);
-        
-        let lastTap = 0;
-        card.addEventListener('touchend', function(e) {
-          const currentTime = new Date().getTime();
-          const tapLength = currentTime - lastTap;
-          if (tapLength < 400 && tapLength > 0) handleSave(e);
-          lastTap = currentTime;
-        });
-        
-        card.addEventListener('dblclick', handleSave);
-      });
+  if(combo >= 3) {
+    let badge = document.getElementById('combo-badge');
+    badge.textContent = `${combo}× COMBO`;
+    badge.classList.add('show');
+  }
 
-      setupObserver(cardsToShow.length);
-    }
+  let scene = document.getElementById('card-scene');
+  let flipper = document.getElementById('card-flipper');
 
-    function toggleFavorite(questionText, cardElement, btnElement) {
-      const heartPopup = cardElement.querySelector('.heart-popup');
-      
-      if (savedQuestionsList.includes(questionText)) {
-        savedQuestionsList = savedQuestionsList.filter(q => q !== questionText);
-        btnElement.classList.remove('liked');
-        btnElement.innerHTML = '🤍';
-      } else {
-        savedQuestionsList.push(questionText);
-        btnElement.classList.add('liked');
-        btnElement.innerHTML = '❤️';
-        
-        heartPopup.classList.remove('animate');
-        void heartPopup.offsetWidth; 
-        heartPopup.classList.add('animate');
-        if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
-      }
-      
-      saveQuestionsToMemory(savedQuestionsList);
+  scene.addEventListener('click', () => {
+    if(!isFlipped) { flip(); }
+  });
 
-      if (isFilterMode && !savedQuestionsList.includes(questionText)) {
-        renderCards();
-      }
-    }
+  document.getElementById('btn-dont').addEventListener('click', e => { e.stopPropagation(); answer(1); });
+  document.getElementById('btn-hard').addEventListener('click', e => { e.stopPropagation(); answer(3); });
+  document.getElementById('btn-know').addEventListener('click', e => { e.stopPropagation(); answer(5); });
 
-    window.toggleFilter = function() {
-      const filterBtn = document.getElementById('filter-btn');
-      isFilterMode = !isFilterMode; 
-      
-      if (isFilterMode) {
-        filterBtn.classList.add('active');
-        filterBtn.innerText = "Vezi Toate";
-      } else {
-        filterBtn.classList.remove('active');
-        filterBtn.innerText = "Arată doar ❤️";
-      }
-      
-      renderCards(); 
-    };
+  let startX=0;
+  scene.addEventListener('touchstart', e=>{ startX=e.touches[0].clientX; }, {passive:true});
+  scene.addEventListener('touchend', e=>{
+    if(!isFlipped) return;
+    let diff = e.changedTouches[0].clientX - startX;
+    if(diff > 70) answer(5);
+    else if(diff < -70) answer(1);
+  }, {passive:true});
 
-    function setupObserver(totalCards) {
-      if(observer) observer.disconnect(); 
-      
-      observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-            
-            const allCards = Array.from(document.querySelectorAll('.snap-card'));
-            const index = allCards.indexOf(entry.target) + 1;
-            
-            document.getElementById('counter').innerText = `${index} / ${totalCards}`;
-            const progressPercent = (index / totalCards) * 100;
-            document.getElementById('progress-line').style.width = `${progressPercent}%`;
-          } else {
-            entry.target.classList.remove('is-visible');
-          }
-        });
-      }, { threshold: 0.5 }); 
+  updateHUD();
+}
 
-      document.querySelectorAll('.snap-card').forEach(card => observer.observe(card));
-    }
+function flip() {
+  isFlipped = true;
+  document.getElementById('card-flipper').classList.add('flipped');
+  document.querySelector('.swipe-hint').classList.add('show'); // MAGIA AICI
+  vibrate(20);
+}
 
-    // PORNIRE APLICAȚIE
-    renderCards();
+function answer(quality) {
+  let id = getId(currentFact);
+  let xpGain = updateSRS(id, quality);
 
-  </script>
+  let flashEl = document.getElementById('flash-overlay');
+  if(quality === 5) {
+    flashEl.className = 'flash-overlay flash-green';
+    spawnParticles(document.getElementById('card-scene'), 'var(--accent)');
+    vibrate([30,20,50]);
+  } else if(quality === 1) {
+    flashEl.className = 'flash-overlay flash-red';
+    vibrate([80]);
+  } else {
+    vibrate(30);
+  }
+
+  showXpPopup(xpGain, combo);
+
+  let scene = document.getElementById('card-scene');
+  scene.classList.add(quality===5 ? 'exit-right' : 'exit-left');
+
+  setTimeout(() => {
+    updateHUD();
+    renderCard(); 
+  }, 280);
+}
+
+renderCard();
+</script>
 </body>
 </html>

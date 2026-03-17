@@ -1,177 +1,349 @@
 <!DOCTYPE html>
 <html lang="ro">
 <head>
-  <meta charset="UTF-8">
-  <title>EduTok</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <link rel="manifest" href="manifest.json">
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-  
-  <style>
-    :root {
-      --bg-dark: #020617; 
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --glass: rgba(255, 255, 255, 0.03);
-      --glass-border: rgba(255, 255, 255, 0.08);
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>EduHub — ULTRA</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08090a;
+  --surface: #111316;
+  --surface2: #181b1f;
+  --border: #2a2d33;
+  --accent: #c8f53f;
+  --accent-dim: #8aaa1f;
+  --accent-bg: #1a2100;
+  --blue: #38bdf8;
+  --blue-bg: #001e30;
+  --red: #f87171;
+  --amber: #fbbf24;
+  --text: #f0f2f5;
+  --muted: #5a6070;
+  --muted2: #363b45;
+  --font: 'Syne', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
 
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
-    html, body {
-      width: 100%; min-height: 100vh;
-      background-color: var(--bg-dark);
-      color: var(--text-main);
-      font-family: 'Outfit', sans-serif;
-      display: flex; flex-direction: column; align-items: center;
-      overflow-x: hidden;
-    }
+html, body {
+  min-height: 100%;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+}
 
-    /* Bule de lumină ambientale */
-    .bg-blobs {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      z-index: 0; pointer-events: none; overflow: hidden;
-    }
-    .blob {
-      position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.2;
-      animation: float 15s infinite alternate ease-in-out;
-    }
-    .blob-1 { width: 400px; height: 400px; background: #10b981; top: -10%; left: -10%; }
-    .blob-2 { width: 350px; height: 350px; background: #3b82f6; bottom: -10%; right: -10%; animation-delay: -7s;}
+/* ── SCANLINE OVERLAY ── */
+body::before {
+  content:'';
+  position:fixed; inset:0; pointer-events:none; z-index:999;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.08) 2px, rgba(0,0,0,.08) 4px);
+}
 
-    .container {
-      position: relative; z-index: 1;
-      width: 100%; max-width: 500px;
-      padding: 40px 25px;
-      display: flex; flex-direction: column; gap: 30px;
-    }
+/* ── HEADER HUD ── */
+header {
+  position: sticky; top: 0;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  background: rgba(8, 9, 10, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 100;
+}
 
-    /* HEADER */
-    header {
-      text-align: left; margin-bottom: 10px;
-    }
-    header h1 {
-      font-size: 2.5rem; font-weight: 800; letter-spacing: -1px;
-      background: linear-gradient(135deg, #fff 60%, #94a3b8);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    header p {
-      color: var(--text-muted); font-size: 1.1rem; margin-top: 5px;
-    }
+.logo-container { display: flex; flex-direction: column; gap: 2px; }
+.logo { font-size: 14px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; color: var(--text); }
+.logo span { color: var(--accent); }
+.version { font-family: var(--mono); font-size: 9px; color: var(--muted); letter-spacing: .1em; }
 
-    /* GRID DISCIPLINE */
-    .subjects-list {
-      display: flex; flex-direction: column; gap: 18px;
-    }
+.hud { display: flex; gap: 20px; align-items: center; }
+.hud-item { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.hud-val { font-family: var(--mono); font-size: 18px; font-weight: 600; line-height: 1; }
+.hud-label { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 
-    .subject-card {
-      text-decoration: none; color: inherit;
-      background: var(--glass);
-      backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-      border: 1px solid var(--glass-border);
-      border-radius: 24px; padding: 20px;
-      display: flex; align-items: center; gap: 20px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative; overflow: hidden;
-    }
+#hud-xp .hud-val { color: var(--accent); text-shadow: 0 0 10px rgba(200,245,63,0.3); }
+#hud-level .hud-val { color: var(--blue); }
 
-    .subject-card:active {
-      transform: scale(0.96); background: rgba(255, 255, 255, 0.07);
-    }
+/* ── MAIN CONTAINER ── */
+main {
+  padding: 30px 20px 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
 
-    /* Icon Circle */
-    .icon-box {
-      width: 60px; height: 60px; border-radius: 18px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.8rem; flex-shrink: 0;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
+.section-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: -10px;
+}
+.section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-    .info-box h3 {
-      font-size: 1.25rem; font-weight: 700; margin-bottom: 4px;
-    }
-    .info-box p {
-      font-size: 0.9rem; color: var(--text-muted); line-height: 1.4;
-    }
+/* ── MODULE CARDS ── */
+.module-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s ease;
+}
 
-    /* Săgeată discretă în dreapta */
-    .subject-card::after {
-      content: '→'; position: absolute; right: 25px; 
-      font-size: 1.2rem; color: rgba(255,255,255,0.2);
-    }
+.module-card:hover { border-color: var(--muted2); }
 
-    /* Culori specifice pentru fiecare card */
-    .card-finante .icon-box { color: #fbbf24; border-color: rgba(251, 191, 36, 0.3); }
-    .card-conta .icon-box { color: #818cf8; border-color: rgba(129, 140, 248, 0.3); }
-    .card-pda .icon-box { color: #10b981; border-color: rgba(16, 185, 129, 0.3); }
-    .card-mru .icon-box { color: #f472b6; border-color: rgba(244, 114, 182, 0.3); }
+.module-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
 
-    /* FOOTER */
-    footer {
-      margin-top: auto; padding: 30px;
-      text-align: center; color: rgba(255,255,255,0.2);
-      font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 2px;
-    }
+.module-info { display: flex; flex-direction: column; gap: 6px; }
+.module-tag { 
+  font-family: var(--mono); font-size: 10px; color: var(--accent); 
+  background: var(--accent-bg); padding: 4px 8px; border-radius: 6px; width: fit-content;
+  text-transform: uppercase; letter-spacing: .1em; font-weight: 800;
+}
+.module-title { font-size: 1.5rem; font-weight: 800; line-height: 1.1; letter-spacing: -.02em; }
+.module-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.4; }
 
-    @keyframes float {
-      0% { transform: translate(0, 0) scale(1); }
-      100% { transform: translate(30px, 40px) scale(1.1); }
-    }
-  </style>
+/* ── PROGRESS BAR ── */
+.progress-container { display: flex; flex-direction: column; gap: 8px; }
+.progress-stats { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+.progress-track { height: 4px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--blue); border-radius: 4px; }
+
+/* ── ACTION BUTTONS ── */
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.action-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.action-btn:active { transform: scale(0.95); }
+.action-icon { font-size: 20px; }
+.action-label { font-family: var(--font); font-size: 11px; font-weight: 700; color: var(--text); letter-spacing: .05em; }
+
+/* Culori specifice pe butoane la hover */
+.btn-cards:hover { background: var(--accent-bg); border-color: rgba(200,245,63,0.3); }
+.btn-cards:hover .action-label { color: var(--accent); }
+
+.btn-audio:hover { background: var(--blue-bg); border-color: rgba(56,189,248,0.3); }
+.btn-audio:hover .action-label { color: var(--blue); }
+
+.btn-quiz:hover { background: rgba(251, 191, 36, 0.1); border-color: rgba(251, 191, 36, 0.3); }
+.btn-quiz:hover .action-label { color: var(--amber); }
+
+</style>
 </head>
 <body>
 
-  <div class="bg-blobs">
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-  </div>
+  <header>
+    <div class="logo-container">
+      <div class="logo">Edu<span>Hub</span></div>
+      <div class="version">SYS.V.3.0.ULTRA</div>
+    </div>
+    <div class="hud">
+      <div class="hud-item" id="hud-xp">
+        <div class="hud-val" id="global-xp">0</div>
+        <div class="hud-label">Global XP</div>
+      </div>
+      <div class="hud-item" id="hud-level">
+        <div class="hud-val" id="global-level">1</div>
+        <div class="hud-label">Nivel</div>
+      </div>
+    </div>
+  </header>
 
-  <div class="container">
-    <header>
-      <h1>EduTok</h1>
-    </header>
+  <main>
+    <div class="section-title">Antrenament Activ</div>
 
-    <div class="subjects-list">
+    <div class="module-card">
+      <div class="module-header">
+        <div class="module-info">
+          <div class="module-tag">CP</div>
+          <div class="module-title">Contabilitate<br>Publică</div>
+          <div class="module-desc"></div>
+        </div>
+      </div>
       
-      <a href="menu_finante.html" class="subject-card card-finante">
-        <div class="icon-box">💰</div>
-        <div class="info-box">
-          <h3>Finanțe Publice</h3>
-          <p>Buget, fiscalitate și mecanisme financiare ale statului.</p>
-        </div>
-      </a>
+      <div class="progress-container">
+        <div class="progress-stats"><span>Mastery</span><span>0%</span></div>
+        <div class="progress-track"><div class="progress-fill" style="width: 0%; background: var(--accent);"></div></div>
+      </div>
 
-      <a href="menu_conta.html" class="subject-card card-conta">
-        <div class="icon-box">📊</div>
-        <div class="info-box">
-          <h3>Contabilitate Publică</h3>
-          <p>Sistemul contabil al instituțiilor și raportarea financiară.</p>
-        </div>
-      </a>
-
-      <a href="menu_pda.html" class="subject-card card-pda">
-        <div class="icon-box">⚖️</div>
-        <div class="info-box">
-          <h3>Procedură PDA</h3>
-          <p>Actul administrativ, contenciosul și regulile de procedură.</p>
-        </div>
-      </a>
-
-      <a href="management.html" class="subject-card card-mru">
-        <div class="icon-box">🤝</div>
-        <div class="info-box">
-          <h3>Management RU</h3>
-          <p>Strategii de personal și legislația funcției publice.</p>
-        </div>
-      </a>
-
+      <div class="action-grid">
+        <a href="conta.html" class="action-btn btn-cards">
+          <div class="action-icon">🃏</div>
+          <div class="action-label">Cards</div>
+        </a>
+        <a href="#" class="action-btn btn-audio">
+          <div class="action-icon">🎧</div>
+          <div class="action-label">Audio</div>
+        </a>
+        <a href="#" class="action-btn btn-quiz">
+          <div class="action-icon">📝</div>
+          <div class="action-label">Grile</div>
+        </a>
+      </div>
     </div>
 
-    <footer>
-      Anul 2 Semestrul 2
-    </footer>
-  </div>
+    <div class="module-card">
+      <div class="module-header">
+        <div class="module-info">
+          <div class="module-tag" style="color: var(--blue); background: var(--blue-bg);">PDA</div>
+          <div class="module-title">Procedura<br>Drept Admin.</div>
+          <div class="module-desc"></div>
+        </div>
+      </div>
+      
+      <div class="progress-container">
+        <div class="progress-stats"><span>Mastery</span><span>0%</span></div>
+        <div class="progress-track"><div class="progress-fill" style="width: 0%;"></div></div>
+      </div>
 
+      <div class="action-grid">
+        <a href="" class="action-btn btn-cards">
+          <div class="action-icon">🃏</div>
+          <div class="action-label">Cards</div>
+        </a>
+        <a href="#" class="action-btn btn-audio">
+          <div class="action-icon">🎧</div>
+          <div class="action-label">Audio</div>
+        </a>
+        <a href="pdagrile.html" class="action-btn btn-quiz">
+          <div class="action-icon">📝</div>
+          <div class="action-label">Grile</div>
+        </a>
+      </div>
+    </div>
+
+        <div class="module-card">
+      <div class="module-header">
+        <div class="module-info">
+          <div class="module-tag">FP 2</div>
+          <div class="module-title">Finanțe<br>Publice</div>
+          <div class="module-desc"></div>
+        </div>
+      </div>
+      
+      <div class="progress-container">
+        <div class="progress-stats"><span>Mastery</span><span>0%</span></div>
+        <div class="progress-track"><div class="progress-fill" style="width: 0%; background: var(--accent);"></div></div>
+      </div>
+
+      <div class="action-grid">
+        <a href="finante.html" class="action-btn btn-cards">
+          <div class="action-icon">🃏</div>
+          <div class="action-label">Cards</div>
+        </a>
+        <a href="podcast_fp.html" class="action-btn btn-audio">
+          <div class="action-icon">🎧</div>
+          <div class="action-label">Audio</div>
+        </a>
+        <a href="#" class="action-btn btn-quiz">
+          <div class="action-icon">📝</div>
+          <div class="action-label">Grile</div>
+        </a>
+      </div>
+    </div>
+
+        <div class="module-card">
+      <div class="module-header">
+        <div class="module-info">
+          <div class="module-tag">MRU</div>
+          <div class="module-title">Managementul<br>Resurselor Umane</div>
+          <div class="module-desc"></div>
+        </div>
+      </div>
+      
+      <div class="progress-container">
+        <div class="progress-stats"><span>Mastery</span><span>0%</span></div>
+        <div class="progress-track"><div class="progress-fill" style="width: 0%; background: var(--accent);"></div></div>
+      </div>
+
+      <div class="action-grid">
+        <a href="conta.html" class="action-btn btn-cards">
+          <div class="action-icon">🃏</div>
+          <div class="action-label">Cards</div>
+        </a>
+        <a href="#" class="action-btn btn-audio">
+          <div class="action-icon">🎧</div>
+          <div class="action-label">Audio</div>
+        </a>
+        <a href="#" class="action-btn btn-quiz">
+          <div class="action-icon">📝</div>
+          <div class="action-label">Grile</div>
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // Tragem Global XP din memoria telefonului (din aplicația de Flashcards)
+    function loadGlobalStats() {
+      // 'ec_ultra2' este numele bazei de date din fișierul de Flashcards
+      let db = JSON.parse(localStorage.getItem('ec_ultra2') || '{}');
+      let state = db._meta || { xp: 0 };
+      
+      let xp = state.xp;
+      let level = Math.floor(xp / 100) + 1;
+
+      // Animație simplă de numărare pentru XP
+      let xpEl = document.getElementById('global-xp');
+      let currentXp = 0;
+      let step = Math.ceil(xp / 30) || 1;
+      
+      let timer = setInterval(() => {
+        currentXp += step;
+        if(currentXp >= xp) {
+          currentXp = xp;
+          clearInterval(timer);
+        }
+        xpEl.textContent = currentXp;
+      }, 20);
+
+      document.getElementById('global-level').textContent = level;
+    }
+
+    // Efect de click finuț pe butoane
+    document.querySelectorAll('.action-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (navigator.vibrate) navigator.vibrate(15);
+      });
+    });
+
+    window.onload = loadGlobalStats;
+  </script>
 </body>
 </html>

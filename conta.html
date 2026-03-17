@@ -44,6 +44,22 @@ body::before {
 }
 
 /* ── LAYOUT ── */
+.back-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  text-decoration: none; font-family: var(--mono); font-weight: 800;
+  transition: 0.2s;
+}
+.back-btn:active { 
+  transform: scale(0.9); 
+  border-color: var(--accent); 
+  color: var(--accent); 
+}
+
 #app {
   height:100dvh;
   display:grid;
@@ -519,8 +535,12 @@ footer {
 <body>
 
 <div id="app">
-  <header>
-    <div class="logo">EduCards</div>
+<header>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <a href="index.html" class="back-btn">←</a>
+      <div class="logo">Contabilitate Publică</div>
+    </div>
+    
     <div class="hud">
       <div class="hud-item" id="hud-streak">
         <div class="hud-val" id="streak-val">0</div>
