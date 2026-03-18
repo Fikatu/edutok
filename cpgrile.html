@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>QuizHub — ULTRA</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08090a;
+  --surface: #111316;
+  --surface2: #181b1f;
+  --border: #2a2d33;
+  --accent: #c8f53f; /* Verde Neon */
+  --accent-bg: #1a2100;
+  --blue: #38bdf8;
+  --red: #f87171;
+  --red-bg: #2a0a0a;
+  --amber: #fbbf24;
+  --text: #f0f2f5;
+  --muted: #5a6070;
+  --muted2: #363b45;
+  --font: 'Syne', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html, body {
+  min-height: 100%; font-family: var(--font);
+  background: var(--bg); color: var(--text); overflow-x: hidden;
+}
+
+body::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:999;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.08) 2px, rgba(0,0,0,.08) 4px);
+}
+
+/* ── HEADER HUD ── */
+header {
+  position: sticky; top: 0; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border); background: rgba(8, 9, 10, 0.85); backdrop-filter: blur(12px); z-index: 100;
+}
+.back-btn {
+  background: var(--surface2); border: 1px solid var(--border); color: var(--text); width: 36px; height: 36px;
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  text-decoration: none; font-family: var(--mono); font-weight: 800; transition: 0.2s;
+}
+.back-btn:active { transform: scale(0.9); border-color: var(--amber); color: var(--amber); }
+
+.header-title { font-family: var(--mono); font-size: 11px; font-weight: 800; letter-spacing: .2em; color: var(--amber); }
+
+.hud-xp { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.hud-val { font-family: var(--mono); font-size: 16px; font-weight: 600; line-height: 1; color: var(--accent); }
+.hud-label { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+
+/* ── QUIZ CONTAINER ── */
+main { padding: 25px 20px 100px; display: flex; flex-direction: column; gap: 20px; position: relative; }
+
+.quiz-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+  padding: 24px; display: flex; flex-direction: column; gap: 24px; position: relative;
+}
+
+.quiz-header { display: flex; justify-content: space-between; align-items: center; }
+.question-counter { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 2px; }
+.combo-badge {
+  font-family: var(--mono); font-size: 10px; font-weight: 800; color: var(--bg); background: var(--amber);
+  padding: 4px 10px; border-radius: 12px; opacity: 0; transform: scale(0.8); transition: 0.3s;
+}
+.combo-badge.show { opacity: 1; transform: scale(1); box-shadow: 0 0 15px rgba(251, 191, 36, 0.4); }
+
+.question-text { font-size: 1.3rem; font-weight: 700; line-height: 1.4; color: var(--text); }
+
+/* ── OPTIONS GRID ── */
+.options-container { display: flex; flex-direction: column; gap: 12px; }
+
+.option-btn {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 14px;
+  padding: 16px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.2s;
+  text-align: left; position: relative; overflow: hidden;
+}
+.option-btn:active { transform: scale(0.98); }
+.option-btn.disabled { pointer-events: none; }
+
+.option-letter {
+  font-family: var(--mono); font-size: 12px; font-weight: 800; color: var(--muted);
+  background: var(--bg); border: 1px solid var(--border); width: 28px; height: 28px;
+  display: grid; place-items: center; border-radius: 8px; flex-shrink: 0; transition: 0.3s;
+}
+.option-text { font-family: var(--font); font-size: 1rem; color: #d0d4de; line-height: 1.3; font-weight: 600; }
+
+/* Stări de răspuns */
+.option-btn.correct { background: var(--accent-bg); border-color: var(--accent); box-shadow: 0 0 15px rgba(200,245,63,0.1); }
+.option-btn.correct .option-letter { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.option-btn.correct .option-text { color: var(--accent); }
+
+.option-btn.wrong { background: var(--red-bg); border-color: var(--red); opacity: 0.8; }
+.option-btn.wrong .option-letter { background: var(--red); color: var(--bg); border-color: var(--red); }
+.option-btn.wrong .option-text { color: var(--red); }
+
+/* ── EXPLANATION & NEXT BTN ── */
+.explanation-box {
+  background: rgba(56, 189, 248, 0.05); border-left: 3px solid var(--blue);
+  padding: 15px; border-radius: 0 12px 12px 0; font-size: 0.9rem; color: #a5b4fc;
+  line-height: 1.5; display: none; margin-top: 5px; animation: fadeIn 0.4s ease forwards;
+}
+
+.next-btn {
+  background: var(--text); color: var(--bg); border: none; border-radius: 14px;
+  padding: 16px; font-family: var(--font); font-size: 1rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 1px; cursor: pointer; display: none;
+  transition: 0.2s; margin-top: 10px;
+}
+.next-btn:active { transform: scale(0.95); }
+
+/* ── FLASH OVERLAYS ── */
+.flash-overlay { position: fixed; inset: 0; pointer-events: none; opacity: 0; z-index: 50; }
+.flash-overlay.green { background: rgba(200,245,63,0.1); animation: flashfade 0.5s forwards; }
+.flash-overlay.red { background: rgba(248,113,113,0.15); animation: flashfade 0.5s forwards; }
+
+@keyframes flashfade { 0% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── RESULT SCREEN ── */
+.result-screen {
+  text-align: center; display: none; flex-direction: column; align-items: center; gap: 20px;
+  padding: 40px 20px; animation: fadeIn 0.5s forwards;
+}
+.result-title { font-size: 2rem; font-weight: 800; color: var(--text); }
+.result-score { font-family: var(--mono); font-size: 4rem; color: var(--accent); font-weight: 800; text-shadow: 0 0 30px rgba(200,245,63,0.3); }
+.result-xp { font-family: var(--mono); font-size: 1.2rem; color: var(--blue); letter-spacing: 1px; }
+
+/* PARTICLES */
+.particle { position: fixed; pointer-events: none; z-index: 200; border-radius: 50%; animation: particleFly 0.8s ease forwards; }
+@keyframes particleFly { to { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); } }
+</style>
+</head>
+<body>
+
+  <header>
+    <a href="index.html" class="back-btn">←</a>
+    <div class="header-title">TACTICAL_QUIZ</div>
+    <div class="hud-xp">
+      <div class="hud-val" id="global-xp">0</div>
+      <div class="hud-label">Global XP</div>
+    </div>
+  </header>
+
+  <main id="quiz-main">
+    <div class="quiz-card" id="quiz-card">
+      <div class="quiz-header">
+        <div class="question-counter" id="q-counter">Q 01/10</div>
+        <div class="combo-badge" id="combo-badge">2x COMBO</div>
+      </div>
+      
+      <div class="question-text" id="q-text">Se încarcă modulul...</div>
+
+      <div class="options-container" id="options-box">
+        </div>
+
+      <div class="explanation-box" id="explanation-box"></div>
+      
+      <button class="next-btn" id="next-btn" onclick="nextQuestion()">Următoarea Grilă →</button>
+    </div>
+
+    <div class="result-screen" id="result-screen">
+      <div class="result-title">Misiune Completă</div>
+      <div class="result-score" id="final-score">8/10</div>
+      <div class="result-xp" id="final-xp">Data extrasa: +120 XP</div>
+      <a href="index.html" class="next-btn" style="display: block; width: 100%; margin-top: 20px;">Înapoi la Bază</a>
+    </div>
+
+  </main>
+
+  <div class="flash-overlay" id="flash-overlay"></div>
+
+  <script>
+const questions = [
+  {
+    q: "Salariile pentru luna curentă în valoare totală de 24.000 lei, conform statului de salarii, se înregistrează astfel:",
+    options: ["641 = 421    24.000  24.000", "421 = 641      24.000 24.000", "631 = 641         24.000 24.000"],
+    correct: 0,
+    expl: "Cheltuielile cu salariile (641) se debitează, iar datoriile față de personal (421) se creditează."
+  },
+  {
+    q: "Cum pot fi grupați ordonatorii de credite în funcție de bugetele de la care sunt finanțate instituțiile pe care le conduc?",
+    options: [
+      "Ordonatori de credite finanțați din bugetul de stat, din bugetele locale, din bugetul asigurărilor sociale de stat, din bugetele fondurilor speciale si din alte bugete",
+      "Ordonatori de credite finanțați din bugetul fondurilor speciale, din bugetul programelor de dezvoltare, bugetul asigurărilor sociale de stat,din bugetele locale si din alte bugete",
+      "Ordonatori de credite finanțați din bugetul centralizat, bugetul asigurărilor sociale de sănătate, din bugetul fondurilor speciale din bugetele locale si din alte bugete "
+    ],
+    correct: 0,
+    expl: "Conform legii, finanțarea se face din bugetul de stat, local, asigurări sociale, fonduri speciale și alte bugete."
+  },
+  {
+    q: "Cheltuielile bugetare sunt:",
+    options: [
+      "Acele cheltuieli care se acoperă de la bugetul de stat, din bugetele locale, asigurări sociale de stat etc.",
+      "Sumele aprobate din bugete, formate din impozite, taxe, contribuții",
+      "Resursele bănești care se cuvin bugetelor în baza unor prevederi legale"
+    ],
+    correct: 0,
+    expl: "Celelalte variante definesc VENITURILE (impozite, taxe), nu cheltuielile bugetare."
+  },
+  {
+    q: "Prin articolul contabil 531.01.01 = 542.01.00 se înregistrează:",
+    options: [
+      "Acordarea unui avans de trezorerie din casierie",
+      "Depunerea la casierie a diferenței de bani necheltuite dintr-un avans",
+      "Înregistrarea contului de cheltuieli prezentat de angajat"
+    ],
+    correct: 1,
+    expl: "Casa (531) se debitează (intră bani), iar Avansurile (542) se creditează (scade creanța asupra angajatului)."
+  },
+  {
+    q: "Recepția parțială a unei amenajări de teren realizate cu forțe proprii se înregistrează:",
+    options: ["722 = 231", "211 = 722", "231 = 722"],
+    correct: 2,
+    expl: "Fiind în curs de amenajare, se debitează 231 (Imobilizări în curs) și se creditează 722 (Venituri din prod. de imobilizări)."
+  },
+  {
+    q: "Analiza contabilă este:",
+    options: [
+      "Un demers prin care fiecare operațiune este cercetată pentru a stabili corespondența între conturi",
+      "Rezultatul articolului contabil",
+      "Un calcul periodic de sinteză al contabilității"
+    ],
+    correct: 0,
+    expl: "Reprezintă procesul logic de stabilire a conturilor debitoare și creditoare înainte de înregistrare."
+  },
+  {
+    q: "Prin articolul contabil 304 = 779 se reflectă:",
+    options: [
+      "Primirea cu împrumut de materiale rezervă de stat",
+      "Constatarea minus la inventar a materialelor",
+      "Primirea prin donație de materiale rezervă de stat"
+    ],
+    correct: 2,
+    expl: "304 intră în gestiune (Debit), iar 779 reprezintă Venituri din bunuri primite gratuit (Credit)."
+  },
+  {
+    q: "Plusul la inventar de materii prime se consemnează prin:",
+    options: ["301 = 601", "301 = 779", "601 = 301"],
+    correct: 0,
+    expl: "Stocul crește (Debit 301), iar cheltuiala se diminuează (Credit 601) pentru a regla gestiunea."
+  },
+  {
+    q: "Articolul contabil 709 = 345 reflectă:",
+    options: [
+      "Descărcarea gestiunii de produsele finite vândute",
+      "Produse finite casate, lipsă la inventar",
+      "Obținerea din activitatea de producție a produselor finite"
+    ],
+    correct: 0,
+    expl: "Produsele finite ies din gestiune (Credit 345), prin contul de variație a stocurilor (Debit 709)."
+  },
+  {
+    q: "Care este soldul final al unui cont de ACTIV cu: Si=700, Rd=500, Rc=400?",
+    options: ["Sold debitor 200 lei", "Sold debitor 800 lei", "Sold creditor 600 lei"],
+    correct: 1,
+    expl: "Formula: Sf = Si + Rulaj Debitor - Rulaj Creditor. 700 + 500 - 400 = 800 lei (Sold Debitor)."
+  },
+  {
+    q: "Înregistrarea diferenței favorabile din reevaluarea unui teren (domeniu public) se face prin:",
+    options: ["105 = 211", "211 = 105", "105 = 101"],
+    correct: 1,
+    expl: "Valoarea terenului crește (Debit 211), contra contului de rezerve din reevaluare (Credit 105)."
+  },
+  {
+    q: "Momentele evaluării elementelor patrimoniale sunt:",
+    options: [
+      "Intrarea în patrimoniu, inventarierea și închiderea exercițiului",
+      "Intrarea, ieșirea, închiderea exercițiului și darea în consum",
+      "Ieșirea, inventarierea și închiderea exercițiului"
+    ],
+    correct: 0,
+    expl: "Conform legii contabilității, evaluarea se face la intrare, la inventariere și la închiderea exercițiului financiar."
+  },
+  {
+    q: "Darea în folosință a obiectelor de inventar se reflectă astfel:",
+    options: ["303.02 = 303.01", "603 = 303.02", "303.01 = 303.02"],
+    correct: 1,
+    expl: "Materialele trec pe cheltuială (Debit 603) și ies din gestiunea stocurilor (Credit 303). În inst. publice se poate folosi și 603=303."
+  },
+  {
+    q: "Trecerea unui teren din domeniul privat al județului în proprietatea publică a statului se reflectă:",
+    options: ["103 = 211 și 211 = 101", "104 = 211 și 211 = 101", "211 = 104 și 101 = 211"],
+    correct: 2,
+    expl: "Se debitează 211 (Terenuri) contra 104 (Fondul bunurilor private), apoi se transferă în domeniul public."
+  },
+  {
+    q: "Care sunt registrele contabile obligatorii?",
+    options: ["Registrul centralizator, Cartea Mare", "Registrul Jurnal, Registrul Inventar, Cartea Mare", "Doar Registrul Jurnal și Inventar"],
+    correct: 1,
+    expl: "Legea contabilității prevede clar obligativitatea a 3 registre: Jurnal, Inventar și Cartea Mare."
+  },
+  {
+    q: "Consumul de materiale pentru ambalat se înregistrează astfel:",
+    options: ["302 = 401", "709 = 302", "602.03 = 302.03"],
+    correct: 2,
+    expl: "Ieșirea din gestiune pentru consum înseamnă recunoașterea cheltuielii (Debit 602) și scăderea stocului (Credit 302)."
+  },
+  {
+    q: "Prin formula contabilă 7XX = 121 se reflectă:",
+    options: [
+      "Preluarea deficitului patrimonial aferent exercițiului precedent",
+      "Preluarea excedentului patrimonial din exercițiul anterior",
+      "Închiderea la sfârșit de perioadă a conturilor de venituri"
+    ],
+    correct: 2,
+    expl: "La finalul perioadei, toate conturile de venituri (clasa 7) se închid prin transferul soldului în contul de rezultat (121)."
+  },
+  {
+    q: "Înregistrarea facturii privind serviciile de telefonie/internet se realizează astfel:",
+    options: ["404 = 626", "626 = 401", "401 = 626"],
+    correct: 1,
+    expl: "Cheltuielile cu poșta/telecomunicațiile (626) se debitează, recunoscând datoria curentă față de furnizor (Credit 401)."
+  },
+  {
+    q: "Principiul necompensării presupune:",
+    options: [
+      "Admite compensări între cheltuieli și venituri",
+      "Interzice orice compensare între elementele de activ/datorii sau venituri/cheltuieli, cu mici excepții legale",
+      "Nu admite compensări doar între venituri și creanțe"
+    ],
+    correct: 1,
+    expl: "Regula de bază este interzicerea compensării, veniturile și cheltuielile trebuind înregistrate distinct și integral."
+  },
+  {
+    q: "Operațiunile care au loc în cursul perioadei pot influența bilanțul producând:",
+    options: ["Mișcări dualiste", "Mișcări permutative (și modificatoare)", "Mișcări opuse"],
+    correct: 1,
+    expl: "Tranzacțiile generează mișcări permutative (modifică doar structura, ex: Activ=Activ) sau modificatoare (modifică volumul total)."
+  },
+  {
+    q: "Amortizarea lunară a unui mijloc de transport se reflectă prin:",
+    options: ["681.01 = 281.03", "281.03 = 681.03", "681.02 = 281.03"],
+    correct: 0,
+    expl: "Cheltuiala cu amortizarea (Debit 681) duce la creșterea amortizării cumulate a mijlocului de transport (Credit 281.03)."
+  },
+  {
+    q: "Care este regula de funcționare a conturilor de Pasiv?",
+    options: [
+      "Debit = sold inițial și sporiri, Credit = reduceri",
+      "Credit = sold inițial și reduceri, Debit = sporiri",
+      "Credit = sold inițial și sporiri, Debit = reduceri"
+    ],
+    correct: 2,
+    expl: "Conturile de pasiv (datorii, capital) cresc pe Credit și scad pe Debit, având sold final creditor."
+  },
+  {
+    q: "Ordonanțarea cheltuielilor este faza în care:",
+    options: [
+      "Se ordonă efectuarea plăților față de angajați",
+      "Se confirmă că livrările au fost efectuate și că plata poate fi realizată",
+      "Se verifică existența angajamentelor și condițiile de exigibilitate"
+    ],
+    correct: 1,
+    expl: "Ordonanțarea este faza care confirmă oficial că bunurile/serviciile au fost recepționate și dă „undă verde” pentru plată."
+  },
+  {
+    q: "Principiul anualității presupune:",
+    options: [
+      "Veniturile și cheltuielile sunt aprobate prin lege pe o perioadă de un an (exercițiu bugetar)",
+      "Operațiunile de încasări și plăți aparțin mereu anului viitor",
+      "Cheltuielile au destinație precisă și limitată"
+    ],
+    correct: 0,
+    expl: "Anualitatea limitează valabilitatea aprobărilor bugetare la strict un an calendaristic."
+  },
+  {
+    q: "După regimul de finanțare, instituțiile publice pot fi:",
+    options: [
+      "Finanțate integral din profit și din donații",
+      "Integral din buget, din venituri proprii + subvenții, sau integral din venituri proprii",
+      "Finanțate strict din taxe locale"
+    ],
+    correct: 1,
+    expl: "Există 3 regimuri clare: integral de la buget (G), parțial din surse proprii (E, F) sau integral din surse proprii."
+  },
+  {
+    q: "Articolul contabil 208 = 721 reflectă:",
+    options: [
+      "Achiziția unui program informatic fără factură",
+      "Realizarea unui program informatic cu forțe proprii",
+      "Scoaterea din evidență a unui soft amortizat"
+    ],
+    correct: 1,
+    expl: "Activul necorporal (208) crește, fiind produs intern, generând un venit din producția de imobilizări necorporale (721)."
+  },
+  {
+    q: "Activele fixe sau necurente sunt:",
+    options: [
+      "Echivalente de trezorerie fără restricții",
+      "Achiziționate pentru a fi comercializate în 12 luni",
+      "Deținute de instituții în scopul utilizării pe termen lung"
+    ],
+    correct: 2,
+    expl: "Spre deosebire de activele curente, activele fixe (imobilizările) sunt păstrate în unitate o perioadă mai mare de 1 an."
+  },
+  {
+    q: "Faza în care se verifică existența angajamentelor, realitatea sumei și exigibilitatea se numește:",
+    options: ["Lichidarea cheltuielilor", "Angajarea cheltuielilor", "Ordonanțarea cheltuielilor"],
+    correct: 0,
+    expl: "Lichidarea este faza de „verificare matematică și faptică” a datoriei, bazată pe documente justificative."
+  },
+  {
+    q: "Care dintre următoarele elemente fac parte din categoria active curente?",
+    options: ["Materii prime, Clienți, Casa în lei", "Utilaje, Terenuri, Software", "Capital social, Credite bancare"],
+    correct: 0,
+    expl: "Activele curente circulă rapid: stocuri (materii prime), creanțe (clienți) și trezorerie (casa/banca)."
+  },
+  {
+    q: "Principiile care stau la baza elaborării și execuției bugetelor sunt:",
+    options: [
+      "Universalitatea, unitatea, anualitatea, specializarea, unitatea monetară, publicitatea, echilibrul",
+      "Anualitatea, durabilitatea, echidistanța",
+      "Publicitatea, specializarea, disponibilitatea"
+    ],
+    correct: 0,
+    expl: "Acestea sunt principiile fundamentale definite de Legea finanțelor publice (L. 500/2002)."
+  },
+  {
+    q: "Cum sunt grupate cheltuielile publice după clasificația funcțională?",
+    options: ["Capitole, subcapitole, paragrafe, subparagrafe", "Părți, capitole, subcapitole, paragrafe", "Subcapitole, articole, alineate"],
+    correct: 1,
+    expl: "Clasificația funcțională grupează cheltuielile după destinația lor în: Părți, Capitole, Subcapitole și Paragrafe."
+  },
+  {
+    q: "Simbolizarea conturilor analitice de cheltuieli ține seama de clasificația bugetară și cuprinde:",
+    options: [
+      "Sursa, capitol, subcapitol, paragraf, articol, alineat",
+      "Doar capitol și articol",
+      "Sursa de finanțare și titlul contabil"
+    ],
+    correct: 0,
+    expl: "Analiticul unui cont de cheltuială bugetară este un șir lung care conține toate elementele clasificației economice și funcționale."
+  },
+  {
+    q: "Aplicând metoda CMP: Stoc inițial 150 buc x 100 lei. Achiziție 50 buc x 95 lei. Care e valoarea consumului de 160 buc?",
+    options: ["15.800 lei", "15.950 lei", "15.750 lei"],
+    correct: 0,
+    expl: "Valoare totală = (150x100)+(50x95) = 19.750. CMP = 19.750/200buc = 98,75 lei/buc. Consum = 160 x 98,75 = 15.800 lei."
+  },
+  {
+    q: "Achitarea unei construcții de 100.000 lei ce intră în domeniul public (neamortizabilă) se înregistrează:",
+    options: ["212 = 101 și 682 = 404", "101 = 212", "212 = 404 și 681 = 212"],
+    correct: 2,
+    expl: "Se recunoaște imobilizarea și datoria (212=404), apoi se amortizează/scade din gestiune (681=212) conform reglementărilor specifice."
+  },
+  {
+    q: "Prin articolul contabil 429 = 770 se reflectă:",
+    options: [
+      "Achitarea prin cont/card a burselor cuvenite studenților",
+      "Returnarea burselor necuvenite",
+      "Achitarea în numerar a burselor"
+    ],
+    correct: 0,
+    expl: "Contul 770 reprezintă Trezoreria (plăți prin cont). Pentru numerar s-ar fi folosit 531 Casa."
+  },
+  {
+    q: "Achiziția de mărfuri (1.000 lei + TVA 19%) se înregistrează astfel:",
+    options: [
+      "% = 401 (1.190) / 371 (1000) și 4426 (190)",
+      "% = 404 (1.190) / 371 (1000) și 4427 (190)",
+      "% = 401 (1.190) / 371 (1000) și 4427 (190)"
+    ],
+    correct: 0,
+    expl: "Mărfurile cresc pe 371, TVA-ul la cumpărare este DEDUCTIBIL (4426), iar datoria către furnizor este 401."
+  },
+  {
+    q: "Balanța de verificare pe rulaj sistematizează din Cartea-Mare următoarele informații:",
+    options: [
+      "Total sume (debitoare/creditoare) și Rulaj (debitor/creditor)",
+      "Sold inițial, Rulaj, Sold final",
+      "Total sume, Rulaj debitor/creditor și Sold final debitor/creditor"
+    ],
+    correct: 2,
+    expl: "Balanța de verificare cu 4 egalități (rulaje) conține Sumele totale, Rulajele perioadei și Soldurile finale."
+  },
+  {
+    q: "Prin articolul contabil 610 = 401 se reflectă:",
+    options: ["Factura pentru energie electrică", "Factura pentru materiale auxiliare", "Factura pentru consumul de apă (RAJAC)"],
+    correct: 2,
+    expl: "Contul 610 reflectă cheltuieli cu energia și apa. Energia electrică merge de obicei pe 605, apa pe 610."
+  },
+  {
+    q: "Evidența creditelor bugetare aprobate, deschise de repartizat și pt. nevoi proprii folosește conturile:",
+    options: [
+      "8060, 8062, 8066",
+      "8060, 8067, 8062",
+      "Doar 8060"
+    ],
+    correct: 0,
+    expl: "Clasa 8 (În afara bilanțului): 8060 (Aprobate), 8066 (De repartizat) și 8062 (Nevoi proprii)."
+  },
+  {
+    q: "Livrarea pe bază de factură a produselor finite se reflectă prin:",
+    options: ["418 = 751", "419 = 751", "411 = 751"],
+    correct: 2,
+    expl: "Facturarea generează o creanță (Debit 411 Clienți) și un venit (Credit 751 Venituri din vânzarea bunurilor)."
+  },
+  {
+    q: "MFP acordă credite ordonatorului principal A (230k) și subordonaților (130k). Se înregistrează:",
+    options: ["Debit 806.10", "Credit 806.20 (360k)", "Debit 806.00 (360k)"],
+    correct: 2,
+    expl: "Suma totală aprobată se reflectă în debitul contului 8060 (Credite bugetare aprobate)."
+  },
+  {
+    q: "Între principiile care stau la baza finanțării bugetare se numără:",
+    options: [
+      "Finanțarea se face la cerere, în funcție de stadiul de realizare și asigurând eficiența",
+      "Finanțarea se face din oficiu, nefiind necesară solicitarea",
+      "Finanțarea nu necesită justificarea eficienței"
+    ],
+    correct: 0,
+    expl: "Finanțarea publică nu e automată. Necesită cerere motivată, eficiență și control al oportunității plăților."
+  },
+  {
+    q: "Acordarea unui avans din contul de finanțare pentru achiziția alimentelor se înregistrează:",
+    options: ["401 = 770", "409 = 770", "770 = 409"],
+    correct: 1,
+    expl: "Se debitează 409 (Avansuri acordate furnizorilor - Creanță) și se creditează 770 (Ies bani din Trezorerie)."
+  },
+  {
+    q: "Preluarea excedentului patrimonial în exercițiul următor se înregistrează prin:",
+    options: ["151 = 121", "121 = 117", "117 = 121"],
+    correct: 1,
+    expl: "Rezultatul curent (121) se descarcă (Debit) în contul de rezultat reportat (Credit 117) la începutul anului următor."
+  },
+  {
+    q: "Având în vedere regimul juridic, bunurile din domeniul public sunt:",
+    options: ["Inalienabile, insesizabile, imprescriptibile", "Insesizabile și emergente", "Imprescriptibile și inactive"],
+    correct: 0,
+    expl: "Nu pot fi vândute (inalienabile), nu pot fi executate silit (insesizabile) și nu se pierd prin nefolosire în timp (imprescriptibile)."
+  },
+  {
+    q: "Cum pot fi clasificate documentele după forma lor de prezentare?",
+    options: ["Cu regim special / fără regim special", "Tipizate și netipizate", "Primare și centralizatoare"],
+    correct: 1,
+    expl: "După forma de prezentare (aspectul fizic/formatul) ele se împart în tipizate (formulare standard) și netipizate."
+  },
+  {
+    q: "Obiectul contabilității îl reprezintă:",
+    options: [
+      "Un ansamblu de principii și mijloace susceptibile să ofere o imagine fidelă",
+      "Doar mișcările de numerar",
+      "Ansamblul mișcărilor de valori exprimabile în bani și raporturile juridico-economice care generează decontări"
+    ],
+    correct: 2,
+    expl: "Contabilitatea măsoară doar ceea ce este cuantificabil în unități monetare și decurge din acte/fapte juridice."
+  },
+  {
+    q: "Achitarea datoriei față de furnizorul de energie (inst. finanțată integral de la buget) se reflectă:",
+    options: ["404 = 770", "411 = 770", "401 = 770"],
+    correct: 2,
+    expl: "Datoria curentă (401) se stinge (Debit), din contul de trezorerie al instituției bugetare (Credit 770)."
+  },
+  {
+    q: "TVA deductibilă este 600k lei, TVA colectată este 450k lei. Regularizarea presupune înregistrarea:",
+    options: ["Unei creanțe de 150.000 lei (de recuperat)", "Unei datorii de 150.000 lei (de plată)", "Unei creanțe de 450.000 lei"],
+    correct: 0,
+    expl: "Dacă TVA plătită la achiziții (600k) > TVA încasată din vânzări (450k), statul îți datorează diferența. Este o Creanță de recuperat!"
+  },
+  {
+    q: "Contul reprezintă:",
+    options: [
+      "Un număr",
+      "Un procedeu specific cunoașterii contabile prin care se stabilește existentul, modificările și situația finală",
+      "O resursă financiară la bancă"
+    ],
+    correct: 1,
+    expl: "Contul este instrumentul de bază al metodei contabilității, creat pentru a urmări o singură categorie de elemente (ex: contul Casa, contul Mărfuri)."
+  }
+];
+// --- UTILITIES: ALGORITMUL DE SHUFFLE (Fisher-Yates) ---
+    function shuffleArray(array) {
+      let currentIndex = array.length, randomIndex;
+      while (currentIndex !== 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        // Schimbă elementele între ele
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+      }
+      return array;
+    }
+
+    // --- STATE-UL APLICAȚIEI ---
+    let currentQ = 0;
+    let score = 0;
+    let combo = 0;
+    let sessionXP = 0;
+    let sessionQuestions = [];     // Aici vom ține cele 10 grile extrase random
+    let currentCorrectIndex = -1;  // Memorează unde se află varianta corectă DUPĂ amestecare
+    
+    // Inițializare XP Global din memorie
+    let db = JSON.parse(localStorage.getItem('ec_ultra2') || '{}');
+    if (!db._meta) db._meta = { xp: 0 };
+    let state = db._meta;
+    document.getElementById('global-xp').textContent = state.xp;
+
+    const letters = ['A', 'B', 'C', 'D', 'E', 'F']; // Suportă și grile cu mai multe variante
+
+function startQuiz() {
+      sessionQuestions = shuffleArray([...questions]);
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      const q = sessionQuestions[currentQ];
+
+      let qNum = (currentQ + 1).toString().padStart(2, '0');
+      let tNum = sessionQuestions.length.toString().padStart(2, '0');
+      document.getElementById('q-counter').textContent = `Q ${qNum}/${tNum}`;
+      document.getElementById('q-text').textContent = q.q;
+      
+      const optionsBox = document.getElementById('options-box');
+      optionsBox.innerHTML = '';
+      
+      let optionsWithStatus = q.options.map((text, index) => ({
+        text: text,
+        isCorrect: index === q.correct
+      }));
+
+      optionsWithStatus = shuffleArray(optionsWithStatus);
+      
+      optionsWithStatus.forEach((opt, index) => {
+        if (opt.isCorrect) {
+          currentCorrectIndex = index;
+        }
+
+        const btn = document.createElement('div');
+        btn.className = 'option-btn';
+        btn.innerHTML = `<div class="option-letter">${letters[index]}</div><div class="option-text">${opt.text}</div>`;
+        btn.onclick = () => checkAnswer(index, btn);
+        optionsBox.appendChild(btn);
+      });
+
+      document.getElementById('explanation-box').style.display = 'none';
+      document.getElementById('next-btn').style.display = 'none';
+    }
+
+    function checkAnswer(selectedIndex, btnElement) {
+      const q = sessionQuestions[currentQ];
+      const allBtns = document.querySelectorAll('.option-btn');
+      
+      allBtns.forEach(b => b.classList.add('disabled'));
+      
+      const flash = document.getElementById('flash-overlay');
+      flash.className = 'flash-overlay';
+      void flash.offsetWidth;
+
+      if (selectedIndex === currentCorrectIndex) {
+        btnElement.classList.add('correct');
+        flash.classList.add('green');
+        combo++;
+        score++;
+        
+        let xpGained = 10;
+        if (combo >= 2) {
+          xpGained += 5 * combo;
+          showComboBadge();
+        }
+        
+        addXP(xpGained);
+        spawnParticles(btnElement, 'var(--accent)');
+        if (navigator.vibrate) navigator.vibrate([20, 30, 50]);
+        
+      } else {
+        btnElement.classList.add('wrong');
+        allBtns[currentCorrectIndex].classList.add('correct');
+        flash.classList.add('red');
+        combo = 0;
+        hideComboBadge();
+        if (navigator.vibrate) navigator.vibrate([80]);
+        
+        const explBox = document.getElementById('explanation-box');
+        explBox.textContent = `💡 Info: ${q.expl}`;
+        explBox.style.display = 'block';
+      }
+
+      document.getElementById('next-btn').style.display = 'block';
+    }
+
+    function nextQuestion() {
+      currentQ++;
+      if (currentQ < sessionQuestions.length) {
+        loadQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function showResults() {
+      document.getElementById('quiz-card').style.display = 'none';
+      const resScreen = document.getElementById('result-screen');
+      resScreen.style.display = 'flex';
+      
+      document.getElementById('final-score').textContent = `${score}/${sessionQuestions.length}`;
+      document.getElementById('final-xp').textContent = `Date extrase: +${sessionXP} XP`;
+      
+      spawnParticles(document.body, 'var(--blue)');
+      spawnParticles(document.body, 'var(--accent)');
+    }
+
+    // --- SISTEMUL XP & EFECTE ---
+    function addXP(amount) {
+      sessionXP += amount;
+      state.xp += amount;
+      db._meta = state;
+      localStorage.setItem('ec_ultra2', JSON.stringify(db));
+      document.getElementById('global-xp').textContent = state.xp;
+    }
+
+    function showComboBadge() {
+      const badge = document.getElementById('combo-badge');
+      badge.textContent = `${combo}x COMBO`;
+      badge.classList.add('show');
+    }
+    
+    function hideComboBadge() {
+      document.getElementById('combo-badge').classList.remove('show');
+    }
+
+    function spawnParticles(el, color) {
+      let rect = el.getBoundingClientRect();
+      let cx = rect.left + rect.width/2; let cy = rect.top + rect.height/2;
+      for(let i=0; i<15; i++) {
+        let p = document.createElement('div');
+        p.className = 'particle';
+        let angle = (i/15) * Math.PI * 2; let dist = 50 + Math.random()*80;
+        p.style.cssText = `width:5px; height:5px; background:${color}; left:${cx}px; top:${cy}px; --tx:${Math.cos(angle)*dist}px; --ty:${Math.sin(angle)*dist}px;`;
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 800);
+      }
+    }
+
+    startQuiz();
+  </script>
+</body>
+</html>
