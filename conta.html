@@ -725,15 +725,12 @@ function renderCard() {
   
   // VERIFICĂM DACĂ E "INFO CARD" (fără întrebare)
   let isInfoCard = !currentFact.q || currentFact.q.trim() === '';
-  isFlipped = isInfoCard; // Dacă e info card, considerăm că e deja "întors" ca să meargă swipe-ul/butoanele
+  isFlipped = isInfoCard; // Dacă e info card, considerăm că e deja "întors"
 
   let wrap = document.getElementById('feed-wrap');
-
-  // Construim interiorul cardului dinamic
   let cardInner = '';
 
   if (isInfoCard) {
-    // 💡 DESIGN SPECIAL PENTRU CARD PUR INFORMATIV
     cardInner = `
       <div class="card-face card-front" style="display: flex; flex-direction: column;">
         <div class="card-category">
@@ -742,7 +739,7 @@ function renderCard() {
         <div class="answer-text" style="font-size: 1.15rem; font-weight: 500; color: var(--text); padding-top: 10px;">
           ${currentFact.a}
         </div>
-        <div class="action-row" style="margin-top: 20px;">
+        <div class="action-row" style="margin-top: auto;">
           <button class="btn-action btn-dont" id="btn-dont">
             <span class="btn-icon">✕</span><span>Nu știam</span>
           </button>
@@ -750,13 +747,12 @@ function renderCard() {
             <span class="btn-icon">~</span><span>De reținut</span>
           </button>
           <button class="btn-action btn-know" id="btn-know">
-            <span class="btn-icon">✓</span><span>Știu</span>
+            <span class="btn-icon">✓</span><span>Am reținut</span>
           </button>
         </div>
       </div>
     `;
   } else {
-    // ❓ DESIGN CLASIC (ÎNTREBARE -> RĂSPUNS)
     cardInner = `
       <div class="card-face card-front">
         <div class="card-category">${currentFact.category}</div>
@@ -790,6 +786,10 @@ function renderCard() {
         ${cardInner}
       </div>
       <div class="flash-overlay" id="flash-overlay"></div>
+    </div>
+    <div class="swipe-hint" id="swipe-hint">
+      <span>← Nu știu</span>
+      <span>Știu →</span>
     </div>
   `;
 
@@ -835,13 +835,16 @@ function renderCard() {
 function flip() {
   isFlipped = true;
   document.getElementById('card-flipper').classList.add('flipped');
-  document.querySelector('.swipe-hint').classList.add('show'); // MAGIA AICI
+  
+  // Protecție: Adăugăm show doar dacă există elementul pe ecran
+  let hint = document.getElementById('swipe-hint');
+  if (hint) hint.classList.add('show');
+  
   vibrate(20);
 }
 
 function answer(quality) {
   let id = getId(currentFact);
-  let oldLevel = Math.floor(state.xp/100)+1;
   let xpGain = updateSRS(id, quality);
 
   let flashEl = document.getElementById('flash-overlay');
@@ -863,7 +866,6 @@ function answer(quality) {
 
   setTimeout(() => {
     updateHUD();
-    checkLevelUp(oldLevel);
     renderCard();
   }, 280);
 }
