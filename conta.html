@@ -578,31 +578,30 @@ footer {
 
 <div class="xp-popup" id="xp-popup"></div>
 
-<div class="levelup-screen" id="levelup-screen">
-  <div style="font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Nivel nou</div>
-  <div class="levelup-num" id="levelup-num">2</div>
-  <div class="levelup-label">Deblocat</div>
-  <button class="levelup-close" onclick="closeLevelUp()">Continuă →</button>
-</div>
-
 <script>
 const facts = [
-  { category:"CP - US 1", q:"Care sunt entitățile obligate să organizeze și să conducă contabilitate proprie?", a:"Societățile comerciale, societățile/companiile naționale, regiile autonome, institutele naționale de cercetare-dezvoltare, societățile cooperatiste, instituțiile publice, asociațiile și celelalte persoane juridice cu și fără scop patrimonial, precum și persoanele fizice care desfășoară activități producătoare de venituri." },
-  { category:"CP - US 1", q:"Care este obiectul contabilității?", a:"Ansamblul mișcărilor de valori exprimabile în bani, precum și raporturile economico-juridice în care unitatea patrimonială este parte și care generează deconturi bănești." },
-  { category:"CP - US 1", q:"Ce este metoda contabilității?", a:"Abordarea obiectului contabilității pe baza unor principii, mijloace și procedee, care să ofere o imagine fidelă a poziției financiare și performanței unei entități." },
-  { category:"CP - US 1", q:"Care sunt procedeele utilizate pentru cunoașterea obiectului contabilității?", a:"Procedee comune disciplinelor economice și procedee specifice metodei contabilității." },
-  { category:"CP - US 1", q:"Care sunt procedeele comune disciplinelor economice?", a:"Documentația, evaluarea, calculația și inventarierea." },
-  { category:"CP - US 1", q:"Care sunt procedeele specifice metodei contabilității?", a:"Bilanțul, contul, balanțele de verificare etc." },
-  { category:"CP - US 1", q:"Cum se stabilește evaluarea la intrarea în patrimoniul instituției?", a:"Bunuri cu titlu oneros → Costul de achiziție. Bunuri produse în instituție → Costul de producție. Bunuri obținute cu titlu gratuit (donații, sponsorizări) → Valoarea justă." },
-  { category:"CP - US 1", q:"Ce cuprinde costul de producție?", a:"Cheltuielile directe aferente producției (materiale directe, energie tehnologică, manoperă directă, alte cheltuieli directe) și cota cheltuielilor indirecte alocată rațional. Exclus: pierderi materiale peste limite, cheltuieli de depozitare neesențiale, regie generală de administrație, costuri de desfacere." },
-  { category:"CP - US 1", q:"Ce cuprinde costul de achiziție?", a:"Prețul de cumpărare + taxele de import + alte taxe nerecuperabile + cheltuielile de transport, manipulare și alte cheltuieli atribuibile direct. Reducerile comerciale acordate de furnizor NU fac parte din costul de achiziție." },
-  { category:"CP - US 1", q:"Ce reprezintă valoarea justă?", a:"Suma pentru care un activ ar putea fi schimbat de bunăvoie între două părți în cunoștință de cauză, în cadrul unei tranzacții cu prețul determinat obiectiv. Pentru bunurile cu piață, valoarea justă = valoarea de piață." },
-  { category:"CP - US 1", q:"Cum se face evaluarea cu ocazia inventarierii?", a:"La valoarea actuală a fiecărui element, denumită valoare de inventar, stabilită în funcție de utilitatea bunului, starea acestuia și prețul pieței." },
-  { category:"CP - US 1", q:"Cum se face evaluarea la încheierea exercițiului financiar?", a:"Se pune de acord valoarea de intrare cu rezultatele inventarierii. Valoarea de intrare se compară cu valoarea de inventar stabilită la inventariere." },
-  { category:"CP - US 1", q:"Evaluare la închidere — elemente de ACTIV:", a:"Plus de valoare → nu se înregistrează (rămân la valoarea de intrare). Minus de valoare: dacă deprecierea e ireversibilă → amortizare suplimentară; dacă e temporară → ajustare pentru depreciere/pierdere de valoare." },
-  { category:"CP - US 1", q:"Evaluare la închidere — elemente de PASIV (datorii):", a:"Minus față de valoarea de intrare → nu se înregistrează. Plus față de valoarea de intrare → se înregistrează pe seama elementelor corespunzătoare de datorii." },
-  { category:"CP - US 1", q:"Cum trebuie evaluate elementele monetare exprimate în valută?", a:"Trebuie evaluate și raportate utilizând cursul de schimb comunicat de BNR, valabil la data încheierii exercițiului." },
-].filter(f => f.q.trim() !== '');
+      { category: "CP - US 1", q: "Care sunt entitățile obligate să organizeze și să conducă contabilitate proprie?", a:"Societăţile comerciale, societăţile/companiile naţionale,regiile autonome, institutele naţionale de cercetare-dezvoltare, societăţile cooperatiste, instituţiil publice, asociaţiile şi celelalte persoane juridice cu şi fără scop patrimonial, precum şi persoanele fizice care desfăşoară activităţi producătoare de venituri"},
+      { category: "CP - US 1", q: "Cum se evaluează bunurile la data ieșirii din instituție sau la darea în consum?", a:"Evaluarea la data ieșirii din instituție sau la darea în consum a bunurilor se face la valoarea lor de intrare"},
+      { category: "CP - US 1", q: "Care este obiectul contabilității?", a:"Ansamblul mișcărilor de valori exprimabile în bani precum și raporturile economico-juridice în care unitatea patrimonială este parte și care generează deconturi bănești"},
+      { category: "CP - US 1", q: "Ce este metoda contabilității?", a:"Abordarea obiectului contabilității pe baza unor principii, mijloace și procedee, care să ofere o imagine fidelă a poziției financiare și performanței unei entități"},
+      { category: "CP - US 1", q: "Care sunt procedeele utilizate pentru cunoașterea obiectului contabilității?", a:"Procedee comune disciplinelor economice și procedee specifice metodei contabilității"},
+      { category: "CP - US 1", q: "Care sunt procedeele comune disciplinelor economice?", a:"Documentația, evaluarea, calculația și inventarierea"},
+      { category: "CP - US 1", q: "Care sunt procedeele specifice metodei contabilității?", a:"Bilanțul, contul, balanțele de verificare etc."},
+      { category: "CP - US 1", q: "Cum se stabilește evaluarea la intrarea în patrimonul instituției?", a:"Pentru bunurile cu titlu oneros (contra-plată) -> Costul de achiziție. Pentru bunurile produse în instituție -> Costul de producție. Pentru bunurile obținute cu titlu gratuir(donații, sponsorizări) -> Valoarea justă."},
+      { category: "CP - US 1", q:"Ce cuprinde costul de producție?", a:"Cuprinde cheltuielile directe aferente producției, și anume: materiale directe, energie consumată în scopuri tehnologice, manoperă directă și alte cheltuieli directe de producție precum și cota cheltuielilor indirecte de producție alocată în mod rațional ca fiind legată de fabricația acestora. Nu sunt cuprinse totuși: Pierderile materiale, manopera sau alte costuri de producție înregistrate peste limite admise, cheltuieli de depozitare cu excepția cazurilor în care aceste costuri sunt necesare în procesul de producție, anterior trecerii într-o nouă fază de fabricație, regiile(cheltuielile) generale de administrație care nu participă la aducerea stocurilor în forma și locul final, costurile de desfacere."},
+      { category: "CP - US 1", q:"Ce cuprinde costul de achiziție?", a:"Cuprinde prețul de cumpărare, taxele de import și alte taxe(Cu excepția celor pe care instituția publică le poate recupera de la autoritățile fiscale), cheltuielile de transport, manipulare și alte cheltuieli care pot fi atribuite direct achiziției bunurilor respective. Reducerile comerciale acordate de furnizor nu fac parte din costul de achiziție."},
+      { category: "CP - US 1", q:"Ce reprezintă valoarea justă(pentru donații/sponsorizări)?", a:"Valoarea justă a unui bun reprezintă suma pentru care un activ ar putea fi schimbat de bună voie între două părți aflate în cunoștință de cauză, în cadrul unei tranzacții cu prețul determinat obiectiv. Pentru bunurile care au valoare de piață, valoarea justă este egală cu aceasta."},
+      { category: "CP - US 1", q:"Evaluarea cu ocazia inventarierii:", a:"Se face la valoarea actuală a fiecărui element denumită valoare de inventar, stabilită în funcție de utilitatea bunului, starea acestuia și prețul pieței, conform normelor emise de Ministerul Finanțelor Publice"},
+      { category: "CP - US 1", q:"Evaluarea la încheierea exercițiului financiar:", a:"Pe perioade care sunt de obiciei de 1 an, perioade care se numesc exerciții contabile. La încheierea exercițiului financiar se realizează valoarea de intrare pusă de acord cu rezultatele inventarierii. Valoarea de intrare sau contabilă se compară cu valoarea stabilită pe baza inventarierii."},
+      { category: "CP - US 1", q:"Evaluarea la încheierea exercițiului financiar pentru elementele de activ:", a:"Diferențele de valoare constatate în plus între valoarea de inventar și valoarea de intrare nu se înregistrează în contabilitate, aceste elemente menționându-se la valoarea lor de intrare. Diferențele de valoare constatate în minus între valoarea de inventar și valoarea contabilă netă a elementelor de activ se înregistrează în contabilitate: pe seama unei amortizări suplimentare, în cazul activelor amortizabile pentru care deprecierea este ireversibilă sau se înregistrează o ajustare pentru depreciere sau pierdere de valoare atunci când deprecierea este temporară, aceste elemente menținându-se la nivelul valorii lor de intrare"},
+      { category: "CP - US 1", q:"Evaluarea la încheierea exercițiului financiar pentru elemente de pasiv de natura datoriilor:", a:"Diferențele constatate în minus între valoarea de inventar și valoarea de intrare nu se înregistrează în contabilitate, aceste elemente menținându-se la valoarea lor de intrare. Diferențele constatate în plus între valoarea stabilită la inventariere și valoarea de intrare elementelor de pasiv de natura datoriilor se îregistrează în contabilitate pe seama elementelor corespunzătoare de datorii."},
+      { category: "CP - US 1", q:"Cum trebuie evaluate elementele monetare exprimate în valută?", a:"Trebuie evaluate și raportate utilizând cursul de schimb comunicat de BNR, valabil la data încheierii exercițiului"},
+      { category: "CP - US 1", q:"", a:"La ieșirea din gestiune stocurile și alte active fungibile se evaluează și înregistrează în contabilitate prin aplicarea uneia din următoarele metode: a) Metoda costului mediu ponderat(CMP), b) metoda primul intrat - primul ieșit (FIFO), c) metoda ultimul intrat - primul ieșit (LIFO)"},
+      { category: "CP - US 1", q:"", a:""},
+      { category: "CP - US 1", q:"", a:""},
+      { category: "CP - US 1", q:"", a:""},
+
+]
 
 function getId(f) {
   let s = f.q + f.category, h = 0;
@@ -695,18 +694,6 @@ function showXpPopup(xpGain, comboCount) {
   el.className = 'xp-popup pop';
 }
 
-function checkLevelUp(oldLevel) {
-  let newLevel = Math.floor(state.xp/100)+1;
-  if(newLevel > oldLevel) {
-    document.getElementById('levelup-num').textContent = newLevel;
-    document.getElementById('levelup-screen').classList.add('show');
-  }
-}
-
-function closeLevelUp() {
-  document.getElementById('levelup-screen').classList.remove('show');
-}
-
 function updateHUD() {
   let level = Math.floor(state.xp/100)+1;
   let xpInLevel = state.xp % 100;
@@ -735,48 +722,74 @@ let isFlipped = false;
 
 function renderCard() {
   currentFact = nextFact();
-  isFlipped = false;
+  
+  // VERIFICĂM DACĂ E "INFO CARD" (fără întrebare)
+  let isInfoCard = !currentFact.q || currentFact.q.trim() === '';
+  isFlipped = isInfoCard; // Dacă e info card, considerăm că e deja "întors" ca să meargă swipe-ul/butoanele
 
   let wrap = document.getElementById('feed-wrap');
+
+  // Construim interiorul cardului dinamic
+  let cardInner = '';
+
+  if (isInfoCard) {
+    // 💡 DESIGN SPECIAL PENTRU CARD PUR INFORMATIV
+    cardInner = `
+      <div class="card-face card-front" style="display: flex; flex-direction: column;">
+        <div class="card-category">
+          ${currentFact.category} <span style="color:var(--blue); opacity:0.8; margin-left:8px;">[INFO]</span>
+        </div>
+        <div class="answer-text" style="font-size: 1.15rem; font-weight: 500; color: var(--text); padding-top: 10px;">
+          ${currentFact.a}
+        </div>
+        <div class="action-row" style="margin-top: 20px;">
+          <button class="btn-action btn-dont" id="btn-dont">
+            <span class="btn-icon">✕</span><span>Nu știam</span>
+          </button>
+          <button class="btn-action btn-hard" id="btn-hard">
+            <span class="btn-icon">~</span><span>De reținut</span>
+          </button>
+          <button class="btn-action btn-know" id="btn-know">
+            <span class="btn-icon">✓</span><span>Știu</span>
+          </button>
+        </div>
+      </div>
+    `;
+  } else {
+    // ❓ DESIGN CLASIC (ÎNTREBARE -> RĂSPUNS)
+    cardInner = `
+      <div class="card-face card-front">
+        <div class="card-category">${currentFact.category}</div>
+        <div class="card-question">${currentFact.q}</div>
+        <div class="tap-hint">
+          <div class="tap-hint-icon">↵</div><span>tap pentru răspuns</span>
+        </div>
+      </div>
+      <div class="card-face card-back">
+        <div class="answer-label">Răspuns</div>
+        <div class="answer-text">${currentFact.a}</div>
+        <div class="action-row">
+          <button class="btn-action btn-dont" id="btn-dont">
+            <span class="btn-icon">✕</span><span>Nu știu</span>
+          </button>
+          <button class="btn-action btn-hard" id="btn-hard">
+            <span class="btn-icon">~</span><span>Greu</span>
+          </button>
+          <button class="btn-action btn-know" id="btn-know">
+            <span class="btn-icon">✓</span><span>Știu</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
   wrap.innerHTML = `
     <div class="card-scene" id="card-scene">
       <div class="combo-badge" id="combo-badge"></div>
       <div class="card-flipper" id="card-flipper">
-
-        <div class="card-face card-front">
-          <div class="card-category">${currentFact.category}</div>
-          <div class="card-question">${currentFact.q}</div>
-          <div class="tap-hint">
-            <div class="tap-hint-icon">↵</div>
-            <span>tap pentru răspuns</span>
-          </div>
-        </div>
-
-        <div class="card-face card-back">
-          <div class="answer-label">Răspuns</div>
-          <div class="answer-text">${currentFact.a}</div>
-          <div class="action-row">
-            <button class="btn-action btn-dont" id="btn-dont">
-              <span class="btn-icon">✕</span>
-              <span>Nu știu</span>
-            </button>
-            <button class="btn-action btn-hard" id="btn-hard">
-              <span class="btn-icon">~</span>
-              <span>Greu</span>
-            </button>
-            <button class="btn-action btn-know" id="btn-know">
-              <span class="btn-icon">✓</span>
-              <span>Știu</span>
-            </button>
-          </div>
-        </div>
-
+        ${cardInner}
       </div>
       <div class="flash-overlay" id="flash-overlay"></div>
-    </div>
-    <div class="swipe-hint">
-      <span>← Nu știu</span>
-      <span>Știu →</span>
     </div>
   `;
 
@@ -787,16 +800,18 @@ function renderCard() {
   }
 
   let scene = document.getElementById('card-scene');
-  let flipper = document.getElementById('card-flipper');
 
+  // Tap pentru rotire (doar dacă NU e info card)
   scene.addEventListener('click', () => {
     if(!isFlipped) { flip(); }
   });
 
+  // Legăm butoanele
   document.getElementById('btn-dont').addEventListener('click', e => { e.stopPropagation(); answer(1); });
   document.getElementById('btn-hard').addEventListener('click', e => { e.stopPropagation(); answer(3); });
   document.getElementById('btn-know').addEventListener('click', e => { e.stopPropagation(); answer(5); });
 
+  // Păstrăm opțional swipe-ul
   let startX=0;
   scene.addEventListener('touchstart', e=>{ startX=e.touches[0].clientX; }, {passive:true});
   scene.addEventListener('touchend', e=>{
@@ -805,6 +820,14 @@ function renderCard() {
     if(diff > 70) answer(5);
     else if(diff < -70) answer(1);
   }, {passive:true});
+  
+  scene.addEventListener('mousedown', e => { startX = e.clientX; });
+  scene.addEventListener('mouseup', e => {
+    if(!isFlipped) return;
+    let diff = e.clientX - startX;
+    if(diff > 70) answer(5);
+    else if(diff < -70) answer(1);
+  });
 
   updateHUD();
 }
