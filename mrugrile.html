@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Grile MRU</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08090a;
+  --surface: #111316;
+  --surface2: #181b1f;
+  --border: #2a2d33;
+  --accent: #c8f53f; /* Verde Neon */
+  --accent-bg: #1a2100;
+  --blue: #38bdf8;
+  --red: #f87171;
+  --red-bg: #2a0a0a;
+  --amber: #fbbf24;
+  --text: #f0f2f5;
+  --muted: #5a6070;
+  --muted2: #363b45;
+  --font: 'Syne', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html, body {
+  min-height: 100%; font-family: var(--font);
+  background: var(--bg); color: var(--text); overflow-x: hidden;
+}
+
+body::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:999;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.08) 2px, rgba(0,0,0,.08) 4px);
+}
+
+/* ── HEADER HUD ── */
+header {
+  position: sticky; top: 0; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border); background: rgba(8, 9, 10, 0.85); backdrop-filter: blur(12px); z-index: 100;
+}
+.back-btn {
+  background: var(--surface2); border: 1px solid var(--border); color: var(--text); width: 36px; height: 36px;
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  text-decoration: none; font-family: var(--mono); font-weight: 800; transition: 0.2s;
+}
+.back-btn:active { transform: scale(0.9); border-color: var(--amber); color: var(--amber); }
+
+.header-title { font-family: var(--mono); font-size: 11px; font-weight: 800; letter-spacing: .2em; color: var(--amber); }
+
+.hud-xp { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.hud-val { font-family: var(--mono); font-size: 16px; font-weight: 600; line-height: 1; color: var(--accent); }
+.hud-label { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+
+/* ── QUIZ CONTAINER ── */
+main { padding: 25px 20px 100px; display: flex; flex-direction: column; gap: 20px; position: relative; }
+
+.quiz-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+  padding: 24px; display: flex; flex-direction: column; gap: 24px; position: relative;
+}
+.option-btn.selected {
+  border-color: var(--blue);
+  background: var(--blue-bg);
+  transform: scale(0.98);
+}
+.option-btn.disabled {
+  pointer-events: none;
+}
+.option-btn.missed {
+  border: 2px dashed var(--accent);
+  opacity: 0.8;
+}
+
+.quiz-header { display: flex; justify-content: space-between; align-items: center; }
+.question-counter { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 2px; }
+.combo-badge {
+  font-family: var(--mono); font-size: 10px; font-weight: 800; color: var(--bg); background: var(--amber);
+  padding: 4px 10px; border-radius: 12px; opacity: 0; transform: scale(0.8); transition: 0.3s;
+}
+.combo-badge.show { opacity: 1; transform: scale(1); box-shadow: 0 0 15px rgba(251, 191, 36, 0.4); }
+
+.question-text { font-size: 1.3rem; font-weight: 700; line-height: 1.4; color: var(--text); }
+
+/* ── OPTIONS GRID ── */
+.options-container { display: flex; flex-direction: column; gap: 12px; }
+
+.option-btn {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 14px;
+  padding: 16px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.2s;
+  text-align: left; position: relative; overflow: hidden;
+}
+.option-btn:active { transform: scale(0.98); }
+.option-btn.disabled { pointer-events: none; }
+
+.option-letter {
+  font-family: var(--mono); font-size: 12px; font-weight: 800; color: var(--muted);
+  background: var(--bg); border: 1px solid var(--border); width: 28px; height: 28px;
+  display: grid; place-items: center; border-radius: 8px; flex-shrink: 0; transition: 0.3s;
+}
+.option-text { font-family: var(--font); font-size: 1rem; color: #d0d4de; line-height: 1.3; font-weight: 600; }
+
+/* Stări de răspuns */
+.option-btn.correct { background: var(--accent-bg); border-color: var(--accent); box-shadow: 0 0 15px rgba(200,245,63,0.1); }
+.option-btn.correct .option-letter { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.option-btn.correct .option-text { color: var(--accent); }
+
+.option-btn.wrong { background: var(--red-bg); border-color: var(--red); opacity: 0.8; }
+.option-btn.wrong .option-letter { background: var(--red); color: var(--bg); border-color: var(--red); }
+.option-btn.wrong .option-text { color: var(--red); }
+
+/* ── EXPLANATION & NEXT BTN ── */
+.explanation-box {
+  background: rgba(56, 189, 248, 0.05); border-left: 3px solid var(--blue);
+  padding: 15px; border-radius: 0 12px 12px 0; font-size: 0.9rem; color: #a5b4fc;
+  line-height: 1.5; display: none; margin-top: 5px; animation: fadeIn 0.4s ease forwards;
+}
+
+.next-btn {
+  background: var(--text); color: var(--bg); border: none; border-radius: 14px;
+  padding: 16px; font-family: var(--font); font-size: 1rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 1px; cursor: pointer; display: none;
+  transition: 0.2s; margin-top: 10px;
+}
+.next-btn:active { transform: scale(0.95); }
+
+/* ── FLASH OVERLAYS ── */
+.flash-overlay { position: fixed; inset: 0; pointer-events: none; opacity: 0; z-index: 50; }
+.flash-overlay.green { background: rgba(200,245,63,0.1); animation: flashfade 0.5s forwards; }
+.flash-overlay.red { background: rgba(248,113,113,0.15); animation: flashfade 0.5s forwards; }
+
+@keyframes flashfade { 0% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── RESULT SCREEN ── */
+.result-screen {
+  text-align: center; display: none; flex-direction: column; align-items: center; gap: 20px;
+  padding: 40px 20px; animation: fadeIn 0.5s forwards;
+}
+.result-title { font-size: 2rem; font-weight: 800; color: var(--text); }
+.result-score { font-family: var(--mono); font-size: 4rem; color: var(--accent); font-weight: 800; text-shadow: 0 0 30px rgba(200,245,63,0.3); }
+.result-xp { font-family: var(--mono); font-size: 1.2rem; color: var(--blue); letter-spacing: 1px; }
+
+/* PARTICLES */
+.particle { position: fixed; pointer-events: none; z-index: 200; border-radius: 50%; animation: particleFly 0.8s ease forwards; }
+@keyframes particleFly { to { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); } }
+</style>
+</head>
+<body>
+
+  <header>
+    <a href="index.html" class="back-btn">←</a>
+    <div class="header-title">Grile MRU</div>
+    <div class="hud-xp">
+      <div class="hud-val" id="global-xp">0</div>
+      <div class="hud-label">Global XP</div>
+    </div>
+  </header>
+
+  <main id="quiz-main">
+    <div class="quiz-card" id="quiz-card">
+      <div class="quiz-header">
+        <div class="question-counter" id="q-counter">Q 01/10</div>
+        <div class="combo-badge" id="combo-badge">2x COMBO</div>
+      </div>
+      
+      <div class="question-text" id="q-text">Se încarcă modulul...</div>
+
+      <div class="options-container" id="options-box">
+        </div>
+
+      <div class="explanation-box" id="explanation-box"></div>
+      
+      <button class="next-btn" id="next-btn" onclick="nextQuestion()">Următoarea Grilă →</button>
+    </div>
+
+    <div class="result-screen" id="result-screen">
+      <div class="result-title">Misiune Completă</div>
+      <div class="result-score" id="final-score">8/10</div>
+      <div class="result-xp" id="final-xp">Data extrasa: +120 XP</div>
+      <a href="index.html" class="next-btn" style="display: block; width: 100%; margin-top: 20px;">Înapoi la Bază</a>
+    </div>
+
+  </main>
+
+  <div class="flash-overlay" id="flash-overlay"></div>
+
+  <script>
+const questions = [
+  {
+    q: "1. În selecția candidaților se pot utiliza teste din următoarele categorii:",
+    options: [
+      "a) teste de abilitati",
+      "b) teste situationale",
+      "c) teste de cunoștințe",
+      "d) teste de opinie"
+    ],
+    correct: [0, 1, 2],
+    expl: "Selecția științifică a resurselor umane folosește teste cognitive (abilități), teste de cunoștințe (profesionale) și teste situaționale. Opiniile personale nu sunt un instrument valid de selecție. [cite: 665, 666, 667, 668, 669]"
+  },
+  {
+    q: "2. Stabilirea unor obiective profesionale individuale:",
+    options: [
+      "a) este importanta pentru individ deoarece obiectivele SMART motivează",
+      "b) nu este atractiva deoarece piata muncii este dinamică și nu există certitudinea că le poți îndeplini",
+      "c) este o sarcina exclusiv a managerilor",
+      "d) face parte din procesul de planificarea și dezvoltarea a carierei"
+    ],
+    correct: [0, 3],
+    expl: "Stabilirea obiectivelor (goal-setting) este o componentă esențială a planificării carierei și are un puternic rol motivațional pentru individ (obiective SMART). Nu este exclusiv sarcina managerului. [cite: 670, 671, 672, 673, 674]"
+  },
+  {
+    q: "3. Menținerea resurselor umane se realizează prin:",
+    options: [
+      "a) motivarea,aprecierea si oferirea unor oportunitati de dezvoltare",
+      "b) pastrarea angajatilor mereu pe acelasi nivel de piramida lui Maslow",
+      "c) atingerea pragului de insatisfactie- nemultumire din modelul factorilor duali"
+    ],
+    correct: [0],
+    expl: "Păstrarea (retenția/menținerea) angajaților valoroși se face prin sisteme de motivare, recunoaștere (apreciere) și planuri de dezvoltare profesională. [cite: 675, 676, 677, 678]"
+  },
+  {
+    q: "4. Recrutarea prin internet are următoarele avantaje:",
+    options: [
+      "a) aduce informatii mai detaliate despre oportunitatile de angajare",
+      "b) angajatorii pot gasi angajatul potrivit selectand dupa criterii relevante candidatii,fara a mai realiza selectie",
+      "c) are o acoperire geografica mai mare,ceea ce faciliteaza accesul la oportunitati de angajare",
+      "d) ofera celor care cauta un loc de muncaacces rapid la informatii privind posturile"
+    ],
+    correct: [0, 2, 3],
+    expl: "Internetul (e-recruiting) oferă acoperire geografică mare, detalii abundente și rapiditate. Varianta B este falsă deoarece recrutarea prin internet NU elimină faza de selecție (interviuri, teste). [cite: 679, 680, 681, 682, 683]"
+  },
+  {
+    q: "5. Evaluarea posturilor este o activitate necesara deoarece:",
+    options: [
+      "a) ofera posibilitatea de a fundamenta o structura de recompense care sa atraga,sa motiveze si sa mentina angajatii",
+      "b) ofera posibilitatea de a crea echilibru si echitatet in grila de salarizare",
+      "c) angajatii trebuie sa cunoasca rolul pe care il ocupa",
+      "d )posturile care sunt la baza ierarhiei trebuie corelate cu salariul minim pe economie"
+    ],
+    correct: [0, 1],
+    expl: "Evaluarea (ierarhizarea) posturilor determină importanța relativă a fiecărui post în organizație, servind exclusiv la crearea unei grile de salarizare echitabile și motivante. [cite: 684, 685, 686, 687, 688]"
+  },
+  {
+    q: "6. Joanna Popescu este puternic demotivata de postul pe care il ocupa .\nCeea ce o deranjează puternic sunt sarcinile repetitive, faptul ca trebuie sa raspunda la cerintele cetatenilor si ca nimeni nu o apreciaza pentru ceea ce face .\nCe s-ar putea face pentru ca motivatia sa creasca?",
+    options: [
+      "a) Să i se ofere posibilitatea de a discuta mai mult cu colegii",
+      "b) Să i se puna in vedere angajatei ca este un post de inceput si ca toti ceilalti angajati au suferit",
+      "c) Să se realizeze o îmbogățire a postului",
+      "d) Să se aplice rotația pe post astfel încât să existe o varietate a sarcinilor",
+      "e) seful direct sa ofere mai mult feed-back"
+    ],
+    correct: [2, 3, 4],
+    expl: "Sarcinile repetitive se rezolvă prin îmbogățirea postului (responsabilități noi) sau rotația pe post (varietate), iar lipsa aprecierii se rezolvă prin feedback direct și constant din partea șefului. [cite: 689, 690, 691, 692, 693, 694, 695, 696]"
+  },
+  {
+    q: "7. Creșterea satisfacției și reducerea absenteismului prin oferirea de feed-back angajaților se datorează:",
+    options: [
+      "a) efectelor controlului mai strict",
+      "b) efectelor psihologice ale conoasterii i rezultatelor propriei munci",
+      "c) efectelor de crestere a productivitatii"
+    ],
+    correct: [1],
+    expl: "Feedback-ul are un efect psihologic profund: îi arată angajatului că munca lui contează și îi permite să își calibreze eforturile, generând satisfacție. Nu reprezintă un „control strict”. [cite: 697, 698, 699, 700]"
+  },
+  {
+    q: "8. Conform managementului performanțelor, din punct de vedere ideal, pentru a întări un comportament dorit al unui angajat consecinta ar trebui sa fie:",
+    options: [
+      "a) pozitivă, viitoare, nesigură",
+      "b) pozitivă, imediată, sigură",
+      "c) negativă sau pozitivă, în funcție de angajat, imediată și nesigură",
+      "d) negativa, imediata si sigura"
+    ],
+    correct: [1],
+    expl: "În teoria condiționării operante (Skinner), pentru a întări (repeta) un comportament pozitiv, recompensa trebuie să fie dorită (pozitivă), acordată imediat după comportament și sigură (garantată). [cite: 701, 702, 703, 704, 705]"
+  },
+  {
+    q: "9. Care din traseele următoare corespund unor variante corecte ale stadiilor de evoluție a carierei individului:",
+    options: [
+      "a) Instalare, progres, maturitate, creare continuă",
+      "b) Instalare, creștere, menținere, maturitate, retragere",
+      "c) Explorare, progres, maturitate, dezangajare (sfârșitul carierei)",
+      "d) Lansare, decizie, maturitate, declin"
+    ],
+    correct: [2],
+    expl: "Conform teoriei stadiilor carierei (Donald Super), traseul clasic este: Explorare (tinerețe), Stabilire/Progres (adult), Menținere/Maturitate și Declin/Dezangajare (înainte de pensie). [cite: 706, 707, 708, 709, 710]"
+  },
+  {
+    q: "10. Integrarea noilor angajați are ca obiective:",
+    options: [
+      "a) limitarea efectelor unor erori pe care noul angajat le-ar putea realiza",
+      "b) schimbarea atitudinii angajatului față de muncă",
+      "c) angajatul să ajungă la nivelul de performanță dorit cât mai repede",
+      "d) aducereaa la cunostinta șefului angajatului că are un nou membru în echipă"
+    ],
+    correct: [0, 2],
+    expl: "Inducția/Integrarea are rolul de a acomoda noul angajat pentru a preveni erorile de început și a-i scurta timpul până devine productiv 100%. Șeful ar trebui deja să știe că a angajat pe cineva. [cite: 711, 712, 713, 714, 715]"
+  },
+  {
+    q: "11. Salariul fiecărui angajat este stabilit pe baza performanțelor sale în sistemul de plată:",
+    options: [
+      "a) În acord global",
+      "b) În regie",
+      "c) in acord individual"
+    ],
+    correct: [2],
+    expl: "Plata în regie se face pe baza timpului petrecut la muncă, acordul global este pe echipă, dar 'acordul individual' salarizează fix performanța și producția fiecărui angajat în parte. [cite: 716, 717, 718, 719]"
+  },
+  {
+    q: "12. Satisfacția în muncă poate fi definită ca:",
+    options: [
+      "a) nivelul cel mai înalt de motivare ce poate fi atins, conform teoriei lui Locke",
+      "b) performanța ridicată în muncă",
+      "c) stare emotivă negativă care rezultă din opinia personală a unui angajat asupra muncii sale sau asupra climatului de muncă",
+      "d) stare emotivă pozitivă care rezultă din opinia personală a unui angajat asupra muncii sale sau asupra climatului de muncă"
+    ],
+    correct: [3],
+    expl: "Satisfacția în muncă este atitudinea și starea emoțională POZITIVĂ a unui angajat față de rolul său, rezultată din evaluarea experiențelor la locul de muncă. [cite: 720, 721, 722, 723, 724]"
+  },
+  {
+    q: "13. Printre criteriile de bază în selecție se numără:",
+    options: [
+      "a) aspectul fizic",
+      "b) personalitatea",
+      "c) experiența",
+      "d) localitatea de domiciliu",
+      "e) educatia"
+    ],
+    correct: [1, 2, 4],
+    expl: "Criteriile legitime și legale de selecție privesc competențele (experiența, educația) și potrivirea psihologică (personalitatea). Aspectul fizic sau domiciliul sunt considerate de obicei criterii discriminatorii. [cite: 725, 726, 727, 728, 729, 730]"
+  },
+  {
+    q: "14. Conform modelului motivației-higienă (Herzberg):",
+    options: [
+      "a) salariul nu motivează deoarece aparține factorilor de igienă",
+      "b) avansarea si realizarile au efect motivator deoarece aparțin factorilor motivatori și orientează angajatul spre efort superior",
+      "c) este influentat de două categorii de factori: motivatori și igienici",
+      "d) factorii de igienă creează satisfacție în muncă și implicit motivație"
+    ],
+    correct: [0, 1, 2],
+    expl: "Herzberg împarte factorii în: Igienici (ex: salariul - care doar previn insatisfacția, dar nu motivează activ) și Motivatori (ex: avansarea - care creează satisfacție reală). [cite: 731, 732, 733, 734, 735]"
+  },
+  {
+    q: "15. John Popescu vrea să îmbunătățească comunicarea orizontală în cadrul departamentului său deoarece:",
+    options: [
+      "a) zvonurile creează multă panică",
+      "b) toate deciziile trebuie luate in comun",
+      "c) schimbul de informatii va trebui intensificat",
+      "d) va creste increderea între membrii grupului"
+    ],
+    correct: [2, 3],
+    expl: "Comunicarea orizontală are loc între colegii de pe același nivel ierarhic. Scopul ei principal este coordonarea (schimbul de informații) și sudarea echipei (creșterea încrederii). [cite: 736, 737, 738, 739, 740]"
+  },
+  {
+    q: "16. Pentru ca o recompensa să producă efect motivațional ea trebuie să fie:",
+    options: [
+      "a) să fie abordata înainte de realizarea obiectivului",
+      "b) dorita",
+      "c) corelata cu performantele obtinute",
+      "d) să fie consistenta"
+    ],
+    correct: [1, 2],
+    expl: "Pe baza Teoriei Așteptărilor a lui Vroom, motivația apare doar dacă recompensa este valoroasă pentru angajat (Valența = dorită) și dacă angajatul știe clar că performanța duce la primirea ei (Instrumentalitatea = corelată cu performanța). [cite: 741, 742, 743, 744, 745]"
+  },
+  {
+    q: "17.De 6 ani, Jhon Popescu lucrează în institutie . E adevărat că la început a pornit bine, erau și mai putinii în echipă și seful ii stia pe fiecare in parte cat de priceput si in ce masura se tine de treaba .Acum insa ,pe langa faptul ca munceste de doua ori mai mult pentru aceasi suma de bani , a si rămas ultimul în echipă cu un nivel de salarizare .",
+    options: [
+      "a) De fapt Maslow avea dreptate, ceea ce l-ar motiva in acest moment pe Popescu ar fi sentimentul ca face parte din echipa",
+      "b) cu siguranta ca daca ar primi ceva mai multe responsabilitati,Jhon Popescu ar fi în stare să facă orice pentru instituție",
+      "c) ceea ce se poate spune cu siguranta este ca Jhon Popescu este tratat echitabil in institutie, piata fiind aceea care face presiuni si trebuie sa muncesti mai mult pentru a satisface nevoile cetatenilor",
+      "d) cel mai bine ar fi sa-i plateasca munca in functie de rezultatele obtinute,atunci cu siguranta nu se va mai simti exploatat"
+    ],
+    correct: [3],
+    expl: "Este o aplicație practică a Teoriei Echității a lui Adams. Jhon simte că aportul său (munca dublă) nu este proporțional cu rezultatul (salariu mic). Plata raportată direct la rezultatele obținute ar restabili sentimentul de echitate. [cite: 746, 747, 748, 749, 750]"
+  },
+  {
+    q: "18. in sedinta de vineri dimineata, in urma evaluarii activitatii desfasurate in ultima jumatate de an ,s-a ajuns la concluzia ca lucrurile nu merg in directia dorita.\nOamenii sunt nemultumiti de locul de munca si directorul cere o analiza aprofundata a sistemului de motivare.In aceste conditii,pe baza modelului asteptarilor( Victor Vroom):",
+    options: [
+      "a) angajatul trebuie sa simta mai intai ca efortul sau se finalizeaza cu realizarea unei performante individuale",
+      "b)este important ca angajatului sa-i fie acoperite nevoile fiziologice,de securitate si de stima de sine",
+      "c) trebuie sa se tina seama ca angajatul trebuie sa stie ca performanta este recompensa echitabila",
+      "d) trebuie verificat daca performanta angajatilor este evaluata",
+      "e) este logic ca recompensa primita sa fie semnificativa pentru angajat"
+    ],
+    correct: [0, 2, 4],
+    expl: "Modelul Așteptărilor (Vroom) se bazează pe 3 condiții: Așteptarea (Efortul va duce la Performanță), Instrumentalitatea (Performanța atrage/este o Recompensă certă) și Valența (Recompensa primită este semnificativă/valoroasă pentru el). [cite: 751, 752, 753, 754, 755, 756, 757]"
+  },
+  {
+    q: "19. Eficacitatea unei pedepse la locul de muncă este determinată de:",
+    options: [
+      "a) cel care transmite informatia legată de pedeapsă",
+      "b) conditionarea operanta",
+      "c) existenta unui public martor",
+      "d) cunoasterea abaterii de catre cel pedepsit",
+      "d) severitatea pedepsei si apropierea acesteia de momentul abaterii"
+    ],
+    correct: [3, 4],
+    expl: "Pentru ca sancțiunea disciplinară să își atingă scopul corectiv, angajatul trebuie să conștientizeze clar ce abatere a făcut (d1), iar pedeapsa trebuie să fie proporțională ca severitate și aplicată prompt după abatere (d2). [cite: 758, 759, 760, 761, 762, 763]"
+  },
+  {
+    q: "20. La Universitatea Alexandru Ioan Cuza se oferă cadrelor didactice un număr de 64 de zile de concediu de odihnă plătit în comparație cu media de 27 de zile la alte organizații.\nAceasta măsură:",
+    options: [
+      "a) compensează absența altor beneficii ale posturilor didactice",
+      "b) va motiva angajatii sa obtina performanta deoarece este vazuta ca o plata suplimentara",
+      "c) va creste loialitatea angajatilor",
+      "d) face parte din sistemul de recompense indirecte oferit de UAIC"
+    ],
+    correct: [0, 2, 3],
+    expl: "Timpul liber suplimentar reprezintă un beneficiu extrasalarial (recompensă indirectă) menit să crească retenția și loialitatea organizațională, adesea compensând nivelul de stres sau lipsa unor mari bonusuri financiare din alte sectoare. [cite: 764, 765, 766, 767, 768, 769]"
+  },
+  {
+    q: "21. Recrutarea are următoarele avantaje :",
+    options: [
+      "a) managerii nu trebuie să facă efort pentru a atragere candidații",
+      "b) mentine un nivel de stabilitate la nivelul organizației pentru ca schimbarea să nu se producă",
+      "c) oferă oportunități angajatorilor existenti",
+      "d) exista deja informații despre candidați"
+    ],
+    correct: [2, 3],
+    expl: "Formularea grilei vizează clar avantajele recrutării INTERNE, deoarece oferă oportunități de promovare personalului existent și reduce riscurile angajării pe nevăzute, calitățile candidaților fiind deja cunoscute de management. [cite: 770, 771, 772, 773, 774]"
+  },
+  {
+    q: "22. Care dintre următoarele cereri pot fi frecvent adresate șefului de către angajații aflați în faza de mijloc a carierei:",
+    options: [
+      "a) Îmbogățirea postului și facilitarea accesului la traininguri asociate noilor activități",
+      "b) Creșterea salariului",
+      "c) cresterea numarului de deplasari pentru ameliorarea contactelor cu persoane din exteriorul institutiei",
+      "d) includerea intr-un program de mentorizare a noilor veniti",
+      "e) introducerea in sistemul de recompensare a unei prime pentru inovatiile propuse"
+    ],
+    correct: [0, 3],
+    expl: "Când ajung la mijlocul carierei (maturitate profesională), angajații caută să evite plafonarea prin îmbogățirea postului cu responsabilități noi și adesea doresc să își transmită expertiza (roluri de mentorat pentru juniori). [cite: 775, 776, 777, 778, 779, 780]"
+  },
+  {
+    q: "23. In instruirea angajatilor trebuie sa se realizele urmatoarele:",
+    options: [
+      "Sa se stabileasca obiective clare",
+      "Sa se ofere aceasi instruire tuturor angajatilor deoarece la un moment dat le va fi utila",
+      "Sa se masoare nivelul de cunostinte si abilitati existente",
+      "Sa se consume toate resursele financiare disponibile in bugetul de formare"
+    ],
+    correct: [0, 2],
+    expl: "Programul de instruire (training) este eficient doar dacă pleacă de la un audit clar al nevoilor de dezvoltare (măsurarea cunoștințelor actuale) și stabilește obiective concrete de învățare. Instruirea 'la grămadă' pentru toată lumea e considerată o risipă. [cite: 781, 782, 783, 784, 785]"
+  },
+  {
+    q: "24. Strategia de a plati angajatii sub pretul pietii poate sa:",
+    options: [
+      "a) genereze o cultura organizationala elitista",
+      "b) duca la angajarea unor oameni de calitate slaba",
+      "c) fie o strategie buna atunci cand loializarea angajatilor s-a realizat prin alte mijloace",
+      "d) rezulte in oferirea unor salarii relativ competitive"
+    ],
+    correct: [1, 2],
+    expl: "Salarizarea sub media pieței (lagging strategy) implică riscul atragerii de forță de muncă slab pregătită. Este însă viabilă și considerată bună DOAR dacă este compensată puternic prin alte beneficii (climat de muncă excelent, siguranța locului de muncă, flexibilitate). [cite: 786, 787, 788, 789, 790]"
+  },
+  {
+    q: "26. Jhon Popescu planifica sa urmeze cursurile programului de Master in Managementul Resurselor Umane.Acest program este o forma de dezvoltare a personalului:",
+    options: [
+      "a) la locul de munca",
+      "b) in afara locului de munca"
+    ],
+    correct: [1],
+    expl: "Educația formală (cum ar fi cursurile universitare de Master) se desfășoară în medii academice externe firmei, fiind deci o metodă clasică de dezvoltare profesională 'off-the-job' (în afara locului de muncă). [cite: 791, 792, 793]"
+  }
+];
+// --- UTILITIES: ALGORITMUL DE SHUFFLE (Fisher-Yates) ---
+    function shuffleArray(array) {
+      let currentIndex = array.length, randomIndex;
+      while (currentIndex !== 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        // Schimbă elementele între ele
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+      }
+      return array;
+    }
+
+    // --- STATE-UL APLICAȚIEI ---
+    let currentQ = 0;
+    let score = 0;
+    let combo = 0;
+    let sessionXP = 0;
+    let sessionQuestions = [];     // Aici vom ține cele 10 grile extrase random
+    let currentCorrectIndex = -1;  // Memorează unde se află varianta corectă DUPĂ amestecare
+    
+    // Inițializare XP Global din memorie
+    let db = JSON.parse(localStorage.getItem('ec_ultra2') || '{}');
+    if (!db._meta) db._meta = { xp: 0 };
+    let state = db._meta;
+    document.getElementById('global-xp').textContent = state.xp;
+
+    const letters = ['A', 'B', 'C', 'D', 'E', 'F']; // Suportă și grile cu mai multe variante
+
+function startQuiz() {
+      sessionQuestions = shuffleArray([...questions]);
+      loadQuestion();
+    }
+
+let selectedIndices = []; // Aici ținem minte ce apasă userul
+    let correctIndices = [];  // Aici știm unde s-au ascuns variantele corecte după Shuffle
+
+    function loadQuestion() {
+      const q = sessionQuestions[currentQ];
+      selectedIndices = [];
+      correctIndices = [];
+      
+      let qNum = (currentQ + 1).toString().padStart(2, '0');
+      let tNum = sessionQuestions.length.toString().padStart(2, '0');
+      document.getElementById('q-counter').textContent = `Q ${qNum}/${tNum}`;
+      document.getElementById('q-text').textContent = q.q;
+      
+      const optionsBox = document.getElementById('options-box');
+      optionsBox.innerHTML = '';
+      
+      // MAGIA 1: Suportă și număr simplu (correct: 1) și listă (correct: [0, 2])
+      let optionsWithStatus = q.options.map((text, index) => {
+        let isCorr = Array.isArray(q.correct) ? q.correct.includes(index) : q.correct === index;
+        return { text: text, isCorrect: isCorr };
+      });
+
+      optionsWithStatus = shuffleArray(optionsWithStatus);
+      
+      optionsWithStatus.forEach((opt, index) => {
+        // Notăm unde a picat varianta corectă
+        if (opt.isCorrect) correctIndices.push(index);
+
+        let cleanText = opt.text.replace(/^[a-z]\)\s*/i, '').trim();
+        let newLetter = String.fromCharCode(97 + index); 
+        let finalText = newLetter + ') ' + cleanText;
+
+        const btn = document.createElement('div');
+        btn.className = 'option-btn';
+        btn.innerHTML = `<div class="option-letter">${letters[index]}</div><div class="option-text">${finalText}</div>`;
+        
+        // În loc să verificăm instant, doar selectăm/deselectăm butonul
+        btn.onclick = () => toggleOption(index, btn);
+        optionsBox.appendChild(btn);
+      });
+
+      document.getElementById('explanation-box').style.display = 'none';
+      
+      // Setăm butonul de Next să fie "Verifică"
+      let nextBtn = document.getElementById('next-btn');
+      nextBtn.textContent = 'Verifică Răspunsul ✓';
+      nextBtn.style.display = 'none'; // E ascuns până selectezi măcar o variantă
+      nextBtn.onclick = verifyAnswer; // Schimbăm funcția butonului
+    }
+
+    // Funcția care doar "bifează" sau "debifează" o variantă
+    function toggleOption(index, btn) {
+      if (btn.classList.contains('disabled')) return;
+
+      let pos = selectedIndices.indexOf(index);
+      if (pos === -1) {
+        selectedIndices.push(index);
+        btn.classList.add('selected');
+      } else {
+        selectedIndices.splice(pos, 1);
+        btn.classList.remove('selected');
+      }
+
+      // Arată butonul "Verifică" doar dacă ai ales ceva
+      document.getElementById('next-btn').style.display = selectedIndices.length > 0 ? 'block' : 'none';
+    }
+
+    // NOUA Funcție care controlează validarea finală a grilei
+    function verifyAnswer() {
+      const q = sessionQuestions[currentQ];
+      const allBtns = document.querySelectorAll('.option-btn');
+      
+      // Blocăm butoanele să nu mai poți modifica
+      allBtns.forEach(b => b.classList.add('disabled'));
+      
+      // Sortăm listele ca să le putem compara ușor
+      selectedIndices.sort();
+      correctIndices.sort();
+
+      // Verificăm dacă ai nimerit TOT și EXACT ce trebuia
+      let isPerfectMatch = (selectedIndices.length === correctIndices.length) &&
+                           selectedIndices.every((val, i) => val === correctIndices[i]);
+
+      const flash = document.getElementById('flash-overlay');
+      flash.className = 'flash-overlay';
+      void flash.offsetWidth;
+
+      if (isPerfectMatch) {
+        // EȘTI GENIU! Răspuns 100% corect
+        selectedIndices.forEach(idx => allBtns[idx].classList.add('correct'));
+        flash.classList.add('green');
+        combo++;
+        score++;
+        
+        let xpGained = 15; // Câștigi mai mult că e mai greu cu variante multiple
+        if (combo >= 2) {
+          xpGained += 5 * combo; 
+          showComboBadge();
+        }
+        
+        addXP(xpGained);
+        spawnParticles(document.body, 'var(--accent)');
+        if (navigator.vibrate) navigator.vibrate([20, 30, 50]);
+        
+      } else {
+        // AI GREȘIT (sau ai ratat o variantă corectă)
+        selectedIndices.forEach(idx => {
+           if (correctIndices.includes(idx)) {
+               allBtns[idx].classList.add('correct'); // Ai intuit-o bine pe asta
+           } else {
+               allBtns[idx].classList.add('wrong'); // Asta era capcană
+           }
+        });
+        
+        // Îți arătăm ce ai uitat să bifezi (apare cu border întrerupt/dashed)
+        correctIndices.forEach(idx => {
+           if (!selectedIndices.includes(idx)) {
+               allBtns[idx].classList.add('missed'); 
+           }
+        });
+
+        flash.classList.add('red');
+        combo = 0;
+        hideComboBadge();
+        if (navigator.vibrate) navigator.vibrate([80]);
+        
+        const explBox = document.getElementById('explanation-box');
+        explBox.textContent = `💡 Info: ${q.expl}`;
+        explBox.style.display = 'block';
+      }
+
+      // Acum transformăm butonul din "Verifică" în "Următoarea"
+      let nextBtn = document.getElementById('next-btn');
+      nextBtn.textContent = 'Următoarea →';
+      nextBtn.onclick = nextQuestion;
+    }
+
+    function nextQuestion() {
+      currentQ++;
+      if (currentQ < sessionQuestions.length) {
+        loadQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function showResults() {
+      document.getElementById('quiz-card').style.display = 'none';
+      const resScreen = document.getElementById('result-screen');
+      resScreen.style.display = 'flex';
+      
+      document.getElementById('final-score').textContent = `${score}/${sessionQuestions.length}`;
+      document.getElementById('final-xp').textContent = `Date extrase: +${sessionXP} XP`;
+      
+      spawnParticles(document.body, 'var(--blue)');
+      spawnParticles(document.body, 'var(--accent)');
+    }
+
+    // --- SISTEMUL XP & EFECTE ---
+    function addXP(amount) {
+      sessionXP += amount;
+      state.xp += amount;
+      db._meta = state;
+      localStorage.setItem('ec_ultra2', JSON.stringify(db));
+      document.getElementById('global-xp').textContent = state.xp;
+    }
+
+    function showComboBadge() {
+      const badge = document.getElementById('combo-badge');
+      badge.textContent = `${combo}x COMBO`;
+      badge.classList.add('show');
+    }
+    
+    function hideComboBadge() {
+      document.getElementById('combo-badge').classList.remove('show');
+    }
+
+    function spawnParticles(el, color) {
+      let rect = el.getBoundingClientRect();
+      let cx = rect.left + rect.width/2; let cy = rect.top + rect.height/2;
+      for(let i=0; i<15; i++) {
+        let p = document.createElement('div');
+        p.className = 'particle';
+        let angle = (i/15) * Math.PI * 2; let dist = 50 + Math.random()*80;
+        p.style.cssText = `width:5px; height:5px; background:${color}; left:${cx}px; top:${cy}px; --tx:${Math.cos(angle)*dist}px; --ty:${Math.sin(angle)*dist}px;`;
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 800);
+      }
+    }
+
+    startQuiz();
+  </script>
+</body>
+</html>
