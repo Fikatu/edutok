@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Grile PDA</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08090a;
+  --surface: #111316;
+  --surface2: #181b1f;
+  --border: #2a2d33;
+  --accent: #c8f53f; /* Verde Neon */
+  --accent-bg: #1a2100;
+  --blue: #38bdf8;
+  --red: #f87171;
+  --red-bg: #2a0a0a;
+  --amber: #fbbf24;
+  --text: #f0f2f5;
+  --muted: #5a6070;
+  --muted2: #363b45;
+  --font: 'Syne', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html, body {
+  min-height: 100%; font-family: var(--font);
+  background: var(--bg); color: var(--text); overflow-x: hidden;
+}
+
+body::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:999;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.08) 2px, rgba(0,0,0,.08) 4px);
+}
+
+/* ── HEADER HUD ── */
+header {
+  position: sticky; top: 0; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border); background: rgba(8, 9, 10, 0.85); backdrop-filter: blur(12px); z-index: 100;
+}
+.back-btn {
+  background: var(--surface2); border: 1px solid var(--border); color: var(--text); width: 36px; height: 36px;
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  text-decoration: none; font-family: var(--mono); font-weight: 800; transition: 0.2s;
+}
+.back-btn:active { transform: scale(0.9); border-color: var(--amber); color: var(--amber); }
+
+.header-title { font-family: var(--mono); font-size: 11px; font-weight: 800; letter-spacing: .2em; color: var(--amber); }
+
+.hud-xp { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.hud-val { font-family: var(--mono); font-size: 16px; font-weight: 600; line-height: 1; color: var(--accent); }
+.hud-label { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+
+/* ── QUIZ CONTAINER ── */
+main { padding: 25px 20px 100px; display: flex; flex-direction: column; gap: 20px; position: relative; }
+
+.quiz-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+  padding: 24px; display: flex; flex-direction: column; gap: 24px; position: relative;
+}
+.option-btn.selected {
+  border-color: var(--blue);
+  background: var(--blue-bg);
+  transform: scale(0.98);
+}
+.option-btn.disabled {
+  pointer-events: none;
+}
+.option-btn.missed {
+  border: 2px dashed var(--accent);
+  opacity: 0.8;
+}
+
+.quiz-header { display: flex; justify-content: space-between; align-items: center; }
+.question-counter { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 2px; }
+.combo-badge {
+  font-family: var(--mono); font-size: 10px; font-weight: 800; color: var(--bg); background: var(--amber);
+  padding: 4px 10px; border-radius: 12px; opacity: 0; transform: scale(0.8); transition: 0.3s;
+}
+.combo-badge.show { opacity: 1; transform: scale(1); box-shadow: 0 0 15px rgba(251, 191, 36, 0.4); }
+
+.question-text { font-size: 1.3rem; font-weight: 700; line-height: 1.4; color: var(--text); }
+
+/* ── OPTIONS GRID ── */
+.options-container { display: flex; flex-direction: column; gap: 12px; }
+
+.option-btn {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 14px;
+  padding: 16px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.2s;
+  text-align: left; position: relative; overflow: hidden;
+}
+.option-btn:active { transform: scale(0.98); }
+.option-btn.disabled { pointer-events: none; }
+
+.option-letter {
+  font-family: var(--mono); font-size: 12px; font-weight: 800; color: var(--muted);
+  background: var(--bg); border: 1px solid var(--border); width: 28px; height: 28px;
+  display: grid; place-items: center; border-radius: 8px; flex-shrink: 0; transition: 0.3s;
+}
+.option-text { font-family: var(--font); font-size: 1rem; color: #d0d4de; line-height: 1.3; font-weight: 600; }
+
+/* Stări de răspuns */
+.option-btn.correct { background: var(--accent-bg); border-color: var(--accent); box-shadow: 0 0 15px rgba(200,245,63,0.1); }
+.option-btn.correct .option-letter { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.option-btn.correct .option-text { color: var(--accent); }
+
+.option-btn.wrong { background: var(--red-bg); border-color: var(--red); opacity: 0.8; }
+.option-btn.wrong .option-letter { background: var(--red); color: var(--bg); border-color: var(--red); }
+.option-btn.wrong .option-text { color: var(--red); }
+
+/* ── EXPLANATION & NEXT BTN ── */
+.explanation-box {
+  background: rgba(56, 189, 248, 0.05); border-left: 3px solid var(--blue);
+  padding: 15px; border-radius: 0 12px 12px 0; font-size: 0.9rem; color: #a5b4fc;
+  line-height: 1.5; display: none; margin-top: 5px; animation: fadeIn 0.4s ease forwards;
+}
+
+.next-btn {
+  background: var(--text); color: var(--bg); border: none; border-radius: 14px;
+  padding: 16px; font-family: var(--font); font-size: 1rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 1px; cursor: pointer; display: none;
+  transition: 0.2s; margin-top: 10px;
+}
+.next-btn:active { transform: scale(0.95); }
+
+/* ── FLASH OVERLAYS ── */
+.flash-overlay { position: fixed; inset: 0; pointer-events: none; opacity: 0; z-index: 50; }
+.flash-overlay.green { background: rgba(200,245,63,0.1); animation: flashfade 0.5s forwards; }
+.flash-overlay.red { background: rgba(248,113,113,0.15); animation: flashfade 0.5s forwards; }
+
+@keyframes flashfade { 0% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── RESULT SCREEN ── */
+.result-screen {
+  text-align: center; display: none; flex-direction: column; align-items: center; gap: 20px;
+  padding: 40px 20px; animation: fadeIn 0.5s forwards;
+}
+.result-title { font-size: 2rem; font-weight: 800; color: var(--text); }
+.result-score { font-family: var(--mono); font-size: 4rem; color: var(--accent); font-weight: 800; text-shadow: 0 0 30px rgba(200,245,63,0.3); }
+.result-xp { font-family: var(--mono); font-size: 1.2rem; color: var(--blue); letter-spacing: 1px; }
+
+/* PARTICLES */
+.particle { position: fixed; pointer-events: none; z-index: 200; border-radius: 50%; animation: particleFly 0.8s ease forwards; }
+@keyframes particleFly { to { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); } }
+</style>
+</head>
+<body>
+
+  <header>
+    <a href="index.html" class="back-btn">←</a>
+    <div class="header-title">Grile PDA</div>
+    <div class="hud-xp">
+      <div class="hud-val" id="global-xp">0</div>
+      <div class="hud-label">Global XP</div>
+    </div>
+  </header>
+
+  <main id="quiz-main">
+    <div class="quiz-card" id="quiz-card">
+      <div class="quiz-header">
+        <div class="question-counter" id="q-counter">Q 01/10</div>
+        <div class="combo-badge" id="combo-badge">2x COMBO</div>
+      </div>
+      
+      <div class="question-text" id="q-text">Se încarcă modulul...</div>
+
+      <div class="options-container" id="options-box">
+        </div>
+
+      <div class="explanation-box" id="explanation-box"></div>
+      
+      <button class="next-btn" id="next-btn" onclick="nextQuestion()">Următoarea Grilă →</button>
+    </div>
+
+    <div class="result-screen" id="result-screen">
+      <div class="result-title">Misiune Completă</div>
+      <div class="result-score" id="final-score">8/10</div>
+      <div class="result-xp" id="final-xp">Data extrasa: +120 XP</div>
+      <a href="index.html" class="next-btn" style="display: block; width: 100%; margin-top: 20px;">Înapoi la Bază</a>
+    </div>
+
+  </main>
+
+  <div class="flash-overlay" id="flash-overlay"></div>
+
+  <script>
+const questions = [
+  {
+    q: "Procedura licitației nu este obligatorie atunci când:",
+    options: [
+      "a) valoarea produselor, lucrărilor sau serviciilor achiziționate nu depășește un anumit prag impus de lege",
+      "b) cumpararea directa prezinta avantaje financiare in sensul efectuarii de economii din bugetul local",
+      "c) autoritatea administrativa apreciaza ca ea nu este necesara ca urmare a lipsei oricarui conflict de interese"
+    ],
+    correct: [0],
+    expl: "Achiziția directă este permisă strict în limitele pragurilor valorice impuse de lege, avantajele financiare nefiind un temei legal de excepție[cite: 279, 280, 281, 282]."
+  },
+  {
+    q: "Potrivit legii,negocierea fara publicitate prealabilă poate fi pusă în practică:",
+    options: [
+      "a) atunci cand nu au fost depuse solicitari de participare in cazul licitatiilor deschise sau restranse",
+      "b) atunci cand exista o situatie urgenta aparuta imprevizibil ca urmare a unui eveniment mai presus de vointa autiritatii contractate",
+      "c) atunci cand anumite produse,servicii sau lucrari pot fi furnizate respectivexecutate numai de un anumit operator economic"
+    ],
+    correct: [0, 1, 2],
+    expl: "Toate cele trei variante constituie excepții legale recunoscute în legea achizițiilor publice care permit negocierea directă, fără publicare[cite: 283, 284, 285, 286]."
+  },
+  {
+    q: "Suspendarea unui act administrativ:",
+    options: [
+      "a) produce încetarea permanentă a efectelor juridice ale acestuia",
+      "b) este sinonima cu anularea",
+      "c) poate fi decisa si de catre instantele de contecios administrativ",
+      "d) poate interveni din oficiu sau la solicitarea celor interesați"
+    ],
+    correct: [2, 3],
+    expl: "Suspendarea oprește temporar (nu permanent) efectele actului și poate fi dispusă de instanță la cerere sau de organul emitent din oficiu[cite: 287, 288, 289, 290, 291]."
+  },
+  {
+    q: "Licitația:",
+    options: [
+      "a) este doar o formalitate preferențială pentru autoritatea care dorește să încheie un contract administrativ",
+      "b) reprezinta o condiție de valabilitate pentru contractele administrative",
+      "c) este procedura de desemnare a unui adjudecatar, parte in contract administrativ, în condițiile impuse de leg"
+    ],
+    correct: [2],
+    expl: "Licitația este o procedură concurențială strict reglementată prin care se desemnează câștigătorul/adjudecatarul, nefiind o opțiune 'preferențială'[cite: 292, 293, 294, 295]."
+  },
+  {
+    q: "Consensul:",
+    options: [
+      "a) presupune acordul unanim de voință a celor care compun organul colegial ce urmează să adopte sau să emită un act administrativ",
+      "b) poate fi realizat cu votul a jumătate plus unu a membrilor organului colegial",
+      "c) este obligatoriu în cazul emiterii/adoptării ordonanțelor și a hotărârilor de Guvern"
+    ],
+    correct: [0, 2],
+    expl: "Consensul reprezintă acordul unanim (nu majoritar) și este modalitatea specifică de adoptare a actelor în cadrul ședințelor de Guvern[cite: 296, 297, 298, 299]."
+  },
+  {
+    q: "Potrivit legii, sunt exceptate de la controlul contencios administrativ următoarele:",
+    options: [
+      "a) actele administrative adoptate emise pentru aplicarea regimului stării de război, asediu sau al celei de urgență",
+      "b) actele administrative ale autoritatilor publice care privesc raporturile acestora cu Parlamentul",
+      "c) actele administrative ale aut.publice care privesc raporturile acestora cu Guvernul",
+      "d) actele de comandament cu caracter militar"
+    ],
+    correct: [1, 3],
+    expl: "Legea 554/2004 exceptează clar actele vizând relația cu Parlamentul și actele de comandament cu caracter militar[cite: 300, 301, 302, 303, 304]."
+  },
+  {
+    q: "Potrivit legii, numărul minim de voturi favorabile necesar pentru ca actul administrativ să fie adoptat în mod valabil poate fi:",
+    options: [
+      "a) cel putin jumătate plus unu din numărul celor prezenți",
+      "b) un anumit număr legal determinat din numărul membrilor autorității colegiale respectiv",
+      "c) cel puțin jumătate plus unu din numărul celor care compun autoritatea colegiala respectiva"
+    ],
+    correct: [0, 1, 2],
+    expl: "Toate cele 3 variante sunt corecte, reprezentând majoritatea simplă (prezenți), majoritatea calificată (număr determinat, ex 2/3) și majoritatea absolută (toți consilierii)[cite: 305, 306, 307, 308]."
+  },
+  {
+    q: "Abrogarea unui act administrativ:",
+    options: [
+      "a) poate fi totală sau parțială",
+      "b) se poate fi materială sau procedurală",
+      "c) determină încetarea definitivă a efectelor unui act administrativ prin emiterea sau adoptarea unui nou act",
+      "d) poate fi expresă sau implicita"
+    ],
+    correct: [0, 2, 3],
+    expl: "Abrogarea presupune scoaterea din vigoare a actului, putând fi expresă (numită clar) sau implicită (dedusă), totală sau parțială[cite: 309, 310, 311, 312, 313]."
+  },
+  {
+    q: "În funcție de situație, funcționarii publici pot răspunde:",
+    options: [
+      "a) civil",
+      "b) administrativ-contravențional",
+      "c) disciplinar",
+      "d) penal"
+    ],
+    correct: [0, 1, 2, 3],
+    expl: "Codul administrativ prevede faptul că funcționarii publici pot atrage absolut oricare din aceste 4 forme de răspundere, în funcție de abatere[cite: 314, 315, 316, 317, 318]."
+  },
+  {
+    q: "Contractele de achiziție publice pot fi clasificate în:",
+    options: [
+      "a) contracte de lucrări",
+      "b) contracte de furnizare",
+      "c) contracte de servicii",
+      "d) contracte de furnituri"
+    ],
+    correct: [0, 1, 2],
+    expl: "Clasificarea legală actuală împarte achizițiile în: lucrări, produse/furnizare și servicii[cite: 319, 320, 321, 322, 323]."
+  },
+  {
+    q: "Într-un contract de achiziții publice, autoritatea contractantă poate fi:",
+    options: [
+      "a) o instituție publică de la nivel central sau local",
+      "b) o asociere de autoritati publice centrale sau locale",
+      "c) o persoana juridică care desfășoară activitati de utilitate publică (apă, energie, transport etc.)",
+      "d) persoana fizica cu personalitate juridica"
+    ],
+    correct: [0, 1, 2],
+    expl: "Sunt autorități contractante ministerele, primăriile, asocierile acestora și operatorii regiilor autonome de utilitate publică[cite: 324, 325, 326, 327, 328]."
+  },
+  {
+    q: "Contractul de gestiune a serviciilor publice poate fi atribuit prin:",
+    options: [
+      "a) negociere directă",
+      "b) negociere restrânsă",
+      "c) negociere indirectă",
+      "d) organizarea unei licitații publice"
+    ],
+    correct: [3],
+    expl: "Pentru asigurarea concurenței, atribuirea delegării de gestiune se face de regulă prin licitație publică deschisă[cite: 329, 330, 331, 332, 333]."
+  },
+  {
+    q: "Rectificarea unui act administrativ reprezintă:",
+    options: [
+      "a) corectarea greșelilor materiale din înscrisul administrativ",
+      "b) modificarea greșelilor de fond din înscrisul administrativ",
+      "c) completarea actului prin îndreptarea greșelilor procedurale din înscrisul administrativ"
+    ],
+    correct: [0],
+    expl: "Rectificarea vizează exclusiv erorile materiale (greșeli de redactare, cifre), neputând modifica fondul juridic al actului[cite: 334, 335, 336, 337]."
+  },
+  {
+    q: "Contractele de concesiune de bunuri proprietate publică:",
+    options: [
+      "a) impune concesionarului plata unei redevente in schimbul dreptului de exploatare a unui bun public",
+      "b) transmit concedentului dreptul de exploatare a unui bun public",
+      "c) presupune elaborarea prealabila incheierii contractului de catre concedent a unui studiu de oportunitate dreptului de exploatare a unui bun proprietate publică",
+      "d) trebuie incheiat în forma scrisă"
+    ],
+    correct: [0, 2, 3],
+    expl: "Concesionarul (privatul) plătește redevența statului. Varianta b e greșită deoarece dreptul de exploatare se transmite concesionarului, nu concedentului[cite: 338, 339, 340, 341, 342]."
+  },
+  {
+    q: "Obiectul acțiunii în contencios administrativ poate fi:",
+    options: [
+      "a) anularea in tot sau in parte a actului administrativ",
+      "b) obligarea autoritatilor administrative de a emite un nou act administrativ în condițiile legii",
+      "c) acordarea de despăgubiri persoanei vătămate"
+    ],
+    correct: [0, 1, 2],
+    expl: "Instanța poate dispune anularea actului, poate obliga instituția să emită un act și poate acorda și daune (acțiune în pretenții)[cite: 343, 344, 345, 346]."
+  },
+  {
+    q: "În funcție de obiectul lor, contractele administrative pot fi:",
+    options: [
+      "a) contracte de împrumut public",
+      "b) contracte de achizitii publice",
+      "c) contracte de vânzare civila",
+      "d) contracte de concesionare"
+    ],
+    correct: [0, 1, 3],
+    expl: "Vânzarea civilă ține de dreptul privat. Achizițiile, concesiunile și împrumuturile de stat sunt contracte pur administrative[cite: 347, 348, 349, 350, 351]."
+  },
+  {
+    q: "În cazul organizării licitației deschise:",
+    options: [
+      "a) este necesară publicarea unui anunț de participare din partea autorității publice",
+      "b) orice furnizor , executant sau prestator poate depune o ofertă",
+      "c) se desfasoara intr-o singura etapa obligatorie"
+    ],
+    correct: [0, 1, 2],
+    expl: "Spre deosebire de licitația restrânsă (care are etapă de preselecție a candidaților), cea deschisă se face într-o singură etapă și oricine poate depune ofertă[cite: 352, 353, 354, 355]."
+  },
+  {
+    q: "Pot avea legimitate procesuala în materia contenciosului administrativ:",
+    options: [
+      "a) Avocatul poporului",
+      "b) reprezentantii Ministerului public",
+      "c) grupurile de persoane fizice",
+      "d) persoanele fizice sau juridice"
+    ],
+    correct: [0, 1, 2, 3],
+    expl: "Legea contenciosului (L554/2004) oferă legitimare oricărei persoane sau grup vătămat, dar și Avocatului Poporului sau Ministerului Public pentru apărarea interesului public[cite: 356, 357, 358, 359, 360]."
+  },
+  {
+    q: "Cazierul administrativ :",
+    options: [
+      "a) poate fi supus procedurii de radiere",
+      "b) este eliberat de catre Autoritatea Nationala a functionarilor publici",
+      "c) se elibereaza la solicitarea oricarei persoane interesate",
+      "d) este necesar de obicei ptr.recrutarea sau promovarea functionarilor publici"
+    ],
+    correct: [0, 1, 3],
+    expl: "Cazierul administrativ ține evidența sancțiunilor disciplinare. Nu se eliberează oricui, ci doar persoanei în cauză sau instituției pentru concurs[cite: 361, 362, 363, 364, 365]."
+  },
+  {
+    q: "Concursul de soluții:",
+    options: [
+      "a) este organizat de obicei pentru rezolvarea unor probleme în domeniul urbanisticii și amenajării peisagistice a teritoriului",
+      "b) reprezintă o procedură specială pentru încheierea unui contract de achiziții publice",
+      "c) presupune selectarea unui plan sau proiect de către un juriu special abilitat în acest sens"
+    ],
+    correct: [0, 1, 2],
+    expl: "Concursul de soluții permite achiziția unui proiect sau plan de către un juriu (frecvent utilizat pentru arhitectură și peisagistică)[cite: 366, 367, 368, 369]."
+  },
+  {
+    q: "În funcție de situație, procedura încheierii unui contract de achiziții publice se poate concretiza în:",
+    options: [
+      "a) dialog competitiv",
+      "b) licitație deschisă sau restransa",
+      "c) mediere",
+      "d) negociere fără publicare prealabilă"
+    ],
+    correct: [0, 1, 3],
+    expl: "Medierea este o metodă de soluționare a litigiilor, nu o procedură de atribuire a unui contract public[cite: 370, 371, 372, 373, 374]."
+  },
+  {
+    q: "Potrivit contractului de concesiune, concesionarul poate utiliza:",
+    options: [
+      "a) bunurile proprii",
+      "b) bunurile care fac obiectul contractului",
+      "c) bunurile de retur",
+      "d) bunurile concesionate"
+    ],
+    correct: [0, 1, 2, 3],
+    expl: "Concesionarul utilizează bunurile obiect al contractului (concesionate/de retur), dar și bunuri din patrimoniul propriu pentru a putea executa serviciul[cite: 375, 376, 377, 378, 379]."
+  },
+  {
+    q: "Soluționarea în primă instanță a cauzelor de contencios administrativ revine potrivit legii:",
+    options: [
+      "a) sectiilor de contencios administrativ si fiscal din cadrul Curtilor de apel",
+      "b) tribunalelor administrativ-fiscale",
+      "c) Înaltei Curți de Casație și Justiție"
+    ],
+    correct: [0, 1],
+    expl: "Competența de fond se împarte: Tribunalele soluționează actele emise de autoritățile locale, iar Curțile de Apel actele emise de autoritățile centrale[cite: 380, 381, 382, 383]."
+  },
+  {
+    q: "Temei legal de admitere unei acțiuni contencioase poate fi:",
+    options: [
+      "a) vătămarea unui drept subiectiv sau a unui interes legitim particular ca urmare a emiterii/adoptării unui act administrativ",
+      "b) refuzul nejustificat de a solutiona o cerere pe cale administrativă",
+      "c) vătămarea unui interes public prin actul administrativ emis/adoptat"
+    ],
+    correct: [0, 1, 2],
+    expl: "Refuzul nejustificat (sau tăcerea) este asimilat unui act administrativ vătămător. Se pot invoca atât interese particulare, cât și publice[cite: 384, 385, 386, 387]."
+  },
+  {
+    q: "Termenul de introducere a acțiunii în contencios administrativ:",
+    options: [
+      "a) poate fi de 6 luni sau de un an, în funcție de situație",
+      "b) este de maxim 6 luni din momentul emiterii actului administrativ contestat",
+      "c) este de 30 de zile si curge din ziua emiterii actului administrativ legal"
+    ],
+    correct: [0],
+    expl: "Termenul standard este de 6 luni, dar legea permite prelungirea până la maxim 1 an pentru motive temeinice, obiective[cite: 388, 389, 390, 391]."
+  },
+  {
+    q: "Comunicarea actelor administrative publicului se poate realiza prin:",
+    options: [
+      "a) publicarea pe site-ul autorității administrative emitente",
+      "b) afișare la sediul emitentului",
+      "c) publicare într-un cotidian central sau local de largă circulație",
+      "d) asigurarea continuitatii functionarii unui serviviu public"
+    ],
+    correct: [0, 1, 2],
+    expl: "Afișarea, site-ul și monitorul oficial sau presa sunt mijloacele clasice de aducere la cunoștință publică[cite: 392, 393, 394, 395, 396]."
+  },
+  {
+    q: "În cazul unui contract administrativ, obligațiile particularului contractant pot fi următoarele:",
+    options: [
+      "a) exploatarea unui bun din domeniul public al statului",
+      "b) executarea unor lucrări publice",
+      "c) plata unor redevențe",
+      "d) livrarea unor bunuri publice"
+    ],
+    correct: [0, 1, 2, 3],
+    expl: "Toate reprezintă obligații tipice asumate de privat în diferite contracte (execuție la achiziții, exploatare și plată la concesiuni)[cite: 397, 398, 399, 400, 401]."
+  },
+  {
+    q: "În funcție de specificul contractului administrativ încheiat, constituie obligații principale ale operatorului economic:",
+    options: [
+      "a) executarea unor lucrări publice",
+      "b) furnizarea unor servicii publice",
+      "c) livrarea unor bunuri publice",
+      "d) asigurarea continuitatii functionarii unui serviciu public"
+    ],
+    correct: [0, 1, 2, 3],
+    expl: "În contractele publice (achiziții sau concesiuni), privatul se obligă la lucrări, bunuri, servicii, dar și la continuitatea serviciilor prestate[cite: 402, 403, 404, 405, 406]."
+  },
+  {
+    q: "Rezolvarea contestațiilor administrative împotriva actelor sau deciziilor nelegale în materia achizițiilor publice sunt de competența:",
+    options: [
+      "a) Consiliului național de soluționare a contestațiilor",
+      "b) autorității administrative ierarhic superioare celei care a organizat procedura atribuirii și încheierii contractului de achiziție publică",
+      "c) Ministerului de Finanțe prin intermediul secretarilor de stat cu atribuții în acest sens"
+    ],
+    correct: [0],
+    expl: "CNSC este organul cu activitate administrativ-jurisdicțională, independent, creat special pentru litigiile din achiziții[cite: 407, 408, 409, 410]."
+  },
+  {
+    q: "Anularea unui act administrativ:",
+    options: [
+      "a) determină lipsirea acestuia de efecte juridice",
+      "b) este o sancțiune aplicată pentru nerespectarea legii cu ocazia emiterii sau adoptării acestuia",
+      "c) este dispusă de o altă autoritate decât cea care a emis sau adoptat actul ilegal sau inoportun"
+    ],
+    correct: [0, 1, 2],
+    expl: "Anularea este o sancțiune a nelegalității, retroactivează și este dispusă de instanța de judecată (autoritatea judecătorească), nu de emitent[cite: 411, 412, 413, 414]."
+  },
+  {
+    q: "Contractul administrativ:",
+    options: [
+      "a) se încheie prin acord de voință unilateral",
+      "b) are ca obiect realizarea unei activități de interes public",
+      "c) se încheie între două sau mai multe persoane"
+    ],
+    correct: [1, 2],
+    expl: "Deși clauzele sunt impuse adesea prin caietul de sarcini, contractul rămâne un acord între două sau mai multe părți, vizând mereu interesul public[cite: 415, 416, 417, 418]."
+  },
+  {
+    q: "Sanctiunile disciplinare care pot fi aplicate functionarilor publici sunt:",
+    options: [
+      "a) mustrare verbala",
+      "b) diminuarea drepturilor salariale cu 5-20% pe o perioada de 3 luni",
+      "c) avertismentul",
+      "d) mustrare scrisa"
+    ],
+    correct: [1, 3],
+    expl: "Codul administrativ prevede diminuarea salarială și mustrarea SCISĂ. 'Mustrarea verbală' sau 'avertismentul' nu se află pe grila de sancțiuni[cite: 419, 420, 421, 422, 423]."
+  },
+  {
+    q: "Revocarea actelor administrative:",
+    options: [
+      "a) determină încetarea retroactivă a efectelor acestora",
+      "b) este sinonimă cu anularea",
+      "c) trebuie dispusă de o autoritate superioară celei care a emis sau adoptat actul ilegal"
+    ],
+    correct: [0],
+    expl: "Dacă un act administrativ a fost emis cu încălcarea legii, retragerea (revocarea) lui va produce efecte retroactive (ca și cum nu a existat)[cite: 424, 425, 426, 427]."
+  },
+  {
+    q: "Motivarea emiterii sau adoptării unui act administrativ presupune :",
+    options: [
+      "a) expunerea considerentelor justificative de fapt și de drept",
+      "b) aducerea la cunoștința celor interesați considerentele emiterii sau adoptării unui act administrativ",
+      "c) explicarea situatiilor care au dus la elaborarea și emiterea/adoptarea sa"
+    ],
+    correct: [0, 2],
+    expl: "Preambulul actului trebuie să expună legea pe care se bazează (temeiul de drept) și situația practică care necesită rezolvare (situația de fapt)[cite: 428, 429, 430, 431]."
+  },
+  {
+    q: "Contractele de furnizare:",
+    options: [
+      "a) sunt utilizate de autoritățile publice pentru achiziționarea de servicii",
+      "b) pot fi utilizate si pentru achiziționarea de imobile",
+      "c) sunt contracte de achiziție publică de produse"
+    ],
+    correct: [2],
+    expl: "În terminologia legii achizițiilor publice (L98/2016), contractul de furnizare vizează exclusiv cumpărarea/închirierea de produse[cite: 432, 433, 434, 435]."
+  },
+  {
+    q: "Dialogul competitiv:",
+    options: [
+      "a) intervine atunci când este vorba despre efectuarea unor lucrări simple, de întreținere a unor echipamente",
+      "b) poate fi folosit ori de câte ori o autoritate administrativă",
+      "c) reprezinta o procedura de atribuire unui contract de achiziție publică pentru o lucrare care manifestă o complexitate deosebită"
+    ],
+    correct: [2],
+    expl: "Este o procedură excepțională rezervată exclusiv achizițiilor atât de complexe încât statul nu poate defini soluțiile tehnice din start[cite: 436, 437, 438, 439]."
+  },
+  {
+    q: "Serviciile pot fi:",
+    options: [
+      "a) gestionate preferential si aleatoriu",
+      "b) gestionate indirect prin delegarea de persoane fizice sau juridice potrivit unui contract de gestiune a serviciilor publice",
+      "c) gestionate direct de catre compartimentele specializate ale aparatului administratiei publice locale"
+    ],
+    correct: [1, 2],
+    expl: "Administrația publică poate opta să ofere serviciile publicului prin aparatul propriu (direct) sau prin delegare către o firmă privată (indirect)[cite: 440, 441, 442, 443]."
+  },
+  {
+    q: "Contractele de lucrari publice:",
+    options: [
+      "a) obliga operatorul economic la executarea sau la proiectarea si executarea unei lucrari",
+      "b) da dreptul operatorului economic la exploatarea lucrarii pe o perioada de timp determinata",
+      "c) obliga autoritatea contractanta la piata unui pret"
+    ],
+    correct: [0, 2],
+    expl: "Spre deosebire de concesiune, aici operatorul nu primește dreptul să exploateze podul/școala; el o construiește și își ia banii pe loc[cite: 444, 445, 446, 447]."
+  },
+  {
+    q: "Contractul de concesiune de lucrări și servicii:",
+    options: [
+      "a) este un contract oneros",
+      "b) se atribuie respectând principiul ofertei celei mai avantajoase economic",
+      "c) impune concedentului plata unei redevențe",
+      "d) are o durată limitată pentru a nu afecta concurența între operatorii economici"
+    ],
+    correct: [0, 1, 3],
+    expl: "Varianta c este capcană, deoarece concesionarul este cel care plătește statului, nu invers[cite: 448, 449, 450, 451, 452]."
+  },
+  {
+    q: "Prin confirmarea unui act administrativ, o autoritate:",
+    options: [
+      "a) validează conținutul actului și îi întărește forța sa juridică",
+      "b) suspendă efectele actului administrativ în cauză",
+      "c) determină producerea efectelor juridice a respectivului act"
+    ],
+    correct: [0],
+    expl: "Confirmarea este actul prin care autoritatea validează juridic un act care prezenta anterior un viciu de nulitate relativă[cite: 453, 454, 455, 456]."
+  }
+];
+// --- UTILITIES: ALGORITMUL DE SHUFFLE (Fisher-Yates) ---
+    function shuffleArray(array) {
+      let currentIndex = array.length, randomIndex;
+      while (currentIndex !== 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        // Schimbă elementele între ele
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+      }
+      return array;
+    }
+
+    // --- STATE-UL APLICAȚIEI ---
+    let currentQ = 0;
+    let score = 0;
+    let combo = 0;
+    let sessionXP = 0;
+    let sessionQuestions = [];     // Aici vom ține cele 10 grile extrase random
+    let currentCorrectIndex = -1;  // Memorează unde se află varianta corectă DUPĂ amestecare
+    
+    // Inițializare XP Global din memorie
+    let db = JSON.parse(localStorage.getItem('ec_ultra2') || '{}');
+    if (!db._meta) db._meta = { xp: 0 };
+    let state = db._meta;
+    document.getElementById('global-xp').textContent = state.xp;
+
+    const letters = ['A', 'B', 'C', 'D', 'E', 'F']; // Suportă și grile cu mai multe variante
+
+function startQuiz() {
+      sessionQuestions = shuffleArray([...questions]);
+      loadQuestion();
+    }
+
+let selectedIndices = []; // Aici ținem minte ce apasă userul
+    let correctIndices = [];  // Aici știm unde s-au ascuns variantele corecte după Shuffle
+
+    function loadQuestion() {
+      const q = sessionQuestions[currentQ];
+      selectedIndices = [];
+      correctIndices = [];
+      
+      let qNum = (currentQ + 1).toString().padStart(2, '0');
+      let tNum = sessionQuestions.length.toString().padStart(2, '0');
+      document.getElementById('q-counter').textContent = `Q ${qNum}/${tNum}`;
+      document.getElementById('q-text').textContent = q.q;
+      
+      const optionsBox = document.getElementById('options-box');
+      optionsBox.innerHTML = '';
+      
+      // MAGIA 1: Suportă și număr simplu (correct: 1) și listă (correct: [0, 2])
+      let optionsWithStatus = q.options.map((text, index) => {
+        let isCorr = Array.isArray(q.correct) ? q.correct.includes(index) : q.correct === index;
+        return { text: text, isCorrect: isCorr };
+      });
+
+      optionsWithStatus = shuffleArray(optionsWithStatus);
+      
+      optionsWithStatus.forEach((opt, index) => {
+        // Notăm unde a picat varianta corectă
+        if (opt.isCorrect) correctIndices.push(index);
+
+        let cleanText = opt.text.replace(/^[a-z]\)\s*/i, '').trim();
+        let newLetter = String.fromCharCode(97 + index); 
+        let finalText = newLetter + ') ' + cleanText;
+
+        const btn = document.createElement('div');
+        btn.className = 'option-btn';
+        btn.innerHTML = `<div class="option-letter">${letters[index]}</div><div class="option-text">${finalText}</div>`;
+        
+        // În loc să verificăm instant, doar selectăm/deselectăm butonul
+        btn.onclick = () => toggleOption(index, btn);
+        optionsBox.appendChild(btn);
+      });
+
+      document.getElementById('explanation-box').style.display = 'none';
+      
+      // Setăm butonul de Next să fie "Verifică"
+      let nextBtn = document.getElementById('next-btn');
+      nextBtn.textContent = 'Verifică Răspunsul ✓';
+      nextBtn.style.display = 'none'; // E ascuns până selectezi măcar o variantă
+      nextBtn.onclick = verifyAnswer; // Schimbăm funcția butonului
+    }
+
+    // Funcția care doar "bifează" sau "debifează" o variantă
+    function toggleOption(index, btn) {
+      if (btn.classList.contains('disabled')) return;
+
+      let pos = selectedIndices.indexOf(index);
+      if (pos === -1) {
+        selectedIndices.push(index);
+        btn.classList.add('selected');
+      } else {
+        selectedIndices.splice(pos, 1);
+        btn.classList.remove('selected');
+      }
+
+      // Arată butonul "Verifică" doar dacă ai ales ceva
+      document.getElementById('next-btn').style.display = selectedIndices.length > 0 ? 'block' : 'none';
+    }
+
+    // NOUA Funcție care controlează validarea finală a grilei
+    function verifyAnswer() {
+      const q = sessionQuestions[currentQ];
+      const allBtns = document.querySelectorAll('.option-btn');
+      
+      // Blocăm butoanele să nu mai poți modifica
+      allBtns.forEach(b => b.classList.add('disabled'));
+      
+      // Sortăm listele ca să le putem compara ușor
+      selectedIndices.sort();
+      correctIndices.sort();
+
+      // Verificăm dacă ai nimerit TOT și EXACT ce trebuia
+      let isPerfectMatch = (selectedIndices.length === correctIndices.length) &&
+                           selectedIndices.every((val, i) => val === correctIndices[i]);
+
+      const flash = document.getElementById('flash-overlay');
+      flash.className = 'flash-overlay';
+      void flash.offsetWidth;
+
+      if (isPerfectMatch) {
+        // EȘTI GENIU! Răspuns 100% corect
+        selectedIndices.forEach(idx => allBtns[idx].classList.add('correct'));
+        flash.classList.add('green');
+        combo++;
+        score++;
+        
+        let xpGained = 15; // Câștigi mai mult că e mai greu cu variante multiple
+        if (combo >= 2) {
+          xpGained += 5 * combo; 
+          showComboBadge();
+        }
+        
+        addXP(xpGained);
+        spawnParticles(document.body, 'var(--accent)');
+        if (navigator.vibrate) navigator.vibrate([20, 30, 50]);
+        
+      } else {
+        // AI GREȘIT (sau ai ratat o variantă corectă)
+        selectedIndices.forEach(idx => {
+           if (correctIndices.includes(idx)) {
+               allBtns[idx].classList.add('correct'); // Ai intuit-o bine pe asta
+           } else {
+               allBtns[idx].classList.add('wrong'); // Asta era capcană
+           }
+        });
+        
+        // Îți arătăm ce ai uitat să bifezi (apare cu border întrerupt/dashed)
+        correctIndices.forEach(idx => {
+           if (!selectedIndices.includes(idx)) {
+               allBtns[idx].classList.add('missed'); 
+           }
+        });
+
+        flash.classList.add('red');
+        combo = 0;
+        hideComboBadge();
+        if (navigator.vibrate) navigator.vibrate([80]);
+        
+        const explBox = document.getElementById('explanation-box');
+        explBox.textContent = `💡 Info: ${q.expl}`;
+        explBox.style.display = 'block';
+      }
+
+      // Acum transformăm butonul din "Verifică" în "Următoarea"
+      let nextBtn = document.getElementById('next-btn');
+      nextBtn.textContent = 'Următoarea →';
+      nextBtn.onclick = nextQuestion;
+    }
+
+    function nextQuestion() {
+      currentQ++;
+      if (currentQ < sessionQuestions.length) {
+        loadQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function showResults() {
+      document.getElementById('quiz-card').style.display = 'none';
+      const resScreen = document.getElementById('result-screen');
+      resScreen.style.display = 'flex';
+      
+      document.getElementById('final-score').textContent = `${score}/${sessionQuestions.length}`;
+      document.getElementById('final-xp').textContent = `Date extrase: +${sessionXP} XP`;
+      
+      spawnParticles(document.body, 'var(--blue)');
+      spawnParticles(document.body, 'var(--accent)');
+    }
+
+    // --- SISTEMUL XP & EFECTE ---
+    function addXP(amount) {
+      sessionXP += amount;
+      state.xp += amount;
+      db._meta = state;
+      localStorage.setItem('ec_ultra2', JSON.stringify(db));
+      document.getElementById('global-xp').textContent = state.xp;
+    }
+
+    function showComboBadge() {
+      const badge = document.getElementById('combo-badge');
+      badge.textContent = `${combo}x COMBO`;
+      badge.classList.add('show');
+    }
+    
+    function hideComboBadge() {
+      document.getElementById('combo-badge').classList.remove('show');
+    }
+
+    function spawnParticles(el, color) {
+      let rect = el.getBoundingClientRect();
+      let cx = rect.left + rect.width/2; let cy = rect.top + rect.height/2;
+      for(let i=0; i<15; i++) {
+        let p = document.createElement('div');
+        p.className = 'particle';
+        let angle = (i/15) * Math.PI * 2; let dist = 50 + Math.random()*80;
+        p.style.cssText = `width:5px; height:5px; background:${color}; left:${cx}px; top:${cy}px; --tx:${Math.cos(angle)*dist}px; --ty:${Math.sin(angle)*dist}px;`;
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 800);
+      }
+    }
+
+    startQuiz();
+  </script>
+</body>
+</html>
