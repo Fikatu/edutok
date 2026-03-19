@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Grile FP 2</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08090a;
+  --surface: #111316;
+  --surface2: #181b1f;
+  --border: #2a2d33;
+  --accent: #c8f53f; /* Verde Neon */
+  --accent-bg: #1a2100;
+  --blue: #38bdf8;
+  --red: #f87171;
+  --red-bg: #2a0a0a;
+  --amber: #fbbf24;
+  --text: #f0f2f5;
+  --muted: #5a6070;
+  --muted2: #363b45;
+  --font: 'Syne', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html, body {
+  min-height: 100%; font-family: var(--font);
+  background: var(--bg); color: var(--text); overflow-x: hidden;
+}
+
+body::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:999;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.08) 2px, rgba(0,0,0,.08) 4px);
+}
+
+/* ── HEADER HUD ── */
+header {
+  position: sticky; top: 0; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border); background: rgba(8, 9, 10, 0.85); backdrop-filter: blur(12px); z-index: 100;
+}
+.back-btn {
+  background: var(--surface2); border: 1px solid var(--border); color: var(--text); width: 36px; height: 36px;
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  text-decoration: none; font-family: var(--mono); font-weight: 800; transition: 0.2s;
+}
+.back-btn:active { transform: scale(0.9); border-color: var(--amber); color: var(--amber); }
+
+.header-title { font-family: var(--mono); font-size: 11px; font-weight: 800; letter-spacing: .2em; color: var(--amber); }
+
+.hud-xp { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.hud-val { font-family: var(--mono); font-size: 16px; font-weight: 600; line-height: 1; color: var(--accent); }
+.hud-label { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+
+/* ── QUIZ CONTAINER ── */
+main { padding: 25px 20px 100px; display: flex; flex-direction: column; gap: 20px; position: relative; }
+
+.quiz-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+  padding: 24px; display: flex; flex-direction: column; gap: 24px; position: relative;
+}
+.option-btn.selected {
+  border-color: var(--blue);
+  background: var(--blue-bg);
+  transform: scale(0.98);
+}
+.option-btn.disabled {
+  pointer-events: none;
+}
+.option-btn.missed {
+  border: 2px dashed var(--accent);
+  opacity: 0.8;
+}
+
+.quiz-header { display: flex; justify-content: space-between; align-items: center; }
+.question-counter { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 2px; }
+.combo-badge {
+  font-family: var(--mono); font-size: 10px; font-weight: 800; color: var(--bg); background: var(--amber);
+  padding: 4px 10px; border-radius: 12px; opacity: 0; transform: scale(0.8); transition: 0.3s;
+}
+.combo-badge.show { opacity: 1; transform: scale(1); box-shadow: 0 0 15px rgba(251, 191, 36, 0.4); }
+
+.question-text { font-size: 1.3rem; font-weight: 700; line-height: 1.4; color: var(--text); }
+
+/* ── OPTIONS GRID ── */
+.options-container { display: flex; flex-direction: column; gap: 12px; }
+
+.option-btn {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 14px;
+  padding: 16px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.2s;
+  text-align: left; position: relative; overflow: hidden;
+}
+.option-btn:active { transform: scale(0.98); }
+.option-btn.disabled { pointer-events: none; }
+
+.option-letter {
+  font-family: var(--mono); font-size: 12px; font-weight: 800; color: var(--muted);
+  background: var(--bg); border: 1px solid var(--border); width: 28px; height: 28px;
+  display: grid; place-items: center; border-radius: 8px; flex-shrink: 0; transition: 0.3s;
+}
+.option-text { font-family: var(--font); font-size: 1rem; color: #d0d4de; line-height: 1.3; font-weight: 600; }
+
+/* Stări de răspuns */
+.option-btn.correct { background: var(--accent-bg); border-color: var(--accent); box-shadow: 0 0 15px rgba(200,245,63,0.1); }
+.option-btn.correct .option-letter { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.option-btn.correct .option-text { color: var(--accent); }
+
+.option-btn.wrong { background: var(--red-bg); border-color: var(--red); opacity: 0.8; }
+.option-btn.wrong .option-letter { background: var(--red); color: var(--bg); border-color: var(--red); }
+.option-btn.wrong .option-text { color: var(--red); }
+
+/* ── EXPLANATION & NEXT BTN ── */
+.explanation-box {
+  background: rgba(56, 189, 248, 0.05); border-left: 3px solid var(--blue);
+  padding: 15px; border-radius: 0 12px 12px 0; font-size: 0.9rem; color: #a5b4fc;
+  line-height: 1.5; display: none; margin-top: 5px; animation: fadeIn 0.4s ease forwards;
+}
+
+.next-btn {
+  background: var(--text); color: var(--bg); border: none; border-radius: 14px;
+  padding: 16px; font-family: var(--font); font-size: 1rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 1px; cursor: pointer; display: none;
+  transition: 0.2s; margin-top: 10px;
+}
+.next-btn:active { transform: scale(0.95); }
+
+/* ── FLASH OVERLAYS ── */
+.flash-overlay { position: fixed; inset: 0; pointer-events: none; opacity: 0; z-index: 50; }
+.flash-overlay.green { background: rgba(200,245,63,0.1); animation: flashfade 0.5s forwards; }
+.flash-overlay.red { background: rgba(248,113,113,0.15); animation: flashfade 0.5s forwards; }
+
+@keyframes flashfade { 0% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── RESULT SCREEN ── */
+.result-screen {
+  text-align: center; display: none; flex-direction: column; align-items: center; gap: 20px;
+  padding: 40px 20px; animation: fadeIn 0.5s forwards;
+}
+.result-title { font-size: 2rem; font-weight: 800; color: var(--text); }
+.result-score { font-family: var(--mono); font-size: 4rem; color: var(--accent); font-weight: 800; text-shadow: 0 0 30px rgba(200,245,63,0.3); }
+.result-xp { font-family: var(--mono); font-size: 1.2rem; color: var(--blue); letter-spacing: 1px; }
+
+/* PARTICLES */
+.particle { position: fixed; pointer-events: none; z-index: 200; border-radius: 50%; animation: particleFly 0.8s ease forwards; }
+@keyframes particleFly { to { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); } }
+</style>
+</head>
+<body>
+
+  <header>
+    <a href="index.html" class="back-btn">←</a>
+    <div class="header-title">Grile Finanțe Publice 2</div>
+    <div class="hud-xp">
+      <div class="hud-val" id="global-xp">0</div>
+      <div class="hud-label">Global XP</div>
+    </div>
+  </header>
+
+  <main id="quiz-main">
+    <div class="quiz-card" id="quiz-card">
+      <div class="quiz-header">
+        <div class="question-counter" id="q-counter">Q 01/10</div>
+        <div class="combo-badge" id="combo-badge">2x COMBO</div>
+      </div>
+      
+      <div class="question-text" id="q-text">Se încarcă modulul...</div>
+
+      <div class="options-container" id="options-box">
+        </div>
+
+      <div class="explanation-box" id="explanation-box"></div>
+      
+      <button class="next-btn" id="next-btn" onclick="nextQuestion()">Următoarea Grilă →</button>
+    </div>
+
+    <div class="result-screen" id="result-screen">
+      <div class="result-title">Misiune Completă</div>
+      <div class="result-score" id="final-score">8/10</div>
+      <div class="result-xp" id="final-xp">Data extrasa: +120 XP</div>
+      <a href="index.html" class="next-btn" style="display: block; width: 100%; margin-top: 20px;">Înapoi la Bază</a>
+    </div>
+
+  </main>
+
+  <div class="flash-overlay" id="flash-overlay"></div>
+
+  <script>
+const questions = [
+  {
+    q: "Evaziunea fiscală legală semnifică:",
+    options: [
+      "a) Neplata impozitelor la termenul și în cuantumul datorat",
+      "b) Sustragerea materiei impozabile de la impunere prin încălcarea prevederilor legale privind stabilirea și încasarea impozitului",
+      "c) Luarea in considerare a unei parti din materia impozabila în calcularea impozitului, în contextul creat de lege daca ar fi NELUAREA IN CONSIDERARE",
+      "d) sustragerea,fara intentie din partea contribuabilului a unei parti din materia impozabila de la impunere"
+    ],
+    correct: [2],
+    expl: "Evaziunea legală implică folosirea breșelor din lege (în contextul creat de ea) pentru a reduce sarcina fiscală, fără a se comite o infracțiune. Varianta b definește evaziunea ilicită/ilegală."
+  },
+  {
+    q: "Elasticitatea impunerii, ca principiu de politică financiară (fiscală) presupune:",
+    options: [
+      "a) Cresterea ponderii impozitelor indirecte în sistemele de impunere",
+      "b) modificarea cu o periodicitate regulată a structurii sistemului de impozite și taxe",
+      "c) practicarea mai multor forme de impozite și taxe",
+      "d) crearea posibilității de adaptare a încasărilor din impozite și taxe la necesitățile de resurse financiare ale autorităților publice"
+    ],
+    correct: [3],
+    expl: "Elasticitatea fiscală măsoară exact flexibilitatea încasărilor: dacă statul are nevoie de mai mulți bani pentru cheltuieli, sistemul trebuie să se poată adapta și să îi genereze."
+  },
+  {
+    q: "O formă de impozitare implicită a consumului de bunuri/servicii, monopolul fiscal:",
+    options: [
+      "a) determină redistribuirea veniturilor private ale persoanelor fizice/juridice în favoarea statului",
+      "b) genereaza veniturile bugetare prin prelevarile din profitul companiilor publice care administrează monopolul",
+      "c) determina o creștere inflationistaă a prețurilor"
+    ],
+    correct: [1],
+    expl: "În cazul monopolului fiscal (ex: tutun, alcool, sare în trecut), statul obține venituri acaparând producția/vânzarea și prelevând profitul acestor companii la buget."
+  },
+  {
+    q: "Din punct de vedere juridic, bugetul de stat reprezintă:",
+    options: [
+      "a) totalitatea sumelor de bani ce se acumulează la dispoziția statului și se alocă beneficiarilor spre utilizare",
+      "b) procese,tehnici de mobilizaree a resurselor bugetare, precum și de utilizare a acestora sub forma cheltuielilor bugetare",
+      "c) un plan al veniturilor și cheltuielilor anuale ale statului",
+      "d) un tablou evaluative și comparativ al veniturilor și al cheltuielilor statului"
+    ],
+    correct: [2],
+    expl: "Privit din perspectivă juridică, bugetul este un act (o lege/un plan aprobat) care autorizează veniturile și cheltuielile anuale."
+  },
+  {
+    q: "Aprobarea și utilizarea de bugete extraordinare semnifică abateri (încălcări) de la principiile bugetare ale",
+    options: [
+      "a) anualității",
+      "b) unitatii",
+      "c) ",
+      "d) specializarii"
+    ],
+    correct: [1],
+    expl: "Principiul UNITĂȚII bugetare cere ca toate veniturile și cheltuielile statului să fie cuprinse într-un singur document. Existența mai multor bugete (extraordinare, anexe) este o abatere de la acest principiu."
+  },
+  {
+    q: "Dimensiunile contraperstației statului față de creditorii săi într-un an se exprimă cu ajutorul următorilor indicatori:",
+    options: [
+      "a) cuantumul anual al dobânzilor si comisioanelor",
+      "b) scaderea dobanzilor aferente datoriei publice in totalul cheltuielilor publice",
+      "c) raportul dintre serviciul datoriei publice si P.I.B",
+      "d) marimea medie a serviciului datoriei publice pe locuitor"
+    ],
+    correct: [0],
+    expl: "Serviciul datoriei publice anuale reprezintă plata efectivă (contrapestația) către creditori, formată din dobânzi, comisioane și rate de capital."
+  },
+  {
+    q: "Modalitatea de încasare a impozitelor prin stopaj (reținere la sursă):",
+    options: [
+      "a) face impozitul astfel încasat cu caracter \"portabil\"",
+      "b) facilitează evaluarea forfetară a materiei impozabile",
+      "c) este aplicabilă la impozitele pe proprietăți",
+      "d) reduce riscul producerii evaziunii fiscale ilicite"
+    ],
+    correct: [3],
+    expl: "Stopajul la sursă (ex: reținerea impozitului pe salariu de către angajator) combate evaziunea, deoarece banii nu ajung la contribuabil pentru ca acesta să îi poată „ascunde”, ci merg direct la stat."
+  },
+  {
+    q: "In sens juridic, conceptul de fiscalitate desemnează:",
+    options: [
+      "a) ansamblul de reglementări privitoare la impozite și taxe",
+      "b) ansamblul resurselor fiscale mobilizate la dispoziția autorităților publice",
+      "c) operațiunile specifice derulate de instituțiile statului în cadrul prelevării contribuțiilor obligatorii de la persoanele fizice și juridice",
+      "d) ansamblul obligațiilor bugetare ale agenților economici"
+    ],
+    correct: [0],
+    expl: "În sens strict juridic, fiscalitatea se referă la corpul de legi, norme și reglementări financiare."
+  },
+  {
+    q: "În cazul taxelor vamale de import:",
+    options: [
+      "a) plătitorul impozitului este importatorul bunurilor/serviciilor",
+      "b) plătitorul impozitului este consumatorul final al bunurilor/serviciilor importate",
+      "c) suportatorul impozitului este producătorul străin al bunurilor/serviciilor importate",
+      "d) obiectul impozitului îl reprezintă valoarea în vamă a bunurilor/serviciilor importate"
+    ],
+    correct: [0, 3],
+    expl: "Importatorul plătește taxa la graniță (a), iar baza de calcul (obiectul) este valoarea în vamă a mărfii (d). Consumatorul final este cel care suportă real taxa (inclusă în preț), nu producătorul străin."
+  },
+  {
+    q: "Înscrierea în buget în sume integrale a tuturor veniturilor și cheltuielilor publice reprezintă o cerință a respectării:",
+    options: [
+      "a) principiului realității bugetului",
+      "b) principiului universalității bugetului",
+      "c) principiului echilibrării bugetului",
+      "d) principiului specializării bugetare"
+    ],
+    correct: [1],
+    expl: "Universalitatea bugetului interzice compensările. Veniturile se trec integral la partea de venituri, iar cheltuielile integral la cheltuieli, fără a le scădea unele din altele."
+  },
+  {
+    q: "Pentru a determina rata reală a dobânzii suportată de stat la un împrumut contractat trebuie cunoscute:",
+    options: [
+      "a) valoarea nominală a înscrisurilor",
+      "b) cursul inscrisurilor",
+      "c) marimea absoluta a dobanzii datorate catre stat",
+      "d) indicele prețurilor (deflatorul)"
+    ],
+    correct: [3],
+    expl: "Pentru a trece de la dobânda 'nominală' (de pe hârtie) la cea 'reală' (puterea de cumpărare), se ajustează cu indicele prețurilor (inflația)."
+  },
+  {
+    q: "Care dintre următoarele afirmații privind conceptul de fiscalitate sunt adevărate:",
+    options: [
+      "a) din punct de vedere economic semnifică un ansamblu de procese de redistribuire a PIB între diferite persoane, fizice și juridice si stat",
+      "b) în orice accepțiune dată acestui concept, fiscalitatea integrează procese de mobilizare de resurse publice sub forma impozitelor și taxelor",
+      "c) aprecierea realista a proportiilor fiscalitatii se face numai prin prisma dimensiunii prelevarilor cu caracter fiscal",
+      "d) în accepțiunea restransa, fiscalitatea integrează doar procesele de alocare și utilizare a resurselor financiare (din impozite și taxe) sub forma cheltuielilor publice"
+    ],
+    correct: [0, 1],
+    expl: "Fiscalitatea este un mijloc de redistribuire a PIB-ului către stat (a) și are mereu ca scop principal mobilizarea de venituri prin prelevări obligatorii (b)."
+  },
+  {
+    q: "Valoarea nominală a înscrisurilor împrumuturilor de stat reprezintă:",
+    options: [
+      "a) prețul cu care se vând și se cumpără titlurile de împrumut, la un moment dat",
+      "b) suma înscrisă pe un titlu de împrumut la care se adaugă dobânda la scadență",
+      "c) suma înscrisă pe titlu de împrumut",
+      "d) mărimea creanței pe care deținătorul efectului o are de încasat de la stat la scadență"
+    ],
+    correct: [2],
+    expl: "Valoarea 'nominală' este pur și simplu cifra tipărită pe hârtie (titlu). Prețul de tranzacționare se numește 'valoare de curs'."
+  },
+  {
+    q: "Corelarea condițiilor de efectuare a plății impozitelor cu posibilitatea reală de plată ale contribuabililor reprezintă o cerință a asigurarii:",
+    options: [
+      "a) echității fiscale în impunere",
+      "b) elasticității impozitelor",
+      "c) stabilității încasărilor din impozite",
+      "d) comoditatii impuneii",
+      "e) certitudinii impunerii"
+    ],
+    correct: [3],
+    expl: "Comoditatea impunerii (unul din principiile clasice ale lui Adam Smith) cere ca impozitul să fie perceput la data și în modul cele mai convenabile (comode) pentru contribuabil."
+  },
+  {
+    q: "Rambursarea împrumuturilor de stat se poate realiza:",
+    options: [
+      "a) în rate anuale regresive",
+      "b) in rate anuale progresive",
+      "c) integral, la o singură scadență",
+      "d) prin răscumpărarea la bursă de valori"
+    ],
+    correct: [2, 3],
+    expl: "Statul poate rambursa datoria dintr-un foc (la scadență) sau poate răscumpăra propriile titluri de pe bursă dacă acest lucru este avantajos."
+  },
+  {
+    q: "În cazul impunerii în cote procentuale progresive compuse:",
+    options: [
+      "a) ritmul de creștere a materiei impozabile este devansat de ritmul de creștere a impozitului",
+      "b) sarcina fiscală poate fi inegală la aceleași mărimi ale materiei impozabile- poate fi si aceasta varianta corecta",
+      "c) sunt respectate, în cel mai înalt grad, cerințele de echitate fiscală verticală",
+      "d) nu este respectată cerința asigurării comodității impunerii"
+    ],
+    correct: [2],
+    expl: "Progresivitatea compusă (pe tranșe) este cel mai corect sistem, asigurând echitatea fiscală (cei cu venituri mult mai mari sunt taxați într-o proporție justă pe tranșele superioare)."
+  },
+  {
+    q: "Îndeplinirea căror atribuții se reflectă ipostaza de bancher a trezoreriei publice:",
+    options: [
+      "a) integrarea în circuitul economic a fluxurilor determinate de finanțarea deficitului bugetar",
+      "b) contractarea de împrumuturi pentru refinanțarea deficitului bugetar- poate fi si aceasta varianta corecta",
+      "c) redistribuirea disponibilităților bănești din conturile instituțiilor publice",
+      "d) elaborarea de prognoze privind evoluția viitoare a operațiunilor de încasări și plăți"
+    ],
+    correct: [0, 1],
+    expl: "Trezoreria acționează ca o 'bancă a statului' (bancher) când plasează titluri pe piață și contractează împrumuturi pentru a finanța deficitul bugetar."
+  },
+  {
+    q: "Plasarea unui împrumut de stat la bursa de valori:",
+    options: [
+      "a) presupune deschiderea unor ghișee speciale în cadrul burselor de valori, la care se vând înscrisurile împrumutului",
+      "b) este aplicabilă doar împrumuturilor perpetue",
+      "c) necesită o publicitate susținută pentru a spori atractivitatea împrumutului",
+      "d) se mai numește „plasare în comision”"
+    ],
+    correct: [3],
+    expl: "Când statul vinde titlurile pe bursă, apelează la un sindicat bancar care intermediază tranzacția, plătindu-le acestora un comision. De aici denumirea."
+  },
+  {
+    q: "Datoria publică consolidată reprezintă:",
+    options: [
+      "a) sumele imprumutate de agenții privați și garantate de stat",
+      "b) nivelul datoriei publice exprimat în prețuri constante",
+      "c) sumele datorate de stat exigibile pe termen mediu și lung",
+      "d) sumele datorate de stat cu o scadență mai mică de un an"
+    ],
+    correct: [2],
+    expl: "Spre deosebire de datoria flotantă (termen scurt, sub un an), datoria consolidată cuprinde obligațiile de plată emise pe termen mediu și lung."
+  },
+  {
+    q: "În succesiunea lor firească, operațiunile specifice execuției bugetului la partea de venituri sunt:",
+    options: [
+      "a) asezarea, emiterea titlurilor de percepere, perceperea, lichidarea",
+      "b) ........ emiterea titlurilor de percepere,lichidare",
+      "c) .... emiterea titlurilor de percepere,perceperea"
+    ],
+    correct: [0],
+    expl: "Procesul complet de adunare a veniturilor: așezarea (determinarea mărimii), lichidarea (calculul exact), emiterea titlului de creanță și, final, perceperea (încasarea propriu-zisă)."
+  },
+  {
+    q: "evaziunea fiscala ilegala presupune:",
+    options: [
+      "a) …………………….. din partea contribuabilului, a unei părți din materia impozabilă de la impunere",
+      "b) ………….. …….. de catre cel obligat prin lege la acesta",
+      "c) sustragerea materiei impozabile de la impunere prin incalcarea prevederilor legale privind stabilirea și încasarea impozitului",
+      "d) luarea in considerare a unei parti din materia impozabila in calcularea impozitului ,în contextul creat de lege"
+    ],
+    correct: [2],
+    expl: "Orice sustragere intenționată care încalcă în mod direct legea fiscală (nedeclarare, contabilitate dublă) constituie evaziune ilicită/ilegală (infracțiune)."
+  },
+  {
+    q: "rectificarea bugetului pe parcursul execuției semnifică :",
+    options: [
+      "a) .................. executiei bugetului de la partea de venituri",
+      "b) o operatiune necesara asigurarii echilibrului bugetar",
+      "c) .................. la principiul bugetar al unitatii",
+      "d) ............ identifica executiei bugetului la partea de cheltuieli"
+    ],
+    correct: [1],
+    expl: "Dacă pe parcursul anului încasările sunt mai mici sau cheltuielile devin mai mari, bugetul se ajustează (rectifică) pentru a se menține echilibrul financiar."
+  },
+  {
+    q: "Gradul de îndatorare al unei țări față de străinătate se poate exprima cu ajutorul următorilor indicatori:",
+    options: [
+      "a) raportul intre datoria externa si valoarea exporturilor de mărfuri și servicii",
+      "b) ...................... datorie externă și datorie internă",
+      "c) valoarea absolută a datoriei externe",
+      "d) marimea medie a datoriei externe pe locuitor"
+    ],
+    correct: [0, 3],
+    expl: "Mărimea absolută nu e un indicator bun (nu poți compara SUA cu România doar după cifră). Se raportează datoria la numărul de locuitori sau la capacitatea de a face exporturi (pentru a obține valuta necesară plății)."
+  },
+  {
+    q: "Modificari asupra proiectului bugetului de stat pot surveni :",
+    options: [
+      "a) .......................... în bloc a proiectului de buget",
+      "b) AMENDAMENTE proiectului de către comisia parlamentară specializată",
+      "c) ....................... de amendamente in sensul modificării de către Parlament a propunerilor din proiectul de buget",
+      "d) ....................... de catre seful statului către Parlament pentru redistribuirea unor prevederi din proiectul de buget"
+    ],
+    correct: [1],
+    expl: "Guvernul concepe bugetul, dar legislativul (Parlamentul) are dreptul suveran de a-l dezbate și modifica prin amendamente introduse în comisii înainte de aprobare."
+  },
+  {
+    q: "În care dintre următoarele situații se încalcă principiul anualității bugetului :",
+    options: [
+      "a) ............ sistemului de gestiune în execuția bugetului",
+      "b) ....................tuturor veniturilor/cheltuielilor inscrise in proiectul de buget pana la sfarsitul perioadei de execuție bugetara",
+      "c) .............. sistemului de execuție in executia bugetului",
+      "d) APROBAREA in buget și aprobarea de actiuni extinse pe mai mulți ani bugetari"
+    ],
+    correct: [3],
+    expl: "Anualitatea limitează aprobarea la un singur an. Aprobarea unor credite de angajament multianuale (pentru proiecte mari) derogă de la acest principiu strict."
+  },
+  {
+    q: "Care dintre următoarele formulări cu privire la contul de execuție bugetară sunt adevărate:",
+    options: [
+      "a) trebuie sa reflecte intr-o forma sintetică, totalitatea veniturilor și a cheltuielilor bugetare realizate și rezultatul execuției",
+      "b) in cazul adoptarii sistemului de gestiune ( in executia bugetului), acesta va reflecta atat operatiunile inregistrate pe parcursul anului respectiv cat si pe cele efectuate in perioada de prelungire ,aferente aceluiasi an bugetar",
+      "c) in cazul adopatarii sistemului de exercitiu( in executia bugetului), acesta va reflecta toate operatiunile realizate, insa, numai pe ....... anului bugetar expirat",
+      "d) ................... aprobarea sa are si semnificatia descarcarii de gestiune a Guvernului pe anul in curs"
+    ],
+    correct: [0, 1, 3],
+    expl: "Contul de execuție este 'nota de plată' la finalul anului, arătând ce s-a realizat faptic (a). Aprobarea ei prin lege dă descărcare de gestiune guvernului (d)."
+  },
+  {
+    q: "Care dintre următoarele afirmații privind întreprinderile publice sunt adevărate:",
+    options: [
+      "a) regiile publice cemerciale au autonomie functionala și financiară",
+      "b) societatile comerciale pe actiuni au capital integral de stat,sunt finantate integral din bugetul public",
+      "c) regiile publice comerciale sunt finantate partial de la bugetul public",
+      "d) regiile autonome varsa la buget dividente corespunzator profitului net realizat"
+    ],
+    correct: [0],
+    expl: "Regiile autonome sunt concepute ca organizații de stat care funcționează independent, cu buget și autonomie financiară proprie (ex: poșta, apărarea, transporturi speciale)."
+  },
+  {
+    q: "Spre deosebire de concepția modernă, în concepția clasică:",
+    options: [
+      "a) impozitele sunt privite numai ca resurse de finanțare publice",
+      "b) impozitele sunt considerate, din punct de vedere al conținutului economic, ca procese de redistribuire a produsului național și ......... nationale",
+      "c) impozitele nu trebuie folosite ca instrumente de reglare a activităților economico-sociale",
+      "d) impozitele trebuie folosite pentru reglarea activităților economico-sociale"
+    ],
+    correct: [0, 2],
+    expl: "În viziunea clasică (laissez-faire), statul este doar 'jandarm'. Rolul impozitelor era exclusiv de a hrăni statul (a), fără a interveni/regla economia (c)."
+  },
+  {
+    q: "Impunerea mărfurilor (produselor) numai la o verigă din circuitul economic este specifică:",
+    options: [
+      "a) taxelor vamale de import",
+      "b) taxei pe valoarea adăugată",
+      "c) taxei pe producție",
+      "d) impozitului cumulativ pe cifra de afaceri"
+    ],
+    correct: [0, 2],
+    expl: "Sunt impozite MONO-fazice, aplicate o singură dată. Vama o aplici doar la graniță, taxa de producție doar la prima vânzare de la producător. TVA-ul se aplică pe tot lanțul (plurifazic)."
+  },
+  {
+    q: "Conversiunea, ca operațiune caracteristică practicării împrumuturilor de stat, reprezintă:",
+    options: [
+      "a) o operațiune specială",
+      "b) o operațiune prin care se înlocuiesc unui împrumut contractat anterior cu dobanda mai mare cu alte înscrisuri cu dobanda mai mică",
+      "c) o operațiune prin care se înlocuiesc inscrisurile unui imprumut contractat anterior pe termen scurt cu alte inscrisuri pe termen mediu si lung",
+      "d) o operatiune obisnuita"
+    ],
+    correct: [1],
+    expl: "Conversiunea e 'refinanțarea' statului. Dacă dobânzile pe piață scad, statul răscumpără datoria scumpă și emite titluri noi cu dobândă mai mică, economisind bani."
+  },
+  {
+    q: "Bugetele publice autonome sunt:",
+    options: [
+      "a) bugetele utilizate de intreprinderi cu capital de stat si institutii publice cu o autonomie(functionala) limitata",
+      "b) bugetele proprii ale unor colectivitati locale,intreprinderi cu capital de stat si institutii publice cu larga autonomie (inscrise in bugetul statului numai ca sold)",
+      "c) ............................................",
+      "d) bugetele utilizate de statele membre ale unor ..... economici sau organizatii internationale"
+    ],
+    correct: [1],
+    expl: "Autonomia locală și instituțională dă dreptul unor entități să își facă propriul buget, separat de Guvern, intrând în bilanțul național doar prin eventuale subvenții cerute (ca sold)."
+  },
+  {
+    q: "In determinarea sarcinii fiscale la nivelul unei persoane juridice ,sunt luate in considerare :",
+    options: [
+      "a) toate impozitele si taxele platite de catre persoana juridica",
+      "b) impozitele pe salarii platite angajatilor",
+      "c) impozitul pe profit platit de persoana juridica",
+      "d) impozitele si taxele suportate efectiv de catre persoana juridica"
+    ],
+    correct: [3],
+    expl: "Sarcina fiscală reprezintă presiunea reală pe banii firmei. Impozitele salariale (pe care le reține de la angajați) sau TVA-ul (pe care îl colectează de la client) nu reprezintă sarcina firmei, ci a terților."
+  },
+  {
+    q: "Datoria externă BRUTA in sens restrans nu include",
+    options: [
+      "a) ajutoare externe cu caracter nerambursabil",
+      "b) investitii straine directe fara termene precise de rambursare sau lichidare",
+      "c) imprumuturir externe cu o perioadă de grație mai mare de 15 ani",
+      "d) obligatiile banesti fata de strainatate pe termeni mediu și lung"
+    ],
+    correct: [0, 1],
+    expl: "Obligațiile care nu necesită plata unor sume înapoi (fonduri nerambursabile, ajutoare) nu constituie 'datorie'."
+  },
+  {
+    q: "Ca principiu bugetar, neafectarea veniturilor presupune:",
+    options: [
+      "a) inscrierea in buget in sume integrale , a tuturor veniturilor și tuturor cheltuielilor",
+      "b) finantarea ansamblului cheltuielilor publice bugetare din totalitatea veniturilor încasate la buget",
+      "c) eliminarea impactului inflatiei asupra incasarilor din impozite și taxe la dispoziția statului",
+      "d) depersonalizarea veniturilor preluate în fondul bugetar la statului"
+    ],
+    correct: [1, 3],
+    expl: "Banii din buget nu au culoare. Taxa ta pe mașină nu se duce direct într-un drum. Toate veniturile sunt colectate la grămadă (depersonalizate) și finanțează toate nevoile la comun (b)."
+  },
+  {
+    q: "Majorarea ratei dobânzii unui împrumut contractat de stat este specific:",
+    options: [
+      "a) consolidarii",
+      "b) conversiunii cu rambursare anticipata",
+      "c) AROZĂRII",
+      "d) conversiunii facultative"
+    ],
+    correct: [2],
+    expl: "Pentru a atrage creditorii să își extindă scadențele la titluri, statul recurge uneori la procedee financiare de primă (ex: 'Arozare'), oferind bonificații sau dobânzi sporite la preschimbare."
+  },
+  {
+    q: "Taxele speciale de consumatie:",
+    options: [
+      "a) au numai rol reglator",
+      "b) au caracter rambursabil",
+      "c) se pot stabili ca sumă fixă pe unitatea de produs",
+      "d) se instituie asupra unor produse care au o cerere inelastică în raport cu prețul"
+    ],
+    correct: [2, 3],
+    expl: "Accizele (taxe speciale) se pun pe bunuri care se consumă masiv indiferent de preț (inelastic - benzină, tutun) pentru a genera venituri mari și se stabilesc fix pe litru/pachet (c)."
+  },
+  {
+    q: "Rectificarea bugetului pe parcursul execuției semnifică:",
+    options: [
+      "a) o fază specifică execuției bugetului la partea de venituri",
+      "b) o fază specifică execuției bugetului la partea de cheltuieli",
+      "c) o abatere de la principiul bugetar al universalității",
+      "d) o operatiune necesară asigurării legalității bugetului"
+    ],
+    correct: [3],
+    expl: "Orice modificare a nivelului de încasări și plăți estimat inițial trebuie aprobată tot prin lege (rectificare bugetară), pentru ca depășirea creditelor să devină legală."
+  },
+  {
+    q: "Impozitul pe cifra de afaceri netă:",
+    options: [
+      "a) are randament fiscal mai scăzut decât impozitul pe cifra de afaceri brută",
+      "b) se caracterizează prin echitate",
+      "c) include în baza de calcul și consumurile intermediare la nivelul verigii respective",
+      "d) poate atenua tendințele de concentrare a producției"
+    ],
+    correct: [3],
+    expl: "Deoarece impozitează doar ce s-a adăugat la valoare (net), el nu penalizează lanțurile lungi de producție, permițând colaborarea firmelor mici și atenuând nevoia ca o singură firmă să dețină tot lanțul (concentrare)."
+  },
+  {
+    q: "Rata fiscalității determinată la nivelul întregii societăți reflectă:",
+    options: [
+      "a) ponderea prelevărilor fiscale în PIB sau venitul național total",
+      "b) raportul dintre totalul încasărilor statului din impozite directe și mărimea veniturilor persoanelor fizice și juridice",
+      "c) pragul maxim suportabil al presiunii fiscale",
+      "d) mărimea impozitelor pe venit în raport cu venitul național"
+    ],
+    correct: [0],
+    expl: "Indicatorul macroeconomic al presiunii fiscale se calculează raportând toate încasările statului din impozite la Produsul Intern Brut creat în acel an."
+  },
+  {
+    q: "Ca formă a taxelor de consumatie, taxa pe valoarea adăugată se caracterizează prin:",
+    options: [
+      "a) este un impozit monofazic pe cifra de afaceri netă",
+      "b) are un caracter universal în aplicare",
+      "c) accelerează circuitul economic al resurselor",
+      "d) are un caracter neutru și un randament fiscal ridicat"
+    ],
+    correct: [1, 3],
+    expl: "TVA este neutru (nu distorsionează prețurile de producție ca impozitul cumulativ) și are cel mai mare randament financiar (aduce cei mai mulți bani), fiind aplicat universal la consum."
+  }
+];
+// --- UTILITIES: ALGORITMUL DE SHUFFLE (Fisher-Yates) ---
+    function shuffleArray(array) {
+      let currentIndex = array.length, randomIndex;
+      while (currentIndex !== 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        // Schimbă elementele între ele
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+      }
+      return array;
+    }
+
+    // --- STATE-UL APLICAȚIEI ---
+    let currentQ = 0;
+    let score = 0;
+    let combo = 0;
+    let sessionXP = 0;
+    let sessionQuestions = [];     // Aici vom ține cele 10 grile extrase random
+    let currentCorrectIndex = -1;  // Memorează unde se află varianta corectă DUPĂ amestecare
+    
+    // Inițializare XP Global din memorie
+    let db = JSON.parse(localStorage.getItem('ec_ultra2') || '{}');
+    if (!db._meta) db._meta = { xp: 0 };
+    let state = db._meta;
+    document.getElementById('global-xp').textContent = state.xp;
+
+    const letters = ['A', 'B', 'C', 'D', 'E', 'F']; // Suportă și grile cu mai multe variante
+
+function startQuiz() {
+      sessionQuestions = shuffleArray([...questions]);
+      loadQuestion();
+    }
+
+let selectedIndices = []; // Aici ținem minte ce apasă userul
+    let correctIndices = [];  // Aici știm unde s-au ascuns variantele corecte după Shuffle
+
+    function loadQuestion() {
+      const q = sessionQuestions[currentQ];
+      selectedIndices = [];
+      correctIndices = [];
+      
+      let qNum = (currentQ + 1).toString().padStart(2, '0');
+      let tNum = sessionQuestions.length.toString().padStart(2, '0');
+      document.getElementById('q-counter').textContent = `Q ${qNum}/${tNum}`;
+      document.getElementById('q-text').textContent = q.q;
+      
+      const optionsBox = document.getElementById('options-box');
+      optionsBox.innerHTML = '';
+      
+      // MAGIA 1: Suportă și număr simplu (correct: 1) și listă (correct: [0, 2])
+      let optionsWithStatus = q.options.map((text, index) => {
+        let isCorr = Array.isArray(q.correct) ? q.correct.includes(index) : q.correct === index;
+        return { text: text, isCorrect: isCorr };
+      });
+
+      optionsWithStatus = shuffleArray(optionsWithStatus);
+      
+      optionsWithStatus.forEach((opt, index) => {
+        // Notăm unde a picat varianta corectă
+        if (opt.isCorrect) correctIndices.push(index);
+
+        let cleanText = opt.text.replace(/^[a-z]\)\s*/i, '').trim();
+        let newLetter = String.fromCharCode(97 + index); 
+        let finalText = newLetter + ') ' + cleanText;
+
+        const btn = document.createElement('div');
+        btn.className = 'option-btn';
+        btn.innerHTML = `<div class="option-letter">${letters[index]}</div><div class="option-text">${finalText}</div>`;
+        
+        // În loc să verificăm instant, doar selectăm/deselectăm butonul
+        btn.onclick = () => toggleOption(index, btn);
+        optionsBox.appendChild(btn);
+      });
+
+      document.getElementById('explanation-box').style.display = 'none';
+      
+      // Setăm butonul de Next să fie "Verifică"
+      let nextBtn = document.getElementById('next-btn');
+      nextBtn.textContent = 'Verifică Răspunsul ✓';
+      nextBtn.style.display = 'none'; // E ascuns până selectezi măcar o variantă
+      nextBtn.onclick = verifyAnswer; // Schimbăm funcția butonului
+    }
+
+    // Funcția care doar "bifează" sau "debifează" o variantă
+    function toggleOption(index, btn) {
+      if (btn.classList.contains('disabled')) return;
+
+      let pos = selectedIndices.indexOf(index);
+      if (pos === -1) {
+        selectedIndices.push(index);
+        btn.classList.add('selected');
+      } else {
+        selectedIndices.splice(pos, 1);
+        btn.classList.remove('selected');
+      }
+
+      // Arată butonul "Verifică" doar dacă ai ales ceva
+      document.getElementById('next-btn').style.display = selectedIndices.length > 0 ? 'block' : 'none';
+    }
+
+    // NOUA Funcție care controlează validarea finală a grilei
+    function verifyAnswer() {
+      const q = sessionQuestions[currentQ];
+      const allBtns = document.querySelectorAll('.option-btn');
+      
+      // Blocăm butoanele să nu mai poți modifica
+      allBtns.forEach(b => b.classList.add('disabled'));
+      
+      // Sortăm listele ca să le putem compara ușor
+      selectedIndices.sort();
+      correctIndices.sort();
+
+      // Verificăm dacă ai nimerit TOT și EXACT ce trebuia
+      let isPerfectMatch = (selectedIndices.length === correctIndices.length) &&
+                           selectedIndices.every((val, i) => val === correctIndices[i]);
+
+      const flash = document.getElementById('flash-overlay');
+      flash.className = 'flash-overlay';
+      void flash.offsetWidth;
+
+      if (isPerfectMatch) {
+        // EȘTI GENIU! Răspuns 100% corect
+        selectedIndices.forEach(idx => allBtns[idx].classList.add('correct'));
+        flash.classList.add('green');
+        combo++;
+        score++;
+        
+        let xpGained = 15; // Câștigi mai mult că e mai greu cu variante multiple
+        if (combo >= 2) {
+          xpGained += 5 * combo; 
+          showComboBadge();
+        }
+        
+        addXP(xpGained);
+        spawnParticles(document.body, 'var(--accent)');
+        if (navigator.vibrate) navigator.vibrate([20, 30, 50]);
+        
+      } else {
+        // AI GREȘIT (sau ai ratat o variantă corectă)
+        selectedIndices.forEach(idx => {
+           if (correctIndices.includes(idx)) {
+               allBtns[idx].classList.add('correct'); // Ai intuit-o bine pe asta
+           } else {
+               allBtns[idx].classList.add('wrong'); // Asta era capcană
+           }
+        });
+        
+        // Îți arătăm ce ai uitat să bifezi (apare cu border întrerupt/dashed)
+        correctIndices.forEach(idx => {
+           if (!selectedIndices.includes(idx)) {
+               allBtns[idx].classList.add('missed'); 
+           }
+        });
+
+        flash.classList.add('red');
+        combo = 0;
+        hideComboBadge();
+        if (navigator.vibrate) navigator.vibrate([80]);
+        
+        const explBox = document.getElementById('explanation-box');
+        explBox.textContent = `💡 Info: ${q.expl}`;
+        explBox.style.display = 'block';
+      }
+
+      // Acum transformăm butonul din "Verifică" în "Următoarea"
+      let nextBtn = document.getElementById('next-btn');
+      nextBtn.textContent = 'Următoarea →';
+      nextBtn.onclick = nextQuestion;
+    }
+
+    function nextQuestion() {
+      currentQ++;
+      if (currentQ < sessionQuestions.length) {
+        loadQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function showResults() {
+      document.getElementById('quiz-card').style.display = 'none';
+      const resScreen = document.getElementById('result-screen');
+      resScreen.style.display = 'flex';
+      
+      document.getElementById('final-score').textContent = `${score}/${sessionQuestions.length}`;
+      document.getElementById('final-xp').textContent = `Date extrase: +${sessionXP} XP`;
+      
+      spawnParticles(document.body, 'var(--blue)');
+      spawnParticles(document.body, 'var(--accent)');
+    }
+
+    // --- SISTEMUL XP & EFECTE ---
+    function addXP(amount) {
+      sessionXP += amount;
+      state.xp += amount;
+      db._meta = state;
+      localStorage.setItem('ec_ultra2', JSON.stringify(db));
+      document.getElementById('global-xp').textContent = state.xp;
+    }
+
+    function showComboBadge() {
+      const badge = document.getElementById('combo-badge');
+      badge.textContent = `${combo}x COMBO`;
+      badge.classList.add('show');
+    }
+    
+    function hideComboBadge() {
+      document.getElementById('combo-badge').classList.remove('show');
+    }
+
+    function spawnParticles(el, color) {
+      let rect = el.getBoundingClientRect();
+      let cx = rect.left + rect.width/2; let cy = rect.top + rect.height/2;
+      for(let i=0; i<15; i++) {
+        let p = document.createElement('div');
+        p.className = 'particle';
+        let angle = (i/15) * Math.PI * 2; let dist = 50 + Math.random()*80;
+        p.style.cssText = `width:5px; height:5px; background:${color}; left:${cx}px; top:${cy}px; --tx:${Math.cos(angle)*dist}px; --ty:${Math.sin(angle)*dist}px;`;
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 800);
+      }
+    }
+
+    startQuiz();
+  </script>
+</body>
+</html>
