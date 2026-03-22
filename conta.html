@@ -642,7 +642,8 @@ function getCard(id) {
 }
 
 function nextFact() {
-  return [...facts].sort((a,b)=>getCard(getId(a)).due - getCard(getId(b)).due)[0];
+  let shuffled = [...facts].sort(() => Math.random() - 0.5);
+  return shuffled.sort((a,b) => getCard(getId(a)).due - getCard(getId(b)).due)[0];
 }
 
 function updateSRS(id, quality) {
