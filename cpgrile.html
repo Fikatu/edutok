@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Grile Contabilitate</title>
+<title>Grile CP</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -60,6 +60,18 @@ main { padding: 25px 20px 100px; display: flex; flex-direction: column; gap: 20p
 .quiz-card {
   background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
   padding: 24px; display: flex; flex-direction: column; gap: 24px; position: relative;
+}
+.option-btn.selected {
+  border-color: var(--blue);
+  background: var(--blue-bg);
+  transform: scale(0.98);
+}
+.option-btn.disabled {
+  pointer-events: none;
+}
+.option-btn.missed {
+  border: 2px dashed var(--accent);
+  opacity: 0.8;
 }
 
 .quiz-header { display: flex; justify-content: space-between; align-items: center; }
@@ -140,7 +152,7 @@ main { padding: 25px 20px 100px; display: flex; flex-direction: column; gap: 20p
 
   <header>
     <a href="index.html" class="back-btn">←</a>
-    <div class="header-title">Grile Contabilitate Publică</div>
+    <div class="header-title">Grile CP</div>
     <div class="hud-xp">
       <div class="hud-val" id="global-xp">0</div>
       <div class="hud-label">Global XP</div>
@@ -178,400 +190,534 @@ main { padding: 25px 20px 100px; display: flex; flex-direction: column; gap: 20p
   <script>
 const questions = [
   {
-    q: "Salariile pentru luna curentă în valoare totală de 24.000 lei, conform statului de salarii, se înregistrează astfel:",
-    options: ["641 = 421    24.000  24.000", "421 = 641      24.000 24.000", "631 = 641         24.000 24.000"],
-    correct: 0,
-    expl: "Cheltuielile cu salariile (641) se debitează, iar datoriile față de personal (421) se creditează."
-  },
-  {
-    q: "Cum pot fi grupați ordonatorii de credite în funcție de bugetele de la care sunt finanțate instituțiile pe care le conduc?",
+    q: "1. Salariile pentru luna curentă în valoare totală de 24.000 lei, conform statului de salarii, se înregistrează astfel:",
     options: [
-      "Ordonatori de credite finanțați din bugetul de stat, din bugetele locale, din bugetul asigurărilor sociale de stat, din bugetele fondurilor speciale si din alte bugete",
-      "Ordonatori de credite finanțați din bugetul fondurilor speciale, din bugetul programelor de dezvoltare, bugetul asigurărilor sociale de stat,din bugetele locale si din alte bugete",
-      "Ordonatori de credite finanțați din bugetul centralizat, bugetul asigurărilor sociale de sănătate, din bugetul fondurilor speciale din bugetele locale si din alte bugete "
+      "a) 641 00 00           =                421 00 00                            24.000         24.000",
+      "b) 421 00 00           =                641 00 00                           24.000        24.000",
+      "c) 631 01 01            =               641 00 00                           24.000         24.000"
     ],
-    correct: 0,
-    expl: "Conform legii, finanțarea se face din bugetul de stat, local, asigurări sociale, fonduri speciale și alte bugete."
+    correct: [0],
+    expl: "Cheltuielile cu salariile personalului se înregistrează prin debitarea contului de cheltuială 641 și creditarea contului de datorie față de angajați 421[cite: 340, 341]."
   },
   {
-    q: "Cheltuielile bugetare sunt:",
+    q: "2. Cum pot fi grupati  ordonatorii de credite în funcție de bugetele de la care sunt finanțate instituțiile pe care le conduc?",
     options: [
-      "Acele cheltuieli care se acoperă de la bugetul de stat, din bugetele locale, asigurări sociale de stat etc.",
-      "Sumele aprobate din bugete, formate din impozite, taxe, contribuții",
-      "Resursele bănești care se cuvin bugetelor în baza unor prevederi legale"
+      "a) ordonatori de credite finanțați din bugetul de stat, din bugetele locale, din bugetul asigurărilor sociale de stat, din bugetele fondurilor speciale si din alte bugete",
+      "b) ordonatori de credite finanțați din bugetul fondurilor speciale, din bugetul programelor de dezvoltare, bugetul asigurărilor sociale de stat,din bugetele locale si din alte bugete",
+      "d) ordonatori de credite finanțați din bugetul centralizat, bugetul asigurărilor sociale de sănătate, din bugetul fondurilor speciale din bugetele locale si din alte bugete"
     ],
-    correct: 0,
-    expl: "Celelalte variante definesc VENITURILE (impozite, taxe), nu cheltuielile bugetare."
+    correct: [0],
+    expl: "Legea finanțelor publice clasifică sursele de finanțare ale ordonatorilor exact așa: buget de stat, local, asigurări sociale, fonduri speciale și alte bugete[cite: 344, 345]."
   },
   {
-    q: "Prin articolul contabil 531.01.01 = 542.01.00 se înregistrează:",
+    q: "3. Cheltuielile bugetare sunt:",
     options: [
-      "Acordarea unui avans de trezorerie din casierie",
-      "Depunerea la casierie a diferenței de bani necheltuite dintr-un avans",
-      "Înregistrarea contului de cheltuieli prezentat de angajat"
+      "a) acele cheltuieli care se acoperă de la bugetul de stat, din bugetele locale, din bugetul asigurărilor sociale de stat, din bugetele fondurilor speciale dupa caz",
+      "b) sumele aprobate din bugete,formate din impozite,taxe,contributii si alte varsaminte",
+      "c) resursele banesti care se cuvin bugetelor in baza unor prevederi legale,formate din impozite,taxe,contributii si alte varsaminte"
     ],
-    correct: 1,
-    expl: "Casa (531) se debitează (intră bani), iar Avansurile (542) se creditează (scade creanța asupra angajatului)."
+    correct: [0],
+    expl: "Cheltuielile bugetare reprezintă sumele alocate din diferitele bugete publice pentru a finanța nevoile statului. Variantele b și c definesc Veniturile bugetare[cite: 348, 349]."
   },
   {
-    q: "Recepția parțială a unei amenajări de teren realizate cu forțe proprii se înregistrează:",
-    options: ["722 = 231", "211 = 722", "231 = 722"],
-    correct: 2,
-    expl: "Fiind în curs de amenajare, se debitează 231 (Imobilizări în curs) și se creditează 722 (Venituri din prod. de imobilizări)."
-  },
-  {
-    q: "Analiza contabilă este:",
+    q: "4. Prin articolul contabil 531 01 01 = 542 01 00 se înregistrează în contabilitate:",
     options: [
-      "Un demers prin care fiecare operațiune este cercetată pentru a stabili corespondența între conturi",
-      "Rezultatul articolului contabil",
-      "Un calcul periodic de sinteză al contabilității"
+      "a) înregistrarea contului de cheltuieli prezentat de angajat la întoarcerea din deplasare, reprezentând diurna, transportul și cazarea",
+      "b) depunerea la casierie a diferenței de bani necheltuite dintr-un avans de trezorerie acordat",
+      "c) acordarea unui avans de trezorerie din casierie"
     ],
-    correct: 0,
-    expl: "Reprezintă procesul logic de stabilire a conturilor debitoare și creditoare înainte de înregistrare."
+    correct: [1],
+    expl: "Contul 531 reprezintă Casa în lei (care crește pe debit), iar 542 reprezintă Avansuri de trezorerie. Când 531 = 542, înseamnă că intră bani în casierie din restituirea unui avans de trezorerie anterior[cite: 352, 354]."
   },
   {
-    q: "Prin articolul contabil 304 = 779 se reflectă:",
+    q: "5. Recepția parțială a unei amenajări de teren în valoare de 23.000 lei realizate cu forțe proprii se înregistrează în contabilitate astfel:",
     options: [
-      "Primirea cu împrumut de materiale rezervă de stat",
-      "Constatarea minus la inventar a materialelor",
-      "Primirea prin donație de materiale rezervă de stat"
+      "a) 722 00 00                  =               231 00 00                                              23.000                       23.000",
+      "b) 211 02 00                 =               722 00 00                                              23.000                      23.000",
+      "c) 231 00 00                  =               722 00 00                                             23.000                      23.000"
     ],
-    correct: 2,
-    expl: "304 intră în gestiune (Debit), iar 779 reprezintă Venituri din bunuri primite gratuit (Credit)."
+    correct: [2],
+    expl: "Fiind o recepție parțială, este o investiție în curs de execuție. Se debitează 231 (Active fixe corporale în curs) și se creditează 722 (Venituri din producția de active fixe), deoarece lucrarea e realizată în regie proprie[cite: 356, 361]."
   },
   {
-    q: "Plusul la inventar de materii prime se consemnează prin:",
-    options: ["301 = 601", "301 = 779", "601 = 301"],
-    correct: 0,
-    expl: "Stocul crește (Debit 301), iar cheltuiala se diminuează (Credit 601) pentru a regla gestiunea."
-  },
-  {
-    q: "Articolul contabil 709 = 345 reflectă:",
+    q: "6. Analiză contabilă este:",
     options: [
-      "Descărcarea gestiunii de produsele finite vândute",
-      "Produse finite casate, lipsă la inventar",
-      "Obținerea din activitatea de producție a produselor finite"
+      "a) un demers prin care fiecare operațiune economică sau financiară este cercetată cu scopul de a se stabili corespondența între conturile debitoare și creditoare",
+      "b) rezultatul aricolului contabil",
+      "c) un calcul periodic de sinteză al contabilității",
+      "d) descrierea succintă a operațiunilor economice înregistrate"
     ],
-    correct: 0,
-    expl: "Produsele finite ies din gestiune (Credit 345), prin contul de variație a stocurilor (Debit 709)."
+    correct: [0],
+    expl: "Analiza contabilă este chiar procesul logic de a „traduce” un document justificativ în limbaj contabil, stabilind ce cont se debitează și ce cont se creditează[cite: 363, 364]."
   },
   {
-    q: "Care este soldul final al unui cont de ACTIV cu: Si=700, Rd=500, Rc=400?",
-    options: ["Sold debitor 200 lei", "Sold debitor 800 lei", "Sold creditor 600 lei"],
-    correct: 1,
-    expl: "Formula: Sf = Si + Rulaj Debitor - Rulaj Creditor. 700 + 500 - 400 = 800 lei (Sold Debitor)."
-  },
-  {
-    q: "Înregistrarea diferenței favorabile din reevaluarea unui teren (domeniu public) se face prin:",
-    options: ["105 = 211", "211 = 105", "105 = 101"],
-    correct: 1,
-    expl: "Valoarea terenului crește (Debit 211), contra contului de rezerve din reevaluare (Credit 105)."
-  },
-  {
-    q: "Momentele evaluării elementelor patrimoniale sunt:",
+    q: "7. Prin articolul contabil 304 01 00 = 779 01 09 se reflectă:",
     options: [
-      "Intrarea în patrimoniu, inventarierea și închiderea exercițiului",
-      "Intrarea, ieșirea, închiderea exercițiului și darea în consum",
-      "Ieșirea, inventarierea și închiderea exercițiului"
+      "a) primirea cu împrumut de materiale rezervă de stat",
+      "b) constatarea minus la inventar a materialelor rezervă de stat",
+      "c) primirea prin donație de materiale rezervă de stat"
     ],
-    correct: 0,
-    expl: "Conform legii contabilității, evaluarea se face la intrare, la inventariere și la închiderea exercițiului financiar."
+    correct: [2],
+    expl: "Contul 304 reprezintă Materiale rezervă de stat, care fiind pe debit înseamnă o intrare. Contul 779 reprezintă Venituri din bunuri primite cu titlu gratuit. Combinația lor atestă o donație (sau un plus de inventar)[cite: 368, 371]."
   },
   {
-    q: "Darea în folosință a obiectelor de inventar se reflectă astfel:",
-    options: ["303.02 = 303.01", "603 = 303.02", "303.01 = 303.02"],
-    correct: 1,
-    expl: "Materialele trec pe cheltuială (Debit 603) și ies din gestiunea stocurilor (Credit 303). În inst. publice se poate folosi și 603=303."
-  },
-  {
-    q: "Trecerea unui teren din domeniul privat al județului în proprietatea publică a statului se reflectă:",
-    options: ["103 = 211 și 211 = 101", "104 = 211 și 211 = 101", "211 = 104 și 101 = 211"],
-    correct: 2,
-    expl: "Se debitează 211 (Terenuri) contra 104 (Fondul bunurilor private), apoi se transferă în domeniul public."
-  },
-  {
-    q: "Care sunt registrele contabile obligatorii?",
-    options: ["Registrul centralizator, Cartea Mare", "Registrul Jurnal, Registrul Inventar, Cartea Mare", "Doar Registrul Jurnal și Inventar"],
-    correct: 1,
-    expl: "Legea contabilității prevede clar obligativitatea a 3 registre: Jurnal, Inventar și Cartea Mare."
-  },
-  {
-    q: "Consumul de materiale pentru ambalat se înregistrează astfel:",
-    options: ["302 = 401", "709 = 302", "602.03 = 302.03"],
-    correct: 2,
-    expl: "Ieșirea din gestiune pentru consum înseamnă recunoașterea cheltuielii (Debit 602) și scăderea stocului (Credit 302)."
-  },
-  {
-    q: "Prin formula contabilă 7XX = 121 se reflectă:",
+    q: "8. Plusul la inventar de materii prime în valoare de 1.000 lei se consemnează în contabilitate prin articolul contabil:",
     options: [
-      "Preluarea deficitului patrimonial aferent exercițiului precedent",
-      "Preluarea excedentului patrimonial din exercițiul anterior",
-      "Închiderea la sfârșit de perioadă a conturilor de venituri"
+      "a) 301 00 00                       =                     601 00 00                           1.000                    1.000",
+      "b) 301 00 00                       =                     779 01 09                            1.000                    1.000",
+      "c) 601 00 00                        =                     301 00 00                           1.000                    1.000"
     ],
-    correct: 2,
-    expl: "La finalul perioadei, toate conturile de venituri (clasa 7) se închid prin transferul soldului în contul de rezultat (121)."
+    correct: [0],
+    expl: "În contabilitatea publică, dacă plusul de inventar provine din cursul anului curent, se stornează (sau compensează) cheltuiala. Se debitează 301 (cresc materiile prime) și se creditează 601 (scade cheltuiala)[cite: 372, 373]."
   },
   {
-    q: "Înregistrarea facturii privind serviciile de telefonie/internet se realizează astfel:",
-    options: ["404 = 626", "626 = 401", "401 = 626"],
-    correct: 1,
-    expl: "Cheltuielile cu poșta/telecomunicațiile (626) se debitează, recunoscând datoria curentă față de furnizor (Credit 401)."
-  },
-  {
-    q: "Principiul necompensării presupune:",
+    q: "9. Articolul contabil 709 02 00 = 345 00 00         800            800     reflectă:",
     options: [
-      "Admite compensări între cheltuieli și venituri",
-      "Interzice orice compensare între elementele de activ/datorii sau venituri/cheltuieli, cu mici excepții legale",
-      "Nu admite compensări doar între venituri și creanțe"
+      "a) descărcarea gestiunii de produsele finite vândute",
+      "b) produse finite casate, lipsă la inventar, neimputabile",
+      "c) obținerea din activitatea de producție a produselor finite"
     ],
-    correct: 1,
-    expl: "Regula de bază este interzicerea compensării, veniturile și cheltuielile trebuind înregistrate distinct și integral."
+    correct: [0],
+    expl: "Creditarea contului 345 înseamnă ieșirea produselor finite din gestiune, iar debitarea contului 709 (Variația stocurilor) este contul corespondent specific care diminuează stocul la vânzare[cite: 376, 377]."
   },
   {
-    q: "Operațiunile care au loc în cursul perioadei pot influența bilanțul producând:",
-    options: ["Mișcări dualiste", "Mișcări permutative (și modificatoare)", "Mișcări opuse"],
-    correct: 1,
-    expl: "Tranzacțiile generează mișcări permutative (modifică doar structura, ex: Activ=Activ) sau modificatoare (modifică volumul total)."
-  },
-  {
-    q: "Amortizarea lunară a unui mijloc de transport se reflectă prin:",
-    options: ["681.01 = 281.03", "281.03 = 681.03", "681.02 = 281.03"],
-    correct: 0,
-    expl: "Cheltuiala cu amortizarea (Debit 681) duce la creșterea amortizării cumulate a mijlocului de transport (Credit 281.03)."
-  },
-  {
-    q: "Care este regula de funcționare a conturilor de Pasiv?",
+    q: "10. Care este soldul final al unui cont de activ care are soldul inițial 700 lei, rulaj debitor 500 lei și rulaj creditor 400 lei?",
     options: [
-      "Debit = sold inițial și sporiri, Credit = reduceri",
-      "Credit = sold inițial și reduceri, Debit = sporiri",
-      "Credit = sold inițial și sporiri, Debit = reduceri"
+      "a) sold final debitor 200 lei",
+      "b) sold final debitor 800lei",
+      "c) sold final creditor 800 lei",
+      "d) sold final debitor 600 lei",
+      "e) sold final creditor 600 lei",
+      "f) sold final creditor 200 lei"
     ],
-    correct: 2,
-    expl: "Conturile de pasiv (datorii, capital) cresc pe Credit și scad pe Debit, având sold final creditor."
+    correct: [1],
+    expl: "Pentru un cont de Activ: Sold Final = Sold Inițial + Rulaj Debitor (Intrări) - Rulaj Creditor (Ieșiri). Calcul: 700 + 500 - 400 = 800 lei (Sold Debitor)[cite: 380, 382]."
   },
   {
-    q: "Ordonanțarea cheltuielilor este faza în care:",
+    q: "11. Înregistrarea în contabilitate a diferenței favorabile în valoare de 22.000 lei din reevaluarea unui teren care face parte din domeniul public al statului se realizează prin articolul contabil:",
     options: [
-      "Se ordonă efectuarea plăților față de angajați",
-      "Se confirmă că livrările au fost efectuate și că plata poate fi realizată",
-      "Se verifică existența angajamentelor și condițiile de exigibilitate"
+      "a) 105 01 00                    =                 211 01 00                  22.000                          22.000\n00 00                     =                 105 01 00                 22.000                         22.000",
+      "b) 211  01  00                    =                 105  01 00                  22.000                        22.000\n105 01 00                      =                 101 00 00                    22.000                       22.000",
+      "c) 105 01 00                      =                    211 02 00                   22.000                       22.000\n101 00 00                     =                       105 01 00                   22.000                         22.000"
     ],
-    correct: 1,
-    expl: "Ordonanțarea este faza care confirmă oficial că bunurile/serviciile au fost recepționate și dă „undă verde” pentru plată."
+    correct: [1],
+    expl: "O diferență favorabilă majorează valoarea activului: se debitează 211.01 (Terenuri) și se creditează 105 (Rezerve din reevaluare). Plus, pentru activele statului, aceste rezerve se transferă adesea direct în contul 101 (Fondul bunurilor din domeniul public)[cite: 387, 390, 391]."
   },
   {
-    q: "Principiul anualității presupune:",
+    q: "12. Momentele evaluării elementelor patrimoniale sunt, potrivit legii:",
     options: [
-      "Veniturile și cheltuielile sunt aprobate prin lege pe o perioadă de un an (exercițiu bugetar)",
-      "Operațiunile de încasări și plăți aparțin mereu anului viitor",
-      "Cheltuielile au destinație precisă și limitată"
+      "a) intrarea în patrimoniu, inventarierea și închiderea exercițiului",
+      "b) intrarea în patrimoniu, ieșirea din patrimoniu, închiderea exercițiului și darea în consum",
+      "c) intrarea în patrimoniu, inventarierea,inchiderea  exercitiului,iesirea din patrimoniu si darea in consum",
+      "d) ieșirea din patrimoniu, inventarierea și închiderea exercițiului"
     ],
-    correct: 0,
-    expl: "Anualitatea limitează valabilitatea aprobărilor bugetare la strict un an calendaristic."
+    correct: [0],
+    expl: "Conform legii contabilității, cele 3 momente standard de evaluare a elementelor patrimoniale sunt: la intrare (cost istoric/achiziție), la inventariere (valoare actuală/justă) și la închiderea exercițiului financiar (bilanț)[cite: 394, 395]."
   },
   {
-    q: "După regimul de finanțare, instituțiile publice pot fi:",
+    q: "13. Darea în folosință a materialelor de natura obiectelor de inventar, pe baza bonului de transfer, se reflectă astfel:",
     options: [
-      "Finanțate integral din profit și din donații",
-      "Integral din buget, din venituri proprii + subvenții, sau integral din venituri proprii",
-      "Finanțate strict din taxe locale"
+      "a) 303 02 00                               =                          303 01 00                           800                 800",
+      "b) 303 01 00                                =                         303 02 00                           800                800",
+      "c) 603 00 00                                 =                        303 02 00                            800                800"
     ],
-    correct: 1,
-    expl: "Există 3 regimuri clare: integral de la buget (G), parțial din surse proprii (E, F) sau integral din surse proprii."
+    correct: [0],
+    expl: "Materialele pleacă din magazie (credit 303.01) și intră efectiv în folosință/exploatare (debit 303.02)[cite: 399, 400]."
   },
   {
-    q: "Articolul contabil 208 = 721 reflectă:",
+    q: "14. Aprobarea prin hotărâre de guvern a trecerii unui teren în valoare de 300.000 lei, din domeniul privat al unui județ în proprietatea publică a statului, in vederea construirii unui liceu in judetul respectiv,se reflecta in contabilitate astfel:",
     options: [
-      "Achiziția unui program informatic fără factură",
-      "Realizarea unui program informatic cu forțe proprii",
-      "Scoaterea din evidență a unui soft amortizat"
+      "a) 103 00 00                    =                      211 01 00                         300.000                300.000\n01 00                      =                       101 00 00                        300.000               300.000",
+      "b)  104 01 01                     =                        211 01 00                        300.000                300.000\n211 01 00                     =                        101 00 00                        300.000                300.000",
+      "c)   211 01 00                     =                         104 01 01                        300.000                300.000\n101 00 00                       =                        211 01 00                         300.000                 300.000"
     ],
-    correct: 1,
-    expl: "Activul necorporal (208) crește, fiind produs intern, generând un venit din producția de imobilizări necorporale (721)."
+    correct: [1],
+    expl: "Se stornează/descarcă terenul din domeniul privat al UAT-ului (se debitează 104 și se creditează 211), și imediat se încarcă în domeniul public al statului (se debitează 211 și se creditează 101 - Fondul bunurilor domeniului public stat)[cite: 406, 409, 410]."
   },
   {
-    q: "Activele fixe sau necurente sunt:",
+    q: "15. Care sunt registrele contabile obligatorii?",
     options: [
-      "Echivalente de trezorerie fără restricții",
-      "Achiziționate pentru a fi comercializate în 12 luni",
-      "Deținute de instituții în scopul utilizării pe termen lung"
+      "a) Registrul centralizator",
+      "b) Registrul Inventar",
+      "c) Cartea mare",
+      "d) Registrul Jurnal"
     ],
-    correct: 2,
-    expl: "Spre deosebire de activele curente, activele fixe (imobilizările) sunt păstrate în unitate o perioadă mai mare de 1 an."
+    correct: [1, 2, 3],
+    expl: "Legea contabilității (nr. 82/1991) specifică clar cele trei registre obligatorii pe care trebuie să le țină orice entitate: Registrul Jurnal (cronologic), Registrul Inventar și Registrul Cartea Mare (sistematic)[cite: 413, 415, 416, 417]."
   },
   {
-    q: "Faza în care se verifică existența angajamentelor, realitatea sumei și exigibilitatea se numește:",
-    options: ["Lichidarea cheltuielilor", "Angajarea cheltuielilor", "Ordonanțarea cheltuielilor"],
-    correct: 0,
-    expl: "Lichidarea este faza de „verificare matematică și faptică” a datoriei, bazată pe documente justificative."
-  },
-  {
-    q: "Care dintre următoarele elemente fac parte din categoria active curente?",
-    options: ["Materii prime, Clienți, Casa în lei", "Utilaje, Terenuri, Software", "Capital social, Credite bancare"],
-    correct: 0,
-    expl: "Activele curente circulă rapid: stocuri (materii prime), creanțe (clienți) și trezorerie (casa/banca)."
-  },
-  {
-    q: "Principiile care stau la baza elaborării și execuției bugetelor sunt:",
+    q: "16. Consumul de materiale pentru ambalat în valoare de 700 lei se înregistrează astfel:",
     options: [
-      "Universalitatea, unitatea, anualitatea, specializarea, unitatea monetară, publicitatea, echilibrul",
-      "Anualitatea, durabilitatea, echidistanța",
-      "Publicitatea, specializarea, disponibilitatea"
+      "a) 302 03 00                              =                         401 01 00                   700                     700",
+      "b) 709 02  00                           =                          302 03 00                     700                    700",
+      "c) 302 03 00                             =                          602 03 00                    700                    700",
+      "d) 602 03 00                             =                           302 03 00                   700                   700"
     ],
-    correct: 0,
-    expl: "Acestea sunt principiile fundamentale definite de Legea finanțelor publice (L. 500/2002)."
+    correct: [3],
+    expl: "Consumul presupune ieșirea din magazie (credit 302 Materiale consumabile) și înregistrarea cheltuielii specifice (debit 602 Cheltuieli cu materialele consumabile)[cite: 418, 425]."
   },
   {
-    q: "Cum sunt grupate cheltuielile publice după clasificația funcțională?",
-    options: ["Capitole, subcapitole, paragrafe, subparagrafe", "Părți, capitole, subcapitole, paragrafe", "Subcapitole, articole, alineate"],
-    correct: 1,
-    expl: "Clasificația funcțională grupează cheltuielile după destinația lor în: Părți, Capitole, Subcapitole și Paragrafe."
-  },
-  {
-    q: "Simbolizarea conturilor analitice de cheltuieli ține seama de clasificația bugetară și cuprinde:",
+    q: "17. Prin formula contabilă 7XX           =             121              se reflectă:",
     options: [
-      "Sursa, capitol, subcapitol, paragraf, articol, alineat",
-      "Doar capitol și articol",
-      "Sursa de finanțare și titlul contabil"
+      "a) preluarea, la începutul exercițiului curent, a deficitului patrimonial aferent exercițiului bugetar precedent",
+      "b) preluarea în exercițiul curent a excedentului patrimonial din exercițiul anterior",
+      "c) închiderea la sfârșit de perioadă (de regulă trimestru) a conturilor de venituri"
     ],
-    correct: 0,
-    expl: "Analiticul unui cont de cheltuială bugetară este un șir lung care conține toate elementele clasificației economice și funcționale."
+    correct: [2],
+    expl: "La sfârșitul exercițiului, conturile de venituri (clasa 7) se închid prin debitarea lor, corespondentul fiind creditul contului 121 (Rezultatul patrimonial)[cite: 426, 429]."
   },
   {
-    q: "Aplicând metoda CMP: Stoc inițial 150 buc x 100 lei. Achiziție 50 buc x 95 lei. Care e valoarea consumului de 160 buc?",
-    options: ["15.800 lei", "15.950 lei", "15.750 lei"],
-    correct: 0,
-    expl: "Valoare totală = (150x100)+(50x95) = 19.750. CMP = 19.750/200buc = 98,75 lei/buc. Consum = 160 x 98,75 = 15.800 lei."
-  },
-  {
-    q: "Achitarea unei construcții de 100.000 lei ce intră în domeniul public (neamortizabilă) se înregistrează:",
-    options: ["212 = 101 și 682 = 404", "101 = 212", "212 = 404 și 681 = 212"],
-    correct: 2,
-    expl: "Se recunoaște imobilizarea și datoria (212=404), apoi se amortizează/scade din gestiune (681=212) conform reglementărilor specifice."
-  },
-  {
-    q: "Prin articolul contabil 429 = 770 se reflectă:",
+    q: "18. Înregistrarea în contabilitate a facturii în valoare de 1.500 lei privind serviciile de telefonie și internet se realizează astfel:",
     options: [
-      "Achitarea prin cont/card a burselor cuvenite studenților",
-      "Returnarea burselor necuvenite",
-      "Achitarea în numerar a burselor"
+      "a) 404                   =               626                               1.500                 1.500",
+      "b) 626                    =                401                              1.500                1.500",
+      "c) 401                    =                626                              1.500                 1.500",
+      "d) 626                   =                404                               1.500                 1.500"
     ],
-    correct: 0,
-    expl: "Contul 770 reprezintă Trezoreria (plăți prin cont). Pentru numerar s-ar fi folosit 531 Casa."
+    correct: [1],
+    expl: "Serviciile executate de terți (factura de telefon/net) se trec pe cheltuieli (debit 626) și se generează obligația de plată (credit 401 - Furnizori)[cite: 430, 432]."
   },
   {
-    q: "Achiziția de mărfuri (1.000 lei + TVA 19%) se înregistrează astfel:",
+    q: "19. Principiul necompensării se caracterizează prin următoarele aspecte:",
     options: [
-      "% = 401 (1.190) / 371 (1000) și 4426 (190)",
-      "% = 404 (1.190) / 371 (1000) și 4427 (190)",
-      "% = 401 (1.190) / 371 (1000) și 4427 (190)"
+      "a) admite compensări între cheltuieli și venituri",
+      "b) este interzisă orice compensare între elementele de activ și datorii sau între elementele de venituri și de cheltuieli, cu excepția compensărilor între active și datorii permise de reglementările legale, numai după înregistrarea în contabilitate a veniturilor și cheltuielilor la valoarea integrală",
+      "c) se admite un mică derogare de la acest principiu",
+      "d) nu admite compensări între cheltuieli și datorii, respectiv între venituri și creanțe"
     ],
-    correct: 0,
-    expl: "Mărfurile cresc pe 371, TVA-ul la cumpărare este DEDUCTIBIL (4426), iar datoria către furnizor este 401."
+    correct: [1],
+    expl: "Acest principiu fundamental interzice amestecarea/compensarea cheltuielilor cu veniturile, obligând la înregistrarea și raportarea lor distinctă și integrală, transparentă[cite: 435, 437]."
   },
   {
-    q: "Balanța de verificare pe rulaj sistematizează din Cartea-Mare următoarele informații:",
+    q: "20. Operațiunile care au loc în cursul perioadei pot influența elementele din bilanț producând :",
     options: [
-      "Total sume (debitoare/creditoare) și Rulaj (debitor/creditor)",
-      "Sold inițial, Rulaj, Sold final",
-      "Total sume, Rulaj debitor/creditor și Sold final debitor/creditor"
+      "a) mișcări dualiste",
+      "b) mișcări moniste",
+      "c) mișcări permutative",
+      "d) mișcări opuse"
     ],
-    correct: 2,
-    expl: "Balanța de verificare cu 4 egalități (rulaje) conține Sumele totale, Rulajele perioadei și Soldurile finale."
+    correct: [2, 3],
+    expl: "Elementele din bilanț pot suferi două feluri de modificări pentru a menține ecuația Activ = Pasiv: mișcări permutative (doar pe o parte, +/-) sau mișcări opuse (modificări simultane în ambele părți)[cite: 440, 443, 444]."
   },
   {
-    q: "Prin articolul contabil 610 = 401 se reflectă:",
-    options: ["Factura pentru energie electrică", "Factura pentru materiale auxiliare", "Factura pentru consumul de apă (RAJAC)"],
-    correct: 2,
-    expl: "Contul 610 reflectă cheltuieli cu energia și apa. Energia electrică merge de obicei pe 605, apa pe 610."
-  },
-  {
-    q: "Evidența creditelor bugetare aprobate, deschise de repartizat și pt. nevoi proprii folosește conturile:",
+    q: "21. Amortizarea lunară de 1.000 lei a unui mijloc de transport se reflectă în contabilitate prin corespondența:",
     options: [
-      "8060, 8062, 8066",
-      "8060, 8067, 8062",
-      "Doar 8060"
+      "a) 681 01 00                                          =                           281 03 03                      1.000                            1.000",
+      "b) 281 03 03                                           =                        681 03 00                      1.000                           1.000",
+      "c) 681 02 00                                            =                        281 03 03                     1.000                           1.000"
     ],
-    correct: 0,
-    expl: "Clasa 8 (În afara bilanțului): 8060 (Aprobate), 8066 (De repartizat) și 8062 (Nevoi proprii)."
+    correct: [0],
+    expl: "Orice amortizare se înregistrează ca o cheltuială de exploatare (Debit 681 - Cheltuieli operaționale cu amortizarea) raportată la creditul contului de amortizare mijloace de transport (Credit 281.03)[cite: 445, 446]."
   },
   {
-    q: "Livrarea pe bază de factură a produselor finite se reflectă prin:",
-    options: ["418 = 751", "419 = 751", "411 = 751"],
-    correct: 2,
-    expl: "Facturarea generează o creanță (Debit 411 Clienți) și un venit (Credit 751 Venituri din vânzarea bunurilor)."
-  },
-  {
-    q: "MFP acordă credite ordonatorului principal A (230k) și subordonaților (130k). Se înregistrează:",
-    options: ["Debit 806.10", "Credit 806.20 (360k)", "Debit 806.00 (360k)"],
-    correct: 2,
-    expl: "Suma totală aprobată se reflectă în debitul contului 8060 (Credite bugetare aprobate)."
-  },
-  {
-    q: "Între principiile care stau la baza finanțării bugetare se numără:",
+    q: "22. Care este regula de funcționare a conturilor de Pasiv?",
     options: [
-      "Finanțarea se face la cerere, în funcție de stadiul de realizare și asigurând eficiența",
-      "Finanțarea se face din oficiu, nefiind necesară solicitarea",
-      "Finanțarea nu necesită justificarea eficienței"
+      "a) conturile de Pasiv consemnează în debit existentul (soldul) inițial și sporitile ulterioare, iar în credit reducerile, având la sfârșitul exercițiului sold final creditor",
+      "b) conturile de Pasiv consemnează în debit existentul (soldul) inițial și reducerile ulterioare, iar în debit sporirile, având la sfârșitul exercițiului sold final creditor",
+      "c) conturile de Pasiv consemnează în credit existentul (soldul) inițial și sporirile  ulterioare, iar în debit  reducerile, având la sfârșitul exercițiului sold final creditor"
     ],
-    correct: 0,
-    expl: "Finanțarea publică nu e automată. Necesită cerere motivată, eficiență și control al oportunității plăților."
+    correct: [2],
+    expl: "Este regula de bază din contabilitate. Conturile de Pasiv încep și cresc mereu pe Credit, se micșorează pe Debit și prezintă sold final Creditor[cite: 452, 455]."
   },
   {
-    q: "Acordarea unui avans din contul de finanțare pentru achiziția alimentelor se înregistrează:",
-    options: ["401 = 770", "409 = 770", "770 = 409"],
-    correct: 1,
-    expl: "Se debitează 409 (Avansuri acordate furnizorilor - Creanță) și se creditează 770 (Ies bani din Trezorerie)."
-  },
-  {
-    q: "Preluarea excedentului patrimonial în exercițiul următor se înregistrează prin:",
-    options: ["151 = 121", "121 = 117", "117 = 121"],
-    correct: 1,
-    expl: "Rezultatul curent (121) se descarcă (Debit) în contul de rezultat reportat (Credit 117) la începutul anului următor."
-  },
-  {
-    q: "Având în vedere regimul juridic, bunurile din domeniul public sunt:",
-    options: ["Inalienabile, insesizabile, imprescriptibile", "Insesizabile și emergente", "Imprescriptibile și inactive"],
-    correct: 0,
-    expl: "Nu pot fi vândute (inalienabile), nu pot fi executate silit (insesizabile) și nu se pierd prin nefolosire în timp (imprescriptibile)."
-  },
-  {
-    q: "Cum pot fi clasificate documentele după forma lor de prezentare?",
-    options: ["Cu regim special / fără regim special", "Tipizate și netipizate", "Primare și centralizatoare"],
-    correct: 1,
-    expl: "După forma de prezentare (aspectul fizic/formatul) ele se împart în tipizate (formulare standard) și netipizate."
-  },
-  {
-    q: "Obiectul contabilității îl reprezintă:",
+    q: "23. Ordonanțarea cheltuielilor este faza în procesul execuției bugetare în care:",
     options: [
-      "Un ansamblu de principii și mijloace susceptibile să ofere o imagine fidelă",
-      "Doar mișcările de numerar",
-      "Ansamblul mișcărilor de valori exprimabile în bani și raporturile juridico-economice care generează decontări"
+      "a) se ordonă efectuarea plăților aferente obligațiilor instituției față de angajați",
+      "b) se verifică existența angajamentelor, se determină sau se verifică realitatea sumei datorate, se verifică condițiile de exigibilitate ale angajamentului legal pe baza documentelor justificative care să ateste operațiunile respective",
+      "c) se confirmă că livrările de bunuri au fost efectuate sau alte creanțe au fost verificate și că plata poate fi realizată"
     ],
-    correct: 2,
-    expl: "Contabilitatea măsoară doar ceea ce este cuantificabil în unități monetare și decurge din acte/fapte juridice."
+    correct: [2],
+    expl: "Ordonanțarea este faza a treia a execuției (după Angajare și Lichidare) în care efectiv se dă 'undă verde' și se confirmă legal că se poate emite ordinul de plată. (Atenție, varianta B definește faza de 'Lichidare') [cite: 456, 459]."
   },
   {
-    q: "Achitarea datoriei față de furnizorul de energie (inst. finanțată integral de la buget) se reflectă:",
-    options: ["404 = 770", "411 = 770", "401 = 770"],
-    correct: 2,
-    expl: "Datoria curentă (401) se stinge (Debit), din contul de trezorerie al instituției bugetare (Credit 770)."
-  },
-  {
-    q: "TVA deductibilă este 600k lei, TVA colectată este 450k lei. Regularizarea presupune înregistrarea:",
-    options: ["Unei creanțe de 150.000 lei (de recuperat)", "Unei datorii de 150.000 lei (de plată)", "Unei creanțe de 450.000 lei"],
-    correct: 0,
-    expl: "Dacă TVA plătită la achiziții (600k) > TVA încasată din vânzări (450k), statul îți datorează diferența. Este o Creanță de recuperat!"
-  },
-  {
-    q: "Contul reprezintă:",
+    q: "24. Principiul anualității presupune:",
     options: [
-      "Un număr",
-      "Un procedeu specific cunoașterii contabile prin care se stabilește existentul, modificările și situația finală",
-      "O resursă financiară la bancă"
+      "a)  veniturile și cheltuielile bugetare sunt aprobate prin lege pe o perioadă de un an, care corespunde exercițiului bugetar",
+      "b) toate operatiunile de incasari si plati efectuate in cursul unui an bugetar in contul unui buget apartin exercitiului corespunzator de executie a bugetului respectiv",
+      "c) cheltuielile si veniturile bugetare au desinatia precisa si limitata si sunt determinate de autorizarile obtinute in legi specifice si in legile bugetare anuale"
     ],
-    correct: 1,
-    expl: "Contul este instrumentul de bază al metodei contabilității, creat pentru a urmări o singură categorie de elemente (ex: contul Casa, contul Mărfuri)."
+    correct: [0],
+    expl: "Principiul anualității stipulează strict orizontul de valabilitate al bugetului: acesta se aprobă și guvernează veniturile/cheltuielile pentru fix un an calendaristic[cite: 460, 461]."
+  },
+  {
+    q: "25. După regimul de finanțare, instituțiile publice pot fi:",
+    options: [
+      "a) instituții finanțate integral din profit",
+      "b) instituții finanțate integral din bugetul de stat, bugetul asigurărilor sociale, bugetele locale, bugetele fondurilor speciale",
+      "c) instituții finanțate din venituri proprii și subvenții acordate de la bugetul de stat, bugetul asigurărilor sociale, bugetele locale, bugetele fondurilor speciale",
+      "d) instituții finanțate  integral din venituri proprii"
+    ],
+    correct: [1, 2, 3],
+    expl: "Legea contabilității publice recunoaște 3 forme de finanțare: integral de la buget (cele mai multe), finanțare mixtă (venituri proprii + buget) și finanțare integrală din venituri proprii (cu grad mare de autonomie)[cite: 464, 466, 467, 468]."
+  },
+  {
+    q: "26. Articolul contabil 208 01 00          =           721 00 00            3.600           3,600              reflectă:",
+    options: [
+      "a) achiziția unui program informatic, fără factură (pe baza avizului de însoțire)",
+      "b) scoaterea din evidenta a unui program informatic amortizat integral",
+      "c) realizarea unui program informatic cu forțe proprii (de către Oficiul de Calcul al instituției)"
+    ],
+    correct: [2],
+    expl: "Contul 208 reprezintă Alte imobilizări necorporale (ex: softuri), iar 721 înseamnă Venituri din producția de active necorporale. Combinația lor atestă că programul a fost creat/fabricat intern, nefiind cumpărat din exterior[cite: 469, 472]."
+  },
+  {
+    q: "27. Activele fixe sau necurente sunt:",
+    options: [
+      "a) sunt reprezentate de trezorerie sau echivalente de trezorerie a căror utilizare nu este restricționată",
+      "b) sunt reprezentate de creante aferente ciclului de exploatare",
+      "c) achizitionate sau produse pentru consum propriu sau in scopul comercializarii si se asteapta sa fie realizate in termen de 12 luni de la data bilantului",
+      "d) deținute de către instituțiile publice în scopul utilizării pe termen lung"
+    ],
+    correct: [3],
+    expl: "Prin definiție, activele fixe (sau imobilizate/necurente) sunt acele bunuri de valoare mare care vor deservi entitatea mai mult de 1 an. Restul (sub 1 an) intră la active curente[cite: 473, 477]."
+  },
+  {
+    q: "28. Faza în care se verifică existența angajamentelor, se determină sau se verifică realitatea sumei datorate, se verifică condițiile de exigibilitate ale angajamentului legal pe baza documentelor justificative, reprezintă:",
+    options: [
+      "a) lichidarea cheltuielilor",
+      "b) angajarea cheltuielilor",
+      "c) ordonanțarea cheltuielilor",
+      "d) plata cheltuielilor"
+    ],
+    correct: [0],
+    expl: "Lichidarea este a doua fază a execuției bugetare și reprezintă fix etapa de verificare cantitativă și a legalității facturii înainte să fie trimisă la ordonanțare (plată)[cite: 478, 479]."
+  },
+  {
+    q: "29. Care dintre următoarele elemente fac parte din categoria active curente?",
+    options: [
+      "a) materii prime",
+      "b) clienți",
+      "c) utilaje",
+      "d) casa în lei"
+    ],
+    correct: [0, 1, 3],
+    expl: "Activele curente sunt cele destinate consumului sau valorificării rapide (sub un an): stocuri (materiile prime), creanțe (clienții) și trezorerie (casa în lei). Utilajele sunt active fixe[cite: 483, 484, 485, 487]."
+  },
+  {
+    q: "30. Precizați care sunt principiile care stau la baza elaborării și execuției bugetelor :",
+    options: [
+      "a) universalitatea, unitatea, anualitatea, specializarea bugetară, unitatea monetară, publicitatea, echilibrul bugetar",
+      "b) anualitatea, durabilitatea, specializarea bugetară, unitatea monetară, echidistanța",
+      "c) publicitatea, specializarea bugetară, echilibrul bugetar, unitatea monetară, anualitatea, disponibilitatea"
+    ],
+    correct: [0],
+    expl: "Acesta este setul canonic de principii din Legea Finanțelor Publice care guvernează absolut orice procedeu de elaborare și cheltuire a bugetului de stat[cite: 488, 489]."
+  },
+  {
+    q: "31. Cum sunt grupate cheltuielile publice după clasificatia funcțională?",
+    options: [
+      "a) capitole, subcapitole, paragrafe și subparagrafe",
+      "b)  subcapitole,paragrafe, subparagrafe și articole",
+      "c) părți, capitole, subcapitole și paragrafe"
+    ],
+    correct: [2],
+    expl: "Clasificația funcțională (ce destinație au banii) se ramifică ierarhic de sus în jos prin: Părți, Capitole, Subcapitole și Paragrafe[cite: 492, 495]."
+  },
+  {
+    q: "32. Simbolizarea conturilor analitice de cheltuieli ține seama de structura clasificatiei bugetare și cuprinde următoarele elemente:",
+    options: [
+      "a) sursa de finanțare a cheltuielii",
+      "b) articolul",
+      "c) simbolul contului din planul de conturi",
+      "d) titlul",
+      "e) subcapitolul",
+      "f) capitolul",
+      "g) alineatul",
+      "h) paragraful"
+    ],
+    correct: [0, 1, 3, 4, 5, 6, 7],
+    expl: "Analiticele pentru cheltuieli la instituții publice sunt foarte lungi pentru că includ absolut toată șirul ierarhic: sursă, capitol, subcapitol, paragraf, titlu, articol, alineat[cite: 496, 497, 498, 500, 501, 502, 503, 504]."
+  },
+  {
+    q: "33. O instituție publică deține la începutul unui luni un stoc de materiale auxiliare de 150 buc evaluate la costul unitar de 100 lei/buc.\nÎn cursul lunii s-a achiziționat o cantitate din același tip de materiale auxiliare de 50 buc, la costul de achiziție unitar de…95 lei.buc.Daca se aplica metoda CMP de evaluare a stocurilor la iesirea din gestiune,care este valoarea  cantitatiide mat.auxiliare de 160 buc consumate in cursul lunii?",
+    options: [
+      "a) 15.800 lei",
+      "b) 15.950 lei",
+      "c) 15.750 lei"
+    ],
+    correct: [0],
+    expl: "Calculul CMP (Cost Mediu Ponderat): se adună valoarea tuturor stocurilor (150*100 + 50*95 = 19.750 lei) și se împarte la cantitatea totală (200 buc). Rezultă 98,75 lei/buc. Valoarea consumului este: 160 buc consumate * 98,75 lei = 15.800 lei[cite: 505, 507, 511]."
+  },
+  {
+    q: "34. Achitarea unei construcții în valoare de 100.000 lei ce intră în domeniul public al statului, care nu se supune amortizării, se înregistrează în contabilitate astfel:",
+    options: [
+      "a) 212 09 01            =      101 00 00                                100.000                     100.000\n682 01 09                =      404 01 00                                 100.000                    100.000",
+      "b)101 00 00            =      212 09 01                                100.000                    100.000",
+      "c) 682 01 09                       =                       401 01 00                                 100.000                   100.000",
+      "d) 212 09 01                 =                       404 01 00                                   100.000                   100.000\n681 01 00                     =                       212 09 01                                   100.000                   100.000"
+    ],
+    correct: [0],
+    expl: "Pentru un bun din domeniul public finanțat integral de la buget, achiziția/cheltuiala de capital generează concomitent o plată/obligație (cheltuiala 682 = furnizor 404) și capitalizarea în patrimoniu (construcția 212 = sursa fondului 101)[cite: 514, 515, 516]."
+  },
+  {  
+    q: "35. Prin articolul contabil: 429            =         770              5.000                                  5.000 se reflectă:",
+    options: [
+      "a) achitarea prin card a burselor cuvenite studenților și doctoranzilor",
+      "b) returnarea de catre studenți și doctoranzi a burselor  necuvenite",
+      "c) achitarea în numerar a burselor cuvenite studenților și doctoranzilor"
+    ],
+    correct: [0],
+    expl: "429 reprezintă datoria aferentă Burselor. 770 este contul de trezorerie Finanțare de la buget (virament bancar/card, nu casierie 531). Creditarea 770 atestă o plată/o ieșire de bani[cite: 523, 524]."
+  },
+  {
+    q: "36. Achiziția de mărfuri pe baza de factură în valoare de 1.000 lei plus TVA 19% se înregistrează astfel:",
+    options: [
+      "a)     %                         =                      401                                                                1.190\n371                                                                                      1000\n442 06                                                                                   190",
+      "b)   %                        =                            404                                                                 1.190\n371                                                                                       1000\n442 07                                                                                   190",
+      "c)  %                           =                          401                                                                 1.190\n371                                                                                        1000\n442 07                                                                                    190"
+    ],
+    correct: [0],
+    expl: "Avem o factură de la furnizori de mărfuri (credit 401 cu tot cu tva, deci 1190 lei). Aceasta se împarte în valoarea mărfurilor intrate (debit 371 cu 1000 lei) și valoarea TVA deductibil de recuperat de la stat (debit 4426 cu 190 lei)[cite: 527, 528, 530, 531]."
+  },
+  {
+    q: "37. Balanța de verificare pe rulaj sistematizează din Registrul Cartea-Mare, următoarele informații:",
+    options: [
+      "a) total sume, debitoare  și creditoare, rulajul debitor și creditor",
+      "b)  sold inițial, debitor sau creditor, rulajul debitor și creditor, soldul final debitor sau creditor",
+      "c) rulajul  debitor si  creditor, total sume debitoare și creditoare, soldul final debitor sau creditor",
+      "d) total sume, debitoare și creditoare, rulajul debitor și creditor, soldul final debitor sau creditor"
+    ],
+    correct: [1],
+    expl: "Balanța pe rulaj folosește regula celor 3 serii de egalități: se verifică Soldul Inițial, se verifică Rulajele (mișcările din lună) și rezultă Soldul Final[cite: 540, 542]."
+  },
+  {
+    q: "38. Prin articolul contabil: 610 00 00             =                  401 01 00          372   372       se reflectă:",
+    options: [
+      "a) factura pentru consumul de energie electrică de la E-ON",
+      "b) factura pentru consumul de materiale auxiliare",
+      "c) factura pentru consumul de apă de la RAJAC"
+    ],
+    correct: [0, 2],
+    expl: "Contul 610 regrupează \"Cheltuieli cu energia și apa\". Deci înregistrarea este valabilă și pentru factura de curent E-ON, și pentru cea de apă RAJAC[cite: 545, 546, 548]."
+  },
+  {
+    q: "39. Evidența creditelor bugetare aprobate, a creditelor deschise cu scopul de a fi repartizate instituțiilor subordonate și a creditelor deschise pentru nevoi proprii se realizează cu ajutorul următoarelor conturi:",
+    options: [
+      "a) 806 00 00 „Credite bugetare aprobate”",
+      "b) 806 20 00 „Credite deschise pentru cheltuieli proprii”",
+      "c) 806 60 00 „Credite deschise de repartizat”",
+      "d) 8067 „Angajamente legale”"
+    ],
+    correct: [0, 1, 2],
+    expl: "În sistemul financiar public, contul 806 ține evidența angajamentelor extrabilanțiere ale bugetului și este format exact din aceste trei analitice (Aprobate, Proprii și de Repartizat altora)[cite: 549, 550, 551, 552]."
+  },
+  {
+    q: "40. Livrarea pe bază de factură a produselor finite obținute din producție proprie, în valoare de 744 lei, se reflectă prin articolul contabil:",
+    options: [
+      "a) 418 00 00               =                          751 01 00                744                  744",
+      "b) 41900 00                =                          751 01 00                744                  744",
+      "c) 411 01 01              =                           751 01 00                  744                 744"
+    ],
+    correct: [2],
+    expl: "Vânzarea generează o creanță, debitându-se contul de Clienți (411), în corespondență directă cu creditul unui cont de venit din exploatare (751 - Venituri din vânzarea bunurilor/serviciilor)[cite: 554, 557]."
+  },
+  {
+    q: "41. Acordarea de către Ministerul Finanțelor Publice a creditelor aprobate pentru ordonatorul principal A (230.000 lei) și pentru ordonatorii subordonați B și C (130.000 lei) se înregistrează prin articolul contabil:",
+    options: [
+      "a) D 806 10 00              230.000",
+      "b) C 806 20 00              360.000",
+      "c) D 806 00 00              360.000",
+      "d) C 806 00 00              360.000",
+      "e) D 806 20 00             130.000"
+    ],
+    correct: [3],
+    expl: "Contul 806 (Credite aprobate) funcționează de regulă ca un cont de Activ în sistem extrabilanțier. Când Ministerul aprobă suma, o debitează (se încarcă suma pe stat). Când o acordă/deschide conturile către ordonatori, creditează 806, descărcând suma totală distribuită: 230k + 130k = 360k Credit[cite: 558, 562]."
+  },
+  {
+    q: "42. Între principiile care stau la baza finanțării bugetare se numără:",
+    options: [
+      "a) finanțarea nu se face din oficiu ci la cerere, beneficiarii sumelor trebuind să solicite și să argumenteze necesitatea finanțării lor",
+      "b) finantarea se face in functie de stadiu de îndeplinire a indicatorilor de plată și pe măsura folosirii mijloacelor acordate anterior",
+      "c) finantarea bugetara trebuie sa asigure o anumita eficienta a folosirii fondurilor precum si desfasurarea unui control asupra necesitatii,oportunitatii si economicitatii unor cheltuieli si actiuni",
+      "d) finanțarea se face din oficiu nefiind necesara solicitarea sumelor"
+    ],
+    correct: [0, 1, 2],
+    expl: "Banii statului nu curg orbește; instituțiile trebuie să își justifice nevoile și cererile, să arate eficiență și nu primesc o nouă tranșă până nu arată documente pentru ce au cheltuit înainte (finanțare etapizată)[cite: 564, 565, 566, 567]."
+  },
+  {
+    q: "43. Acordarea unui avans din contul de finanțare pentru achiziția alimentelor necesare la cantină în valoare de 5.000 lei se înregistrează prin articolul contabil:",
+    options: [
+      "a) 401 01 00                  =     770                       5.000           5.000",
+      "b) 409 01 00                 =    770 00 00             5.000            5.000",
+      "c) 770 00 00                  =     409 01 01            5.000            5.000"
+    ],
+    correct: [1],
+    expl: "Dacă dăm un avans comercial pentru alimente, debităm 409 (Furnizori-debitori/Avansuri acordate). Deoarece banii pleacă direct din contul de trezorerie, credităm 770 (Finanțare de la buget)[cite: 569, 571]."
+  },
+  {
+    q: "44. Preluarea excedentului patrimonial în exercițiul următor se înregistrează prin articolul contabil",
+    options: [
+      "a) 151                   =                121",
+      "b) 121                   =               117",
+      "c) 117                   =                 121",
+      "d) 461                   =               117"
+    ],
+    correct: [1],
+    expl: "Rezultatul din contul 121 trebuie golit și transferat în rezultatul reportat (117). Excedentul (sold creditor 121) se debitează, mutând balanța pozitivă pe creditul 117[cite: 573, 575]."
+  },
+  {
+    q: "45. Având în vedere regimul juridic, bunurile din domeniul public sunt:",
+    options: [
+      "a) inalienabile",
+      "b) insesizabile",
+      "c) emergente",
+      "d) imprescriptibile",
+      "e) inactive"
+    ],
+    correct: [0, 1, 3],
+    expl: "Dreptul public stabilește cele trei interdicții absolute pentru bunurile statului: nu pot fi vândute/donate (inalienabile), nu pot fi urmărite/executate silit de bănci (insesizabile) și nu pot fi furate prin trecerea timpului (imprescriptibile)[cite: 578, 579, 580, 582]."
+  },
+  {
+    q: "46. Cum pot fi clasificate documentele după forma lor de prezentare?",
+    options: [
+      "a) documente cu regim special și documente fără regim special",
+      "b) documente tipizate și documente netipizate",
+      "c) documente tipizate și documente cu regim special"
+    ],
+    correct: [1],
+    expl: "Forma de prezentare distinge între hârtii care trebuie să aibă o machetă fixă impusă de minister (tipizate - gen Facturi/Chitanțe) și documente libere/netipizate[cite: 584, 586]."
+  },
+  {
+    q: "47. Obiectul contabilității îl reprezintă:",
+    options: [
+      "a) un ansamblu de principii, mijloace și procedee susceptibile să ofere o imagine fidelă a poziției financiare și a performanței unei entități",
+      "b) ansamblul mișcărilor de valori idiferentt dacă pot sau nu fi exprimabile în bani dintr-un perimetru de mică sau de mare întindere, precum si  de raporturile economico-juridice în care unitatea patrimonială este parte si care genereaza sau nu decontari banesti",
+      "c) ansamblul mișcărilor de valori exprimabile în bani dintr-un perimetru de mică sau de mare întindere,precum si de raporturile economico-juridice in care unitatea patrimoniala este parte si care genereaza deconturi banesti"
+    ],
+    correct: [2],
+    expl: "Contabilitatea urmărește exclusiv mișcările de valori EXPRIMABILE ÎN BANI (evaluabile monetar)[cite: 588, 591]."
+  },
+  {
+    q: "48. Achitarea datoriei față de furnizorul de energie electrică în valoare de 357 lei, de către o instituție publică finanțată integral din bugetul statului se reflectă în contabilitate astfel:",
+    options: [
+      "a) 404               =             770                     357                357",
+      "b) 411              =              770                     357                 357",
+      "c) 401             =                770                    357                  357"
+    ],
+    correct: [2],
+    expl: "Obligația față de furnizori se anulează debitând contul 401, concomitent cu ieșirea de numerar virat de trezorerie, adică se creditează 770 Finanțare de la buget[cite: 592, 595]."
+  },
+  {
+    q: "49. La sfârșitul perioadei, situația TVA se prezintă astfel: taxa pe valoarea adăugată aferentă achizițiilor pe bază de factură este 600.000 lei, iar taxa pe valoarea adăugată aferentă vânzărilor pe bază de factură este 450.000 lei.\nRegularizarea TVA la sfârșitul perioadei presupune înregistrarea:",
+    options: [
+      "a) unei creanțe de 150.000 lei",
+      "b) unei creanțe de 450.000 lei",
+      "c) unei creante de 450.000 lei",
+      "d) unei datorii de 150.000 lei"
+    ],
+    correct: [0],
+    expl: "Din moment ce ai plătit furnizorilor TVA 600.000 (TVA deductibil) și ai încasat de la clienți doar 450.000 (TVA colectat), diferența de 150.000 reprezintă o sumă pe care statul ți-o datorează ție. Astfel, tu înregistrezi o CREANȚĂ pe care o ai de recuperat[cite: 597, 598]."
+  },
+  {
+    q: "50. Contul reprezintă:",
+    options: [
+      "a) un numar",
+      "b) un procedeu specific cunoașterii contabile prin care se stabilește existentul inițial, modificările ulterioare și situația finală a unei substanțe patrimoniale determinate",
+      "c) un simbol",
+      "d) o resursă financiară pe termen scurt sau lung depusă la bancă ce are ca beneficiu dobândă"
+    ],
+    correct: [1],
+    expl: "Din punct de vedere teoretic, contul este un procedeu de modelare. Varianta D definește contul bancar comercial, nu instrumentul teoretic contabil[cite: 605, 607]."
   }
 ];
 // --- UTILITIES: ALGORITMUL DE SHUFFLE (Fisher-Yates) ---
@@ -607,69 +753,138 @@ function startQuiz() {
       loadQuestion();
     }
 
-    function loadQuestion() {
-      const q = sessionQuestions[currentQ];
+let selectedIndices = []; // Aici ținem minte ce apasă userul
+    let correctIndices = [];  // Aici știm unde s-au ascuns variantele corecte după Shuffle
 
+function loadQuestion() {
+      const q = sessionQuestions[currentQ];
+      selectedIndices = [];
+      correctIndices = [];
+      
       let qNum = (currentQ + 1).toString().padStart(2, '0');
       let tNum = sessionQuestions.length.toString().padStart(2, '0');
       document.getElementById('q-counter').textContent = `Q ${qNum}/${tNum}`;
-      document.getElementById('q-text').textContent = q.q;
+      
+      // 🧹 TRUCUL MAGIC PENTRU ÎNTREBĂRI: Tăiem "1. ", "45. " și punem ordinea corectă
+      let cleanQuestionText = q.q.replace(/^\d+[\.\)]\s*/, '');
+      document.getElementById('q-text').textContent = (currentQ + 1) + '. ' + cleanQuestionText;
       
       const optionsBox = document.getElementById('options-box');
       optionsBox.innerHTML = '';
       
-      let optionsWithStatus = q.options.map((text, index) => ({
-        text: text,
-        isCorrect: index === q.correct
-      }));
+      // MAGIA 1: Suportă și număr simplu (correct: 1) și listă (correct: [0, 2])
+      let optionsWithStatus = q.options.map((text, index) => {
+        let isCorr = Array.isArray(q.correct) ? q.correct.includes(index) : q.correct === index;
+        return { text: text, isCorrect: isCorr };
+      });
 
       optionsWithStatus = shuffleArray(optionsWithStatus);
       
       optionsWithStatus.forEach((opt, index) => {
-        if (opt.isCorrect) {
-          currentCorrectIndex = index;
-        }
+        // Notăm unde a picat varianta corectă
+        if (opt.isCorrect) correctIndices.push(index);
+
+        let cleanText = opt.text.replace(/^[a-z]\)\s*/i, '').trim();
+        let newLetter = String.fromCharCode(97 + index); 
+        let finalText = newLetter + ') ' + cleanText;
 
         const btn = document.createElement('div');
         btn.className = 'option-btn';
-        btn.innerHTML = `<div class="option-letter">${letters[index]}</div><div class="option-text">${opt.text}</div>`;
-        btn.onclick = () => checkAnswer(index, btn);
+        btn.innerHTML = `<div class="option-letter">${letters[index]}</div><div class="option-text">${finalText}</div>`;
+        
+        // În loc să verificăm instant, doar selectăm/deselectăm butonul
+        btn.onclick = () => toggleOption(index, btn);
         optionsBox.appendChild(btn);
       });
 
       document.getElementById('explanation-box').style.display = 'none';
-      document.getElementById('next-btn').style.display = 'none';
+      
+      // Setăm butonul de Next să fie "Verifică"
+      let nextBtn = document.getElementById('next-btn');
+      nextBtn.textContent = 'Verifică Răspunsul ✓';
+      nextBtn.style.display = 'none'; // E ascuns până selectezi măcar o variantă
+      nextBtn.onclick = verifyAnswer; // Schimbăm funcția butonului
     }
 
-    function checkAnswer(selectedIndex, btnElement) {
+      document.getElementById('explanation-box').style.display = 'none';
+      
+      // Setăm butonul de Next să fie "Verifică"
+      let nextBtn = document.getElementById('next-btn');
+      nextBtn.textContent = 'Verifică Răspunsul ✓';
+      nextBtn.style.display = 'none'; // E ascuns până selectezi măcar o variantă
+      nextBtn.onclick = verifyAnswer;
+
+    // Funcția care doar "bifează" sau "debifează" o variantă
+    function toggleOption(index, btn) {
+      if (btn.classList.contains('disabled')) return;
+
+      let pos = selectedIndices.indexOf(index);
+      if (pos === -1) {
+        selectedIndices.push(index);
+        btn.classList.add('selected');
+      } else {
+        selectedIndices.splice(pos, 1);
+        btn.classList.remove('selected');
+      }
+
+      // Arată butonul "Verifică" doar dacă ai ales ceva
+      document.getElementById('next-btn').style.display = selectedIndices.length > 0 ? 'block' : 'none';
+    }
+
+    // NOUA Funcție care controlează validarea finală a grilei
+    function verifyAnswer() {
       const q = sessionQuestions[currentQ];
       const allBtns = document.querySelectorAll('.option-btn');
       
+      // Blocăm butoanele să nu mai poți modifica
       allBtns.forEach(b => b.classList.add('disabled'));
       
+      // Sortăm listele ca să le putem compara ușor
+      selectedIndices.sort();
+      correctIndices.sort();
+
+      // Verificăm dacă ai nimerit TOT și EXACT ce trebuia
+      let isPerfectMatch = (selectedIndices.length === correctIndices.length) &&
+                           selectedIndices.every((val, i) => val === correctIndices[i]);
+
       const flash = document.getElementById('flash-overlay');
       flash.className = 'flash-overlay';
       void flash.offsetWidth;
 
-      if (selectedIndex === currentCorrectIndex) {
-        btnElement.classList.add('correct');
+      if (isPerfectMatch) {
+        // EȘTI GENIU! Răspuns 100% corect
+        selectedIndices.forEach(idx => allBtns[idx].classList.add('correct'));
         flash.classList.add('green');
         combo++;
         score++;
         
-        let xpGained = 10;
+        let xpGained = 15; // Câștigi mai mult că e mai greu cu variante multiple
         if (combo >= 2) {
-          xpGained += 5 * combo;
+          xpGained += 5 * combo; 
           showComboBadge();
         }
         
         addXP(xpGained);
-        spawnParticles(btnElement, 'var(--accent)');
+        spawnParticles(document.body, 'var(--accent)');
         if (navigator.vibrate) navigator.vibrate([20, 30, 50]);
         
       } else {
-        btnElement.classList.add('wrong');
-        allBtns[currentCorrectIndex].classList.add('correct');
+        // AI GREȘIT (sau ai ratat o variantă corectă)
+        selectedIndices.forEach(idx => {
+           if (correctIndices.includes(idx)) {
+               allBtns[idx].classList.add('correct'); // Ai intuit-o bine pe asta
+           } else {
+               allBtns[idx].classList.add('wrong'); // Asta era capcană
+           }
+        });
+        
+        // Îți arătăm ce ai uitat să bifezi (apare cu border întrerupt/dashed)
+        correctIndices.forEach(idx => {
+           if (!selectedIndices.includes(idx)) {
+               allBtns[idx].classList.add('missed'); 
+           }
+        });
+
         flash.classList.add('red');
         combo = 0;
         hideComboBadge();
@@ -680,7 +895,10 @@ function startQuiz() {
         explBox.style.display = 'block';
       }
 
-      document.getElementById('next-btn').style.display = 'block';
+      // Acum transformăm butonul din "Verifică" în "Următoarea"
+      let nextBtn = document.getElementById('next-btn');
+      nextBtn.textContent = 'Următoarea →';
+      nextBtn.onclick = nextQuestion;
     }
 
     function nextQuestion() {
