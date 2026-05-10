@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Podcast PDA</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08090a;
+  --surface: #111316;
+  --surface2: #181b1f;
+  --border: #2a2d33;
+  --accent: #c8f53f; /* Verde Neon */
+  --accent-bg: #1a2100;
+  --blue: #38bdf8;   /* Albastru Cyber */
+  --blue-bg: #001e30;
+  --text: #f0f2f5;
+  --muted: #5a6070;
+  --muted2: #363b45;
+  --font: 'Syne', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html, body {
+  min-height: 100%;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+/* ── SCANLINE OVERLAY ── */
+body::before {
+  content:'';
+  position:fixed; inset:0; pointer-events:none; z-index:999;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.08) 2px, rgba(0,0,0,.08) 4px);
+}
+
+/* ── HEADER HUD ── */
+header {
+  position: sticky; top: 0;
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  background: rgba(8, 9, 10, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 100;
+}
+
+.back-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  text-decoration: none; font-family: var(--mono); font-weight: 800;
+  transition: 0.2s;
+}
+.back-btn:active { transform: scale(0.9); border-color: var(--accent); color: var(--accent); }
+
+.header-title {
+  font-family: var(--mono); font-size: 11px; font-weight: 800;
+  letter-spacing: .2em; text-transform: uppercase; color: var(--blue);
+}
+
+.hud-xp {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+}
+.hud-val { font-family: var(--mono); font-size: 16px; font-weight: 600; line-height: 1; color: var(--accent); text-shadow: 0 0 10px rgba(200,245,63,0.3); }
+.hud-label { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+
+/* ── MAIN CONTAINER ── */
+main {
+  padding: 25px 20px 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+/* ── EPISODE CARD ── */
+.ep-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+}
+
+.ep-header {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;
+}
+
+.ep-tag {
+  font-family: var(--mono); font-size: 10px; color: var(--blue); 
+  background: var(--blue-bg); padding: 4px 8px; border-radius: 6px;
+  text-transform: uppercase; letter-spacing: .1em; font-weight: 800;
+  margin-bottom: 8px; display: inline-block;
+}
+
+.ep-title { font-size: 1.25rem; font-weight: 800; line-height: 1.2; letter-spacing: -.02em; }
+.ep-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.4; margin-top: 6px; }
+
+.ep-badge {
+  font-family: var(--mono); font-size: 10px; font-weight: 800;
+  color: var(--bg); background: var(--text); padding: 4px 6px; border-radius: 4px;
+  letter-spacing: 1px; flex-shrink: 0;
+}
+
+/* ── CUSTOM PLAYER UI ULTRA ── */
+.player-ui {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Controale Play / Skip */
+.controls-row {
+  display: flex; align-items: center; justify-content: center; gap: 20px;
+}
+
+.play-btn {
+  width: 50px; height: 50px; border-radius: 16px; border: 1px solid var(--accent);
+  background: var(--accent-bg); color: var(--accent); font-size: 1.2rem;
+  display: grid; place-items: center; cursor: pointer;
+  box-shadow: 0 0 15px rgba(200,245,63,0.1); transition: 0.2s;
+}
+.play-btn:active { transform: scale(0.9); background: var(--accent); color: var(--bg); }
+
+.skip-btn {
+  background: transparent; border: none; color: var(--muted);
+  font-size: 1.1rem; width: 40px; height: 40px;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  cursor: pointer; transition: 0.2s; font-family: var(--font);
+}
+.skip-btn:active { transform: scale(0.8); color: var(--text); }
+.skip-text { font-family: var(--mono); font-size: 9px; font-weight: 800; margin-top: 2px; letter-spacing: 1px;}
+
+/* Timeline & Progress */
+.timeline-container { display: flex; flex-direction: column; gap: 8px; }
+
+.time-info {
+  display: flex; justify-content: space-between;
+  font-family: var(--mono); font-size: 10px; color: var(--muted); font-weight: 600;
+}
+
+.timeline {
+  width: 100%; height: 6px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 4px; cursor: pointer; position: relative; overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%; width: 0%; background: var(--accent);
+  border-radius: 2px; pointer-events: none; transition: width 0.1s linear;
+  box-shadow: 0 0 10px var(--accent);
+}
+
+/* ── XP POPUP ── */
+.xp-popup {
+  position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
+  background: var(--accent); color: var(--bg);
+  font-family: var(--mono); font-size: 13px; font-weight: 800;
+  padding: 10px 20px; border-radius: 20px;
+  box-shadow: 0 0 20px rgba(200,245,63,0.4);
+  opacity: 0; pointer-events: none; z-index: 50; transition: 0.3s;
+}
+.xp-popup.show { animation: popupAnim 2.5s ease forwards; }
+
+@keyframes popupAnim {
+  0% { opacity: 0; transform: translate(-50%, 20px); }
+  15% { opacity: 1; transform: translate(-50%, 0); }
+  85% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -20px); }
+}
+
+</style>
+</head>
+<body>
+
+  <header>
+    <a href="index.html" class="back-btn">←</a>
+    <div class="header-title">Podcasturi Procedura de drept administrativ</div>
+    <div class="hud-xp">
+      <div class="hud-val" id="global-xp">0</div>
+      <div class="hud-label">Global XP</div>
+    </div>
+  </header>
+
+  <main>
+
+    <div class="ep-card">
+      <div class="ep-header">
+        <div>
+          <div class="ep-tag">PDA - US 1</div>
+          <h3 class="ep-title">Conceptul, sfera de aplicare şi principiile procedurii de drept administrativ</h3>
+          <p class="ep-desc"></p>
+        </div>
+        <div class="ep-badge">EP_01</div>
+      </div>
+      
+      <div class="player-ui" data-src="audio/PDA1.mp3"> <div class="controls-row">
+          <button class="skip-btn rewind-btn">⟲<span class="skip-text">10s</span></button>
+          <button class="play-btn">▶</button>
+          <button class="skip-btn forward-btn">⟳<span class="skip-text">10s</span></button>
+        </div>
+        
+        <div class="timeline-container">
+          <div class="time-info">
+            <span class="current-time">00:00</span>
+            <span class="total-time">00:00</span>
+          </div>
+          <div class="timeline"><div class="progress-bar"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ep-card">
+      <div class="ep-header">
+        <div>
+          <div class="ep-tag" style="color:var(--accent); background:var(--accent-bg);">PDA - US 2</div>
+          <h3 class="ep-title">Reguli procedurale generale aplicabile activității administrative</h3>
+          <p class="ep-desc"></p>
+        </div>
+        <div class="ep-badge">EP_02</div>
+      </div>
+      
+      <div class="player-ui" data-src="audio/PDA2.mp3">
+        <div class="controls-row">
+          <button class="skip-btn rewind-btn">⟲<span class="skip-text">10s</span></button>
+          <button class="play-btn">▶</button>
+          <button class="skip-btn forward-btn">⟳<span class="skip-text">10s</span></button>
+        </div>
+        
+        <div class="timeline-container">
+          <div class="time-info">
+            <span class="current-time">00:00</span>
+            <span class="total-time">00:00</span>
+          </div>
+          <div class="timeline"><div class="progress-bar"></div></div>
+        </div>
+      </div>
+    </div>
+       <div class="ep-card">
+      <div class="ep-header">
+        <div>
+          <div class="ep-tag">PDA - US 3</div>
+          <h3 class="ep-title">Procedura anterioară în emiterea sau adoptarea actelor adminstrative</h3>
+          <p class="ep-desc"></p>
+        </div>
+        <div class="ep-badge">EP_03</div>
+      </div>
+      
+      <div class="player-ui" data-src="audio/PDA3.mp3"> <div class="controls-row">
+          <button class="skip-btn rewind-btn">⟲<span class="skip-text">10s</span></button>
+          <button class="play-btn">▶</button>
+          <button class="skip-btn forward-btn">⟳<span class="skip-text">10s</span></button>
+        </div>
+        
+        <div class="timeline-container">
+          <div class="time-info">
+            <span class="current-time">00:00</span>
+            <span class="total-time">00:00</span>
+          </div>
+          <div class="timeline"><div class="progress-bar"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ep-card">
+      <div class="ep-header">
+        <div>
+          <div class="ep-tag">PDA - US 4</div>
+          <h3 class="ep-title">Procedura concomitentă și ulterioară în emiterea sau adoptarea actelor administrative</h3>
+          <p class="ep-desc"></p>
+        </div>
+        <div class="ep-badge">EP_04</div>
+      </div>
+      
+      <div class="player-ui" data-src="audio/PDA4.mp3"> <div class="controls-row">
+          <button class="skip-btn rewind-btn">⟲<span class="skip-text">10s</span></button>
+          <button class="play-btn">▶</button>
+          <button class="skip-btn forward-btn">⟳<span class="skip-text">10s</span></button>
+        </div>
+        
+        <div class="timeline-container">
+          <div class="time-info">
+            <span class="current-time">00:00</span>
+            <span class="total-time">00:00</span>
+          </div>
+          <div class="timeline"><div class="progress-bar"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ep-card">
+      <div class="ep-header">
+        <div>
+          <div class="ep-tag">PDA - US 5</div>
+          <h3 class="ep-title">Reguli procedurale privind contractele administrative</h3>
+          <p class="ep-desc"></p>
+        </div>
+        <div class="ep-badge">EP_05</div>
+      </div>
+      
+      <div class="player-ui" data-src="audio/PDA5.mp3"> <div class="controls-row">
+          <button class="skip-btn rewind-btn">⟲<span class="skip-text">10s</span></button>
+          <button class="play-btn">▶</button>
+          <button class="skip-btn forward-btn">⟳<span class="skip-text">10s</span></button>
+        </div>
+        
+        <div class="timeline-container">
+          <div class="time-info">
+            <span class="current-time">00:00</span>
+            <span class="total-time">00:00</span>
+          </div>
+          <div class="timeline"><div class="progress-bar"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ep-card">
+      <div class="ep-header">
+        <div>
+          <div class="ep-tag">PDA - US 6</div>
+          <h3 class="ep-title">Reguli procedurale privind tragerea la răspundere juridică a funcționarilor publici</h3>
+          <p class="ep-desc"></p>
+        </div>
+        <div class="ep-badge">EP_06</div>
+      </div>
+      
+      <div class="player-ui" data-src="audio/PDA6.mp3"> <div class="controls-row">
+          <button class="skip-btn rewind-btn">⟲<span class="skip-text">10s</span></button>
+          <button class="play-btn">▶</button>
+          <button class="skip-btn forward-btn">⟳<span class="skip-text">10s</span></button>
+        </div>
+        
+        <div class="timeline-container">
+          <div class="time-info">
+            <span class="current-time">00:00</span>
+            <span class="total-time">00:00</span>
+          </div>
+          <div class="timeline"><div class="progress-bar"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ep-card">
+      <div class="ep-header">
+        <div>
+          <div class="ep-tag">PDA - US 7</div>
+          <h3 class="ep-title">Conctenciosul administrativ și rolul său în statul de drept</h3>
+          <p class="ep-desc"></p>
+        </div>
+        <div class="ep-badge">EP_07</div>
+      </div>
+      
+      <div class="player-ui" data-src="audio/PDA7.mp3"> <div class="controls-row">
+          <button class="skip-btn rewind-btn">⟲<span class="skip-text">10s</span></button>
+          <button class="play-btn">▶</button>
+          <button class="skip-btn forward-btn">⟳<span class="skip-text">10s</span></button>
+        </div>
+        
+        <div class="timeline-container">
+          <div class="time-info">
+            <span class="current-time">00:00</span>
+            <span class="total-time">00:00</span>
+          </div>
+          <div class="timeline"><div class="progress-bar"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <div class="xp-popup" id="xp-popup">🎧 EPISOD FINALIZAT: +50 XP</div>
+
+  <script>
+    // 1. INIȚIALIZARE XP GLOBAL
+    let db = JSON.parse(localStorage.getItem('ec_ultra2') || '{}');
+    if (!db._meta) db._meta = { xp: 0, streak: 0, todayDone: 0, dailyGoal: 10 };
+    let state = db._meta;
+    
+    const xpDisplay = document.getElementById('global-xp');
+    xpDisplay.textContent = state.xp;
+
+    function saveAndShowXP(amount) {
+      state.xp += amount;
+      db._meta = state;
+      localStorage.setItem('ec_ultra2', JSON.stringify(db));
+      xpDisplay.textContent = state.xp;
+      
+      // Arată Pop-up
+      const popup = document.getElementById('xp-popup');
+      popup.classList.remove('show');
+      void popup.offsetWidth; // Trigger reflow
+      popup.classList.add('show');
+      if (navigator.vibrate) navigator.vibrate([30, 50, 100]);
+    }
+
+    // 2. LOGICA PLAYER-ULUI AUDIO
+    document.querySelectorAll('.player-ui').forEach(player => {
+      
+      const audioSrc = player.getAttribute('data-src');
+      const audio = new Audio(audioSrc);
+      let isCompleted = false; // Ca să nu dăm XP de 2 ori pe același ep.
+      
+      const playBtn = player.querySelector('.play-btn');
+      const rewindBtn = player.querySelector('.rewind-btn');
+      const forwardBtn = player.querySelector('.forward-btn');
+      const timeline = player.querySelector('.timeline');
+      const progressBar = player.querySelector('.progress-bar');
+      const currentTimeEl = player.querySelector('.current-time');
+      const totalTimeEl = player.querySelector('.total-time');
+
+      // Formatare timp (ex: 65 sec -> 01:05)
+      const formatTime = (seconds) => {
+        if (isNaN(seconds)) return "00:00";
+        const min = Math.floor(seconds / 60);
+        const sec = Math.floor(seconds % 60);
+        return `${min < 10 ? '0' : ''}${min}:${sec < 10 ? '0' : ''}${sec}`;
+      };
+
+      audio.addEventListener('loadedmetadata', () => {
+        totalTimeEl.textContent = formatTime(audio.duration);
+      });
+
+      // PLAY / PAUSE
+      playBtn.addEventListener('click', () => {
+        if (audio.paused) {
+          // Oprim celelalte audio-uri
+          document.querySelectorAll('audio').forEach(otherAudio => {
+             if(otherAudio !== audio && !otherAudio.paused) {
+                 otherAudio.pause();
+                 document.querySelectorAll('.play-btn').forEach(btn => btn.innerHTML = '▶');
+             }
+          });
+          audio.play();
+          playBtn.innerHTML = '⏸';
+          if (navigator.vibrate) navigator.vibrate(10);
+        } else {
+          audio.pause();
+          playBtn.innerHTML = '▶';
+        }
+      });
+
+      // SKIP 10s
+      rewindBtn.addEventListener('click', () => {
+        audio.currentTime = Math.max(0, audio.currentTime - 10);
+        if (navigator.vibrate) navigator.vibrate(15);
+      });
+
+      forwardBtn.addEventListener('click', () => {
+        audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
+        if (navigator.vibrate) navigator.vibrate(15);
+      });
+
+      // UPDATE PROGRESS BAR
+      audio.addEventListener('timeupdate', () => {
+        currentTimeEl.textContent = formatTime(audio.currentTime);
+        const progressPercent = (audio.currentTime / audio.duration) * 100;
+        progressBar.style.width = `${progressPercent}%`;
+      });
+
+      // CLICK PE TIMELINE
+      timeline.addEventListener('click', (e) => {
+        const rect = timeline.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const widthPercent = clickX / rect.width;
+        audio.currentTime = widthPercent * audio.duration;
+      });
+
+      // EPISOD TERMINAT -> ACORDARE XP
+      audio.addEventListener('ended', () => {
+        playBtn.innerHTML = '▶';
+        progressBar.style.width = '0%';
+        currentTimeEl.textContent = '00:00';
+        
+        if (!isCompleted) {
+          isCompleted = true; // Marchează ca finalizat în sesiunea curentă
+          saveAndShowXP(50); // Acordă 50 XP
+        }
+      });
+    });
+  </script>
+</body>
+</html>
